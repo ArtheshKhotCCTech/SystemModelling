@@ -1,11 +1,14 @@
 # Purpose: the one way SpecAlive calls an LLM. complete() takes a Pydantic model as the response
 # schema, sends it as an OpenAI strict structured output at temperature 0, and returns a validated
-# instance — or raises LLMError with the request id, never a partial object. Every result is
+# instance — or raises LLMError with the request id, never a partial object. An optional image
+# goes beside the text as a data URL, and its hash joins the cache key. Every result is
 # cached on disk (llm/cache.py), so a repeat call makes no network request; tokens and estimated
 # cost are logged per call. `openai` is imported lazily so importing this module needs no key.
 from __future__ import annotations
 
+import base64
 import copy
+import hashlib
 import json
 import logging
 from collections.abc import Callable
@@ -77,6 +80,13 @@ def _strictify(node: Any) -> Any:
     return node
 
 
+def _user_content(text: str, image: bytes | None, media_type: str) -> str | list[dict[str, Any]]:
+    if image is None:
+        return text
+    url = f"data:{media_type};base64,{base64.b64encode(image).decode('ascii')}"
+    return [{"type": "text", "text": text}, {"type": "image_url", "image_url": {"url": url}}]
+
+
 class OpenAITransport:
     """Sends a prepared request through the OpenAI SDK and maps the reply to a RawResponse."""
 
@@ -110,10 +120,13 @@ class LLMClient:
         self._transport = transport
         self.usage: list[CallUsage] = []
 
-    def complete(self, *, prompt: str, input_text: str, schema: type[M]) -> M:
+    def complete(self, *, prompt: str, input_text: str, schema: type[M],
+                 image: bytes | None = None, image_media_type: str = "image/png") -> M:
         s = self._settings
         json_schema = strict_json_schema(schema)
-        key = ResponseCache.key(s.model, prompt, json_schema, input_text)
+        key_text = input_text if image is None else (
+            f"{input_text}\n\x00image {image_media_type} {hashlib.sha256(image).hexdigest()}")
+        key = ResponseCache.key(s.model, prompt, json_schema, key_text)
 
         cached = self._cache.get(key)
         if isinstance(cached, dict) and "response" in cached:
@@ -131,7 +144,7 @@ class LLMClient:
             "temperature": 0,
             "messages": [
                 {"role": "system", "content": prompt},
-                {"role": "user", "content": input_text},
+                {"role": "user", "content": _user_content(input_text, image, image_media_type)},
             ],
             "response_format": {
                 "type": "json_schema",

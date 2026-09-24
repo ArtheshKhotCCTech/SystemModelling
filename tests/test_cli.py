@@ -1,7 +1,7 @@
-# Purpose: pins the phase 1 CLI contract — `--help` lists every subcommand (FR-01 acceptance 1),
-# pipeline stages are honest stubs that exit non-zero, `cache clear` empties the response
-# cache, and `doctor` prints one OK/FAIL line per check, exits non-zero on any FAIL and never
-# prints the API key.
+# Purpose: pins the CLI contract — `--help` lists every subcommand (FR-01 acceptance 1), stages
+# not yet delivered are honest stubs that exit non-zero, `ingest` writes evidence.json and exits
+# 2 on a missing input (phase 3), `cache clear` empties the response cache, and `doctor` prints
+# one OK/FAIL line per check, exits non-zero on any FAIL and never prints the API key.
 import subprocess
 import sys
 
@@ -12,7 +12,7 @@ from specalive.llm.cache import ResponseCache
 
 SUBCOMMANDS = ["ingest", "extract", "generate", "compile", "verify", "report", "run", "cache",
                "doctor"]
-STUBS = ["ingest", "extract", "generate", "compile", "verify", "report", "run"]
+STUBS = ["extract", "generate", "compile", "verify", "report", "run"]
 
 
 def test_help_lists_every_subcommand(capsys):
@@ -35,6 +35,36 @@ def test_stubs_say_not_implemented_and_exit_nonzero(name, capsys):
     code = cli.main([name])
     assert code != 0
     assert "not implemented in this phase" in capsys.readouterr().err
+
+
+def test_ingest_writes_evidence_json(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cli, "load_settings", lambda: cli.Settings(cache_dir=tmp_path / "c"))
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    (bundle / "notes.txt").write_text("Pump ran fine.\n", encoding="utf-8")
+    (bundle / "diagram.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    out = tmp_path / "out"
+    assert cli.main(["ingest", str(bundle), "-o", str(out)]) == 0
+    assert (out / "evidence.json").is_file()
+    printed = capsys.readouterr().out
+    assert "2 source(s)" in printed
+    assert "unread" in printed and "diagram.png" in printed  # never silently skipped
+
+
+def test_ingest_missing_input_is_an_input_problem(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cli, "load_settings", lambda: cli.Settings(cache_dir=tmp_path / "c"))
+    assert cli.main(["ingest", str(tmp_path / "nope"), "-o", str(tmp_path / "o")]) == 2
+    assert "not found" in capsys.readouterr().err
+    assert cli.main(["ingest"]) == 2
+
+
+def test_ingest_with_nothing_readable_exits_two(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cli, "load_settings", lambda: cli.Settings(cache_dir=tmp_path / "c"))
+    bundle = tmp_path / "b"
+    bundle.mkdir()
+    (bundle / "blob.bin").write_bytes(b"\x00\x01\xff")
+    assert cli.main(["ingest", str(bundle), "-o", str(tmp_path / "o")]) == 2
+    assert (tmp_path / "o" / "evidence.json").is_file()
 
 
 def test_cache_clear_empties_the_cache(tmp_path, monkeypatch, capsys):

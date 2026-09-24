@@ -1,0 +1,62 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 325 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+50 780 Td
+(Widget Requirement Specification) Tj T*
+(Revision B) Tj T*
+(Date 12 Mar 2025) Tj T*
+(1. Scope) Tj T*
+(The widget shall hold water.) Tj T*
+(WR-F-001 - The pump shall start on demand.) Tj T*
+(WR-F-002 - The pump shall stop at the high level.) Tj T*
+(2. Setpoints) Tj T*
+(High level 0.9 m) Tj T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 100 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+50 780 Td
+(3. Interfaces) Tj T*
+(The controller reads the level sensor.) Tj T*
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000247 00000 n 
+0000000623 00000 n 
+0000000749 00000 n 
+0000000900 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+970
+%%EOF

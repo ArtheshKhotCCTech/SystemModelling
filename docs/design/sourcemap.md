@@ -21,8 +21,8 @@
 |---|---|---|
 | `pyproject.toml` | 1 | Package metadata, runtime and `[dev]` dependencies, the `specalive` console script. |
 | `specalive/__init__.py` | 1 | Package marker and `__version__`. |
-| `specalive/config.py` | 1 | Every setting in one immutable `Settings` built by `load_settings()`: model name, cache directory, omc path and MSL version, SysML validator folder and Java path, timeouts, repair attempt limit, token prices, API key (hidden from repr). The only module that reads environment variables. |
-| `specalive/cli.py` | 1, 9 | Command-line entry point. Phase 1: argparse subcommands with the stages stubbed, `cache clear`, and `doctor` (four OK/FAIL toolchain checks). Phase 9 wires the real pipeline, progress output and graceful failure. |
+| `specalive/config.py` | 1, 3 | Every setting in one immutable `Settings` built by `load_settings()`: model name, cache directory, omc path and MSL version, SysML validator folder and Java path, timeouts, repair attempt limit, token prices, the vision switch (3), API key (hidden from repr). The only module that reads environment variables. |
+| `specalive/cli.py` | 1, 3, 9 | Command-line entry point. Phase 1: argparse subcommands with the stages stubbed, `cache clear`, and `doctor` (four OK/FAIL toolchain checks). Phase 3: `ingest` writes `evidence.json`, lists every source not fully read, exits 2 on an input problem. Phase 9 wires the real pipeline, progress output and graceful failure. |
 | `DECISIONS.md` | 1 | Daily decision log, written by the team. Phase 1 creates the header only. |
 | `AI-LOG.md` | 1 | Where AI output was overridden or discarded, written by the team. Phase 1 creates the header only. |
 | `README.md` | 1, 9 | Setup, the `run` command, **the command that compiles the committed model**, output layout. Phase 9 completes it. |
@@ -43,15 +43,28 @@
 | Source File | Phase | Purpose |
 |---|---|---|
 | `specalive/llm/__init__.py` | 1 | Layer marker for the LLM layer. |
-| `specalive/llm/client.py` | 1 | OpenAI wrapper: strict structured outputs from Pydantic models, temperature 0, cache-first, token and cost logging, `LLMError` with request id; `openai` imported lazily. |
+| `specalive/llm/client.py` | 1, 3 | OpenAI wrapper: strict structured outputs from Pydantic models, temperature 0, cache-first, token and cost logging, `LLMError` with request id; `openai` imported lazily. Phase 3: optional image input for vision, its hash part of the cache key. |
 | `specalive/llm/cache.py` | 1 | On-disk response cache keyed by model, prompt and input hash; makes runs repeatable and tests offline. |
 
 ### `ingest/` — inputs to evidence
 | Source File | Phase | Purpose |
 |---|---|---|
-| `specalive/ingest/evidence.py` | 3 | `EvidenceChunk` and `EvidenceBundle`: text plus source, locator (page, sheet/row, section) and reliability. |
-| `specalive/ingest/classify.py` | 3 | Infers each source's role (change record, review decision, spec, datasheet, legacy model, informal note, verification document), revision and date; uses a source-index table when the bundle has one. |
-| `specalive/ingest/readers/*.py` | 3 | One reader per format: pdf, docx, xlsx, eml, text/markdown, Modelica, PlantUML, json, csv (header and statistics), image (vision or flagged unread). |
+| `specalive/ingest/__init__.py` | 3 | Layer marker for the ingest layer. |
+| `specalive/ingest/evidence.py` | 3 | `Source` (path, format, read status with reason, role, revision, date, reliability, document number and status, how it was classified and the index row that says so), `EvidenceChunk` (source id, locator, text, kind, role, header -> value `fields` for table rows) and `EvidenceBundle`, which rejects duplicate sources and chunks of unknown sources. |
+| `specalive/ingest/classify.py` | 3 | Role, revision, date and reliability per source: a source-index table recognised by its columns (traced to its row), then the document's own title and header fields, then the format default, then the LLM only when every rule finds nothing. Register rows get their sheet's role (change log, requirements, verification) from its columns. |
+| `specalive/ingest/ingest.py` | 3 | The stage: walks a bundle in sorted path order (or one file), makes `src_` ids from paths, reads and classifies every file, and writes a deterministic `evidence.json`. |
+| `specalive/ingest/readers/__init__.py` | 3 | Reader registry: format by extension, else by content sniffing; any reader exception becomes an `unread` source with the reason. |
+| `specalive/ingest/readers/_common.py` | 3 | `ReadContext`, `ReadResult`, chunking under a size cap at line boundaries, table-row rendering with headers, header and email date parsing. |
+| `specalive/ingest/readers/pdf.py` | 3 | PDF text layer per page, cut at numbered headings and id-led items, located by page and line; no text layer is unread, failed pages partial. |
+| `specalive/ingest/readers/docx.py` | 3 | Word body in order: paragraphs with their section, table rows keyed by headers (two-column tables as key: value), page headers; embedded images reported. |
+| `specalive/ingest/readers/xlsx.py` | 3 | Every sheet; header row found by shape, each row a chunk naming sheet, row and headers; formulas with no cached value reported. |
+| `specalive/ingest/readers/eml.py` | 3 | Email thread split into messages at separators, "wrote:" lines and `>` quotes, each with sender and date, decoded, newest first by parsed date. |
+| `specalive/ingest/readers/text.py` | 3 | Plain text as line-ranged paragraphs; Markdown headings, list items, paragraphs and table rows with their section. |
+| `specalive/ingest/readers/modelica.py` | 3 | Modelica as `code` blocks with line ranges, comments kept; also the shared code reader. |
+| `specalive/ingest/readers/puml.py` | 3 | PlantUML as `code` blocks, comments kept. |
+| `specalive/ingest/readers/json_.py` | 3 | JSON entries as chunks addressed by JSON path, split further until quotable. |
+| `specalive/ingest/readers/csv_.py` | 3 | CSV summarised: header, row count, time span, per-column statistics or distinct values; never inlined. |
+| `specalive/ingest/readers/image.py` | 3 | Images to the vision model as `diagram_text` (partial, not verbatim) when `SPECALIVE_VISION` is on; otherwise unread with the reason. |
 
 ### `extract/` — evidence to IR
 | Source File | Phase | Purpose |
@@ -106,6 +119,7 @@
 | Source File | Phase | Purpose |
 |---|---|---|
 | `tests/fixtures/probe.sysml` | 1 | Minimal SysML v2 model (part, port, connection, attribute with unit, state machine) that `specalive doctor` validates to prove the toolchain. |
+| `tests/fixtures/ingest/two_pages.pdf`, `corrupt.pdf` | 3 | A minimal two-page PDF with a text layer, and a broken one, for the PDF reader and the unread path. |
 | `tests/fixtures/sysml/*` | 5 | One minimal validated example per SysML construct the templates use (`R-SYS-5`). |
 | `tests/goldens/L1_tank.ir.json` | 2 | Hand-written reference IR for L1. Fixture for the generators and the reference for coverage. Never read by `specalive/`. |
 | `tests/goldens/L2_co2.ir.json` | 10 | Hand-written reference IR for L2. |
@@ -121,4 +135,8 @@
 | `tests/test_units.py` | 2 | Every benchmark unit to SI, spelling variants, lists, `UnknownUnit`. |
 | `tests/test_ir.py` | 2 | IR contract on a small model: trace-or-assumption, dangling references, SI units, one effective value, expression language, state-machine rules. |
 | `tests/test_catalogue.py` | 2 | Shipped catalogue covers L1 and loads; each broken-entry case fails at load naming the kind; `check_model`. |
+| `tests/test_ingest_readers.py` | 3 | Each reader on small fixtures: locators, kinds, headers kept, email split and order, CSV summary, image with vision off and on, broken files unread. |
+| `tests/test_ingest_classify.py` | 3 | Keyword and header rules, index-row parsing, index recognised by columns and traced, fallbacks down to the LLM, register sheet roles. |
+| `tests/test_ingest_pipeline.py` | 3 | Scratch bundles: every file a Source, deterministic ids and order, corrupt file isolated, byte-identical `evidence.json`, evidence model validation. |
+| `tests/test_ingest_bundles.py` | 3 | FR-03 acceptance 1-5 on the four `Testcases/` bundles. |
 | `tests/test_golden_l1.py` | 2 | FR-02 acceptance 1–5 on the L1 golden IR, its effective values, states, criteria and conflicts, and verbatim plain-text quotes. |

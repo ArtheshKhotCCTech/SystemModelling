@@ -1,5 +1,6 @@
 # Purpose: every tunable of SpecAlive in one immutable Settings object — model name, cache
-# directory, tool paths, per-tool timeouts, repair attempt limit, token prices. This is the only
+# directory, tool paths, per-tool timeouts, repair attempt limit, token prices, whether images go
+# to the vision model. This is the only
 # module that reads environment variables or `.env` (R-FND-2); real variables override `.env`.
 # Callers build Settings once with load_settings() and pass it down. The API key is excluded
 # from repr so it is never printed.
@@ -38,6 +39,8 @@ class Settings:
     # USD per million tokens, for the per-call cost estimate. Defaults are gpt-4o list prices.
     price_in_per_mtok: float = 2.50
     price_out_per_mtok: float = 10.00
+    # Send images to the vision model at ingest (FR-03 requirement 7). Off: images are unread.
+    vision: bool = False
     openai_api_key: str | None = field(default=None, repr=False)
 
     @property
@@ -64,6 +67,17 @@ def _positive_int(text: str) -> int:
     if value < 1:
         raise ValueError("must be at least 1")
     return value
+
+
+_TRUE = frozenset({"1", "true", "yes", "on"})
+_FALSE = frozenset({"0", "false", "no", "off"})
+
+
+def _bool(text: str) -> bool:
+    lowered = text.lower()
+    if lowered in _TRUE or lowered in _FALSE:
+        return lowered in _TRUE
+    raise ValueError("must be one of 1/0, true/false, yes/no, on/off")
 
 
 def _read(env: Mapping[str, str], name: str, parse: Callable[[str], T], default: T) -> T:
@@ -109,5 +123,6 @@ def load_settings(environ: Mapping[str, str] | None = None,
                                 d.price_in_per_mtok),
         price_out_per_mtok=_read(env, "SPECALIVE_PRICE_OUT", _non_negative_float,
                                  d.price_out_per_mtok),
+        vision=_read(env, "SPECALIVE_VISION", _bool, d.vision),
         openai_api_key=key,
     )

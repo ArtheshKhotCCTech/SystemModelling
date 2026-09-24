@@ -1,7 +1,9 @@
 # Purpose: the `specalive` command line. Phase 1 fixes the subcommand set (one per pipeline stage,
 # plus `run`, `cache clear` and `doctor`); the stage commands are stubs until their phases land.
 # `doctor` proves the toolchain — Python, omc + MSL, the SysML v2 validator, the OpenAI API — and
-# must pass before any modelling phase starts (R-FND-1). Top of the layer stack; nothing imports it.
+# must pass before any modelling phase starts (R-FND-1). `ingest` (phase 3) reads a bundle into
+# evidence.json and lists every file it could not fully read. Top of the layer stack; nothing
+# imports it.
 from __future__ import annotations
 
 import argparse
@@ -16,12 +18,13 @@ from pydantic import BaseModel
 
 from specalive import __version__
 from specalive.config import ConfigError, Settings, load_settings
+from specalive.ingest.ingest import InputNotFound, ingest, write_evidence
 from specalive.llm.cache import ResponseCache
 from specalive.llm.client import LLMClient, LLMError
 from specalive.toolchain import omc, sysml_validate
 
 # FR-09 exit codes: 0 all gates passed, 1 a gate failed, 2 input problem, 3 toolchain problem.
-EXIT_OK, EXIT_FAILED, EXIT_TOOLCHAIN = 0, 1, 3
+EXIT_OK, EXIT_FAILED, EXIT_INPUT, EXIT_TOOLCHAIN = 0, 1, 2, 3
 
 PROBE_FIXTURE = Path("tests/fixtures/probe.sysml")
 
@@ -104,6 +107,33 @@ def cmd_cache_clear(settings: Settings) -> int:
     return EXIT_OK
 
 
+def cmd_ingest(settings: Settings, bundle: str | None, out: Path | None) -> int:
+    if not bundle:
+        print("specalive ingest: input problem: give a bundle folder or a file", file=sys.stderr)
+        return EXIT_INPUT
+    path = Path(bundle)
+    out = out or Path("out") / (path.stem or "run")
+    try:
+        evidence = ingest(path, settings, llm=LLMClient(settings))
+    except InputNotFound as exc:
+        print(f"specalive ingest: input problem: {exc}", file=sys.stderr)
+        return EXIT_INPUT
+    target = write_evidence(evidence, out)
+    counts = {status: sum(1 for s in evidence.sources if s.status == status)
+              for status in ("read", "partial", "unread")}
+    print(f"{len(evidence.sources)} source(s): {counts['read']} read, {counts['partial']} partial, "
+          f"{counts['unread']} unread; {len(evidence.chunks)} chunk(s)")
+    for s in evidence.sources:
+        if s.status != "read":
+            print(f"  {s.status:<7}  {s.path}  {s.reason}")
+    print(f"wrote {target}")
+    if not evidence.sources or counts["unread"] == len(evidence.sources):
+        print("specalive ingest: input problem: nothing in the input could be read",
+              file=sys.stderr)
+        return EXIT_INPUT
+    return EXIT_OK
+
+
 def cmd_stub(name: str) -> int:
     print(f"specalive {name}: not implemented in this phase", file=sys.stderr)
     return EXIT_FAILED
@@ -147,6 +177,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_doctor(settings)
     if args.command == "cache":
         return cmd_cache_clear(settings)
+    if args.command == "ingest":
+        return cmd_ingest(settings, args.bundle, args.out)
     return cmd_stub(args.command)
 
 
