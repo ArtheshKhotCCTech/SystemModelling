@@ -1,0 +1,3502 @@
+{
+  "name": "two_tank_sequence",
+  "description": "Two-tank fill/transfer/drain demonstrator: TK-101 is filled through XV-101, transferred to TK-102 through XV-102 and drained through XV-103, sequenced by PLC-101 from LT-101/LT-102 levels and START/STOP/SHUT pushbuttons. Hand-written golden IR from the L1 bundle with the CR-004 effective parameter set.",
+  "sources": [
+    {
+      "id": "cds_02",
+      "title": "Control Logic Design Note - Two-Tank Fill/Transfer/Drain Controller",
+      "path": "04_design_notes/04_control_logic_design_notes.docx",
+      "role": "design_note",
+      "revision": "B",
+      "date": "2026-02-20",
+      "reliability": "high",
+      "tags": [
+        "CDS-02",
+        "SRC-04"
+      ]
+    },
+    {
+      "id": "controls_email_thread",
+      "title": "RE: Tank demo timing / high-level tuning and shutdown semantics",
+      "path": "05_correspondence/05_controls_email_thread.eml",
+      "role": "correspondence",
+      "revision": null,
+      "date": "2026-03-12",
+      "reliability": "medium",
+      "tags": [
+        "SRC-05"
+      ]
+    },
+    {
+      "id": "cr_004",
+      "title": "Change request CR-004",
+      "path": null,
+      "role": "change_record",
+      "revision": "1",
+      "date": "2026-03-11",
+      "reliability": "high",
+      "tags": [
+        "CR-004"
+      ]
+    },
+    {
+      "id": "demo_run_900s",
+      "title": "900 s demonstration run",
+      "path": "09_datasets/10_demo_run_900s.csv",
+      "role": "reference_data",
+      "revision": null,
+      "date": "2026-04-04",
+      "reliability": "medium",
+      "tags": [
+        "SRC-10"
+      ]
+    },
+    {
+      "id": "dr_02",
+      "title": "DR-02 Design Review Minutes - Two-Tank Controller",
+      "path": "04_design_notes/06_design_review_minutes.md",
+      "role": "review_decision",
+      "revision": "Final",
+      "date": "2026-02-19",
+      "reliability": "high",
+      "tags": [
+        "DR-02",
+        "SRC-06"
+      ]
+    },
+    {
+      "id": "engineering_data_register",
+      "title": "Tank Filling/Emptying System - Engineering Data Register",
+      "path": "02_engineering_data/02_engineering_data_register.xlsx",
+      "role": "register",
+      "revision": null,
+      "date": "2026-04-10",
+      "reliability": "high",
+      "tags": [
+        "SRC-02"
+      ]
+    },
+    {
+      "id": "icd_01",
+      "title": "Interface control document ICD-01",
+      "path": null,
+      "role": "design_note",
+      "revision": "B",
+      "date": "2026-02-12",
+      "reliability": "high",
+      "tags": [
+        "ICD-01"
+      ]
+    },
+    {
+      "id": "mds_01",
+      "title": "Mechanical data sheet MDS-01",
+      "path": null,
+      "role": "design_note",
+      "revision": "1.2",
+      "date": "2026-02-02",
+      "reliability": "high",
+      "tags": [
+        "MDS-01"
+      ]
+    },
+    {
+      "id": "operator_shift_notes",
+      "title": "Test engineer scratch notes",
+      "path": "04_design_notes/12_operator_shift_notes.txt",
+      "role": "informal_note",
+      "revision": null,
+      "date": "2026-04-04",
+      "reliability": "low",
+      "tags": [
+        "SRC-12"
+      ]
+    },
+    {
+      "id": "partial_legacy_architecture",
+      "title": "Synthetic legacy architecture draft",
+      "path": "03_architecture_diagrams/11_partial_legacy_architecture.puml",
+      "role": "legacy_architecture",
+      "revision": "Draft",
+      "date": "2026-01-28",
+      "reliability": "low",
+      "tags": [
+        "SRC-11"
+      ]
+    },
+    {
+      "id": "reference_control_diagram",
+      "title": "Reference control diagram",
+      "path": "03_architecture_diagrams/03_reference_control_diagram.png",
+      "role": "other",
+      "revision": null,
+      "date": null,
+      "reliability": "medium",
+      "tags": [
+        "SRC-03"
+      ]
+    },
+    {
+      "id": "sim_legacy",
+      "title": "Archived Modelica demo TankDemo_Rev12",
+      "path": "06_legacy_code/07_legacy_tank_demo.mo",
+      "role": "legacy_model",
+      "revision": "1.2",
+      "date": "2026-02-02",
+      "reliability": "medium",
+      "tags": [
+        "SIM-LEGACY",
+        "TankDemo_Rev12",
+        "SRC-07"
+      ]
+    },
+    {
+      "id": "tp_17",
+      "title": "Test Procedure TP-17 - 900 s Controller Demonstration",
+      "path": "08_commissioning/09_test_procedure_TP17.pdf",
+      "role": "verification_procedure",
+      "revision": "C",
+      "date": "2026-04-03",
+      "reliability": "high",
+      "tags": [
+        "TP-17",
+        "SRC-09"
+      ]
+    },
+    {
+      "id": "urs_001",
+      "title": "User Requirement Specification - Two-Tank Sequence Controller",
+      "path": "01_requirements/01_customer_URS.pdf",
+      "role": "requirement_spec",
+      "revision": "A",
+      "date": "2026-01-15",
+      "reliability": "high",
+      "tags": [
+        "URS-001",
+        "SRC-01"
+      ]
+    },
+    {
+      "id": "vd_vxs24",
+      "title": "Synthetic Supplier Datasheet - VXS-24 On/Off Valve",
+      "path": "07_datasheets/08_valve_datasheet.pdf",
+      "role": "datasheet",
+      "revision": "B",
+      "date": "2026-02-05",
+      "reliability": "high",
+      "tags": [
+        "VD-VXS24",
+        "SRC-08"
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "id": "tk_101",
+      "kind": "tank",
+      "name": "Tank 1",
+      "tags": [
+        "TK-101",
+        "tank1",
+        "T1"
+      ],
+      "attributes": {
+        "service": "Intermediate receiving tank",
+        "orientation": "vertical"
+      },
+      "ports": [
+        {
+          "id": "tk_101_inlet",
+          "role": "inlet",
+          "direction": "in",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "tk_101_outlet",
+          "role": "outlet",
+          "direction": "out",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "tk_101_level_out",
+          "role": "level_out",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "m"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §2",
+          "quote": "TK-101 Tank 1 tank1 / T1"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 4, column D",
+          "quote": "Intermediate receiving tank"
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "tk_102",
+      "kind": "tank",
+      "name": "Tank 2",
+      "tags": [
+        "TK-102",
+        "tank2",
+        "T2"
+      ],
+      "attributes": {
+        "service": "Final receiving/drain tank",
+        "orientation": "vertical"
+      },
+      "ports": [
+        {
+          "id": "tk_102_inlet",
+          "role": "inlet",
+          "direction": "in",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "tk_102_outlet",
+          "role": "outlet",
+          "direction": "out",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "tk_102_level_out",
+          "role": "level_out",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "m"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §2",
+          "quote": "TK-102 Tank 2 tank2 / T2"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 5, column D",
+          "quote": "Final receiving/drain tank"
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "xv_101",
+      "kind": "on_off_valve",
+      "name": "Inlet valve to Tank 1",
+      "tags": [
+        "XV-101",
+        "valve1",
+        "V1"
+      ],
+      "attributes": {
+        "fail_position": "closed"
+      },
+      "ports": [
+        {
+          "id": "xv_101_inlet",
+          "role": "inlet",
+          "direction": "in",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "xv_101_outlet",
+          "role": "outlet",
+          "direction": "out",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "xv_101_cmd_in",
+          "role": "cmd_in",
+          "direction": "in",
+          "domain": "signal_bool",
+          "unit": null
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §2",
+          "quote": "XV-101 Inlet valve to Tank 1 valve1 / V1"
+        },
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §1",
+          "quote": "Project tags XV-101, XV-102 and XV-103 use this family."
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "xv_102",
+      "kind": "on_off_valve",
+      "name": "Transfer valve Tank 1 to Tank 2",
+      "tags": [
+        "XV-102",
+        "valve2",
+        "V2"
+      ],
+      "attributes": {
+        "fail_position": "closed"
+      },
+      "ports": [
+        {
+          "id": "xv_102_inlet",
+          "role": "inlet",
+          "direction": "in",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "xv_102_outlet",
+          "role": "outlet",
+          "direction": "out",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "xv_102_cmd_in",
+          "role": "cmd_in",
+          "direction": "in",
+          "domain": "signal_bool",
+          "unit": null
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §2",
+          "quote": "XV-102 Transfer valve Tank 1 to Tank 2 valve2 / V2"
+        },
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §1",
+          "quote": "Project tags XV-101, XV-102 and XV-103 use this family."
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "xv_103",
+      "kind": "on_off_valve",
+      "name": "Tank 2 drain valve",
+      "tags": [
+        "XV-103",
+        "valve3",
+        "V3"
+      ],
+      "attributes": {
+        "fail_position": "closed"
+      },
+      "ports": [
+        {
+          "id": "xv_103_inlet",
+          "role": "inlet",
+          "direction": "in",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "xv_103_outlet",
+          "role": "outlet",
+          "direction": "out",
+          "domain": "fluid",
+          "unit": "m3/s"
+        },
+        {
+          "id": "xv_103_cmd_in",
+          "role": "cmd_in",
+          "direction": "in",
+          "domain": "signal_bool",
+          "unit": null
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §2",
+          "quote": "XV-103 Tank 2 drain valve valve3 / V3"
+        },
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §1",
+          "quote": "Project tags XV-101, XV-102 and XV-103 use this family."
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "lt_101",
+      "kind": "level_sensor",
+      "name": "Tank 1 level transmitter",
+      "tags": [
+        "LT-101",
+        "level1"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "lt_101_level_in",
+          "role": "level_in",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "m"
+        },
+        {
+          "id": "lt_101_level_out",
+          "role": "level_out",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "m"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §5",
+          "quote": "Level measurements LT-101 and LT-102 shall be available to PLC-101."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 9, column D",
+          "quote": "TK-101 level"
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "lt_102",
+      "kind": "level_sensor",
+      "name": "Tank 2 level transmitter",
+      "tags": [
+        "LT-102",
+        "level2"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "lt_102_level_in",
+          "role": "level_in",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "m"
+        },
+        {
+          "id": "lt_102_level_out",
+          "role": "level_out",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "m"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §5",
+          "quote": "Level measurements LT-101 and LT-102 shall be available to PLC-101."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 10, column D",
+          "quote": "TK-102 level"
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "pb_start",
+      "kind": "command_button",
+      "name": "START pushbutton",
+      "tags": [
+        "PB-START",
+        "start",
+        "START"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "pb_start_cmd_out",
+          "role": "cmd_out",
+          "direction": "out",
+          "domain": "signal_bool",
+          "unit": null
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §5",
+          "quote": "START, STOP and SHUT are momentary commands."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 11, column D",
+          "quote": "Start/resume command"
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "pb_stop",
+      "kind": "command_button",
+      "name": "STOP pushbutton",
+      "tags": [
+        "PB-STOP",
+        "stop",
+        "STOP"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "pb_stop_cmd_out",
+          "role": "cmd_out",
+          "direction": "out",
+          "domain": "signal_bool",
+          "unit": null
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §5",
+          "quote": "START, STOP and SHUT are momentary commands."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 12, column D",
+          "quote": "Pause command"
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "pb_shut",
+      "kind": "command_button",
+      "name": "SHUT pushbutton",
+      "tags": [
+        "PB-SHUT",
+        "shut",
+        "SHUT"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "pb_shut_cmd_out",
+          "role": "cmd_out",
+          "direction": "out",
+          "domain": "signal_bool",
+          "unit": null
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §5",
+          "quote": "START, STOP and SHUT are momentary commands."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 13, column D",
+          "quote": "Controlled shutdown/drain"
+        },
+        {
+          "source_id": "operator_shift_notes",
+          "locator": "line 17",
+          "quote": "'shut' is controlled drain; E-stop is outside this demo scope."
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "plc_101",
+      "kind": "sequence_controller",
+      "name": "Sequence controller",
+      "tags": [
+        "PLC-101",
+        "tankController"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "plc_101_level1",
+          "role": "level1",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "m"
+        },
+        {
+          "id": "plc_101_level2",
+          "role": "level2",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "m"
+        },
+        {
+          "id": "plc_101_start",
+          "role": "start",
+          "direction": "in",
+          "domain": "signal_bool",
+          "unit": null
+        },
+        {
+          "id": "plc_101_stop",
+          "role": "stop",
+          "direction": "in",
+          "domain": "signal_bool",
+          "unit": null
+        },
+        {
+          "id": "plc_101_shut",
+          "role": "shut",
+          "direction": "in",
+          "domain": "signal_bool",
+          "unit": null
+        },
+        {
+          "id": "plc_101_valve1",
+          "role": "valve1",
+          "direction": "out",
+          "domain": "signal_bool",
+          "unit": null
+        },
+        {
+          "id": "plc_101_valve2",
+          "role": "valve2",
+          "direction": "out",
+          "domain": "signal_bool",
+          "unit": null
+        },
+        {
+          "id": "plc_101_valve3",
+          "role": "valve3",
+          "direction": "out",
+          "domain": "signal_bool",
+          "unit": null
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §2",
+          "quote": "PLC-101 Sequence controller tankController"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 14, column D",
+          "quote": "Sequence and mode control"
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "src_101",
+      "kind": "fluid_source",
+      "name": "Supply source",
+      "tags": [
+        "SRC-101",
+        "source"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "src_101_outlet",
+          "role": "outlet",
+          "direction": "out",
+          "domain": "fluid",
+          "unit": "m3/s"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 15, column D",
+          "quote": "Supply to XV-101"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 21",
+          "quote": "SRC --> V1 : liquid"
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    },
+    {
+      "id": "drn_101",
+      "kind": "fluid_sink",
+      "name": "Drain",
+      "tags": [
+        "DRN-101",
+        "ambient1"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "drn_101_inlet",
+          "role": "inlet",
+          "direction": "in",
+          "domain": "fluid",
+          "unit": "m3/s"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 16, column D",
+          "quote": "Drain from XV-103"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 26",
+          "quote": "V3 --> DRN : liquid"
+        }
+      ],
+      "assumption_ids": [],
+      "confidence": 1.0
+    }
+  ],
+  "connections": [
+    {
+      "id": "if_hyd_01",
+      "from_port": "src_101_outlet",
+      "to_port": "xv_101_inlet",
+      "medium_or_signal": "liquid",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 4, column G",
+          "quote": "SRC -> V1"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 21",
+          "quote": "SRC --> V1 : liquid"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_hyd_02",
+      "from_port": "xv_101_outlet",
+      "to_port": "tk_101_inlet",
+      "medium_or_signal": "liquid",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 5, column G",
+          "quote": "V1 -> T1"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 22",
+          "quote": "V1 --> T1 : liquid"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_hyd_03",
+      "from_port": "tk_101_outlet",
+      "to_port": "xv_102_inlet",
+      "medium_or_signal": "liquid",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 6, column G",
+          "quote": "T1 -> V2"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 23",
+          "quote": "T1 --> V2 : liquid"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_hyd_04",
+      "from_port": "xv_102_outlet",
+      "to_port": "tk_102_inlet",
+      "medium_or_signal": "liquid",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 7, column G",
+          "quote": "V2 -> T2"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 24",
+          "quote": "V2 --> T2 : liquid"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_hyd_05",
+      "from_port": "tk_102_outlet",
+      "to_port": "xv_103_inlet",
+      "medium_or_signal": "liquid",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 8, column G",
+          "quote": "T2 -> V3"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 25",
+          "quote": "T2 --> V3 : liquid"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_hyd_06",
+      "from_port": "xv_103_outlet",
+      "to_port": "drn_101_inlet",
+      "medium_or_signal": "liquid",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 9, column G",
+          "quote": "V3 -> drain"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 26",
+          "quote": "V3 --> DRN : liquid"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_101_lt_101",
+      "from_port": "tk_101_level_out",
+      "to_port": "lt_101_level_in",
+      "medium_or_signal": "level",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 9, column D",
+          "quote": "TK-101 level"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 4, column J",
+          "quote": "LT-101"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_102_lt_102",
+      "from_port": "tk_102_level_out",
+      "to_port": "lt_102_level_in",
+      "medium_or_signal": "level",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 10, column D",
+          "quote": "TK-102 level"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 5, column J",
+          "quote": "LT-102"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_ctl_01",
+      "from_port": "lt_101_level_out",
+      "to_port": "plc_101_level1",
+      "medium_or_signal": "level measurement",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 10, column I",
+          "quote": "High/low comparisons"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_ctl_02",
+      "from_port": "lt_102_level_out",
+      "to_port": "plc_101_level2",
+      "medium_or_signal": "level measurement",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 11, column I",
+          "quote": "Low comparison"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_ctl_03",
+      "from_port": "pb_start_cmd_out",
+      "to_port": "plc_101_start",
+      "medium_or_signal": "command",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 12, column I",
+          "quote": "Ignored while running / SHUT"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_ctl_04",
+      "from_port": "pb_stop_cmd_out",
+      "to_port": "plc_101_stop",
+      "medium_or_signal": "command",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 13, column I",
+          "quote": "Close valves; pause"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_ctl_05",
+      "from_port": "pb_shut_cmd_out",
+      "to_port": "plc_101_shut",
+      "medium_or_signal": "command",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 14, column I",
+          "quote": "Highest-priority controlled drain"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_ctl_06",
+      "from_port": "plc_101_valve1",
+      "to_port": "xv_101_cmd_in",
+      "medium_or_signal": "open command",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 15, column F",
+          "quote": "Open command"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 27",
+          "quote": "PLC ..> V1 : valve1"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_ctl_07",
+      "from_port": "plc_101_valve2",
+      "to_port": "xv_102_cmd_in",
+      "medium_or_signal": "open command",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 16, column F",
+          "quote": "Open command"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 28",
+          "quote": "PLC ..> V2 : valve2"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_ctl_08",
+      "from_port": "plc_101_valve3",
+      "to_port": "xv_103_cmd_in",
+      "medium_or_signal": "open command",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Interface_Matrix row 17, column F",
+          "quote": "Open command"
+        },
+        {
+          "source_id": "partial_legacy_architecture",
+          "locator": "line 29",
+          "quote": "PLC ..> V3 : valve3"
+        }
+      ],
+      "assumption_ids": []
+    }
+  ],
+  "parameters": [
+    {
+      "id": "pb_shut_press_times",
+      "owner": "pb_shut",
+      "name": "press_times",
+      "value": [
+        700.0
+      ],
+      "unit": "s",
+      "original": {
+        "value": "700",
+        "unit": "s"
+      },
+      "status": "verification_only",
+      "authority": "tp_17",
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §3",
+          "quote": "700 SHUT Enter controlled shutdown, inhibit V1, and command V2 and V3 open until both"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 36, column C",
+          "quote": "The demonstration run shall apply START at 20 s, STOP at 220 s, START at 280 s, STOP at 650 s and SHUT at 700 s."
+        }
+      ],
+      "assumption_ids": [
+        "as_momentary_pulse"
+      ]
+    },
+    {
+      "id": "pb_start_press_times",
+      "owner": "pb_start",
+      "name": "press_times",
+      "value": [
+        20.0,
+        280.0
+      ],
+      "unit": "s",
+      "original": {
+        "value": "20, 280",
+        "unit": "s"
+      },
+      "status": "verification_only",
+      "authority": "tp_17",
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §3",
+          "quote": "20 START Begin or resume automatic operation; first occurrence begins T1 fill."
+        },
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §3",
+          "quote": "280 START Resume the state interrupted at 220 s."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 36, column C",
+          "quote": "The demonstration run shall apply START at 20 s, STOP at 220 s, START at 280 s, STOP at 650 s and SHUT at 700 s."
+        }
+      ],
+      "assumption_ids": [
+        "as_momentary_pulse"
+      ]
+    },
+    {
+      "id": "pb_stop_press_times",
+      "owner": "pb_stop",
+      "name": "press_times",
+      "value": [
+        220.0,
+        650.0
+      ],
+      "unit": "s",
+      "original": {
+        "value": "220, 650",
+        "unit": "s"
+      },
+      "status": "verification_only",
+      "authority": "tp_17",
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §3",
+          "quote": "220 STOP Close all three valves and hold sequence context."
+        },
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §3",
+          "quote": "650 STOP Close all valves; hold sequence context."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 36, column C",
+          "quote": "The demonstration run shall apply START at 20 s, STOP at 220 s, START at 280 s, STOP at 650 s and SHUT at 700 s."
+        }
+      ],
+      "assumption_ids": [
+        "as_momentary_pulse"
+      ]
+    },
+    {
+      "id": "plc_101_scan_time",
+      "owner": "plc_101",
+      "name": "scan_time",
+      "value": 0.1,
+      "unit": "s",
+      "original": {
+        "value": "0.1",
+        "unit": "s"
+      },
+      "status": "effective",
+      "authority": "cds_02",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 18, column H",
+          "quote": "Not the integration step."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 14, column L",
+          "quote": "100 ms scan."
+        }
+      ],
+      "assumption_ids": [
+        "as_event_driven_controller"
+      ]
+    },
+    {
+      "id": "plc_101_wait_after_drain",
+      "owner": "plc_101",
+      "name": "wait_after_drain",
+      "value": 8,
+      "unit": "s",
+      "original": {
+        "value": "8",
+        "unit": "s"
+      },
+      "status": "effective",
+      "authority": "cr_004",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 26, column C",
+          "quote": "The inter-cycle waiting time after Tank 2 reaches low level shall be 8 s."
+        },
+        {
+          "source_id": "controls_email_thread",
+          "locator": "message of Thu, 12 Mar 2026 09:14 from s.patel",
+          "quote": "8 s after T2 reaches low before the next fill starts."
+        },
+        {
+          "source_id": "dr_02",
+          "locator": "line 26",
+          "quote": "Consider reducing inter-cycle delay after Tank 2 low. *Closed by CR-004: 8 s.*"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "plc_101_wait_after_drain_urs_001",
+      "owner": "plc_101",
+      "name": "wait_after_drain",
+      "value": 10,
+      "unit": "s",
+      "original": {
+        "value": "10",
+        "unit": "s"
+      },
+      "status": "superseded",
+      "authority": "urs_001",
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §4",
+          "quote": "Wait after T2 low 10 s Before next automatic fill cycle"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 13, column H",
+          "quote": "Replaced by CR-004."
+        },
+        {
+          "source_id": "sim_legacy",
+          "locator": "line 15",
+          "quote": "parameter Real wait3(unit=\"s\") = 10;"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "plc_101_wait_after_fill",
+      "owner": "plc_101",
+      "name": "wait_after_fill",
+      "value": 10,
+      "unit": "s",
+      "original": {
+        "value": "10",
+        "unit": "s"
+      },
+      "status": "effective",
+      "authority": "urs_001",
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §4",
+          "quote": "Wait after T1 high 10 s No valve open during wait"
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-F-004 - After a 10 s waiting period, V2 shall open and transfer liquid from Tank 1 to Tank 2."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 10, column H",
+          "quote": "Before opening XV-102."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "plc_101_wait_after_transfer",
+      "owner": "plc_101",
+      "name": "wait_after_transfer",
+      "value": 12,
+      "unit": "s",
+      "original": {
+        "value": "12",
+        "unit": "s"
+      },
+      "status": "effective",
+      "authority": "cr_004",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 25, column C",
+          "quote": "The post-transfer waiting time shall be 12 s."
+        },
+        {
+          "source_id": "controls_email_thread",
+          "locator": "message of Thu, 12 Mar 2026 09:14 from s.patel",
+          "quote": "Also use 12 s after T1 reaches low level before opening the drain valve"
+        },
+        {
+          "source_id": "dr_02",
+          "locator": "line 25",
+          "quote": "Confirm post-transfer delay. *Closed by CR-004: 12 s.*"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "plc_101_wait_after_transfer_urs_001",
+      "owner": "plc_101",
+      "name": "wait_after_transfer",
+      "value": 10,
+      "unit": "s",
+      "original": {
+        "value": "10",
+        "unit": "s"
+      },
+      "status": "superseded",
+      "authority": "urs_001",
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §4",
+          "quote": "Wait after T1 low 10 s No valve open during wait"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 11, column H",
+          "quote": "Replaced by CR-004."
+        },
+        {
+          "source_id": "sim_legacy",
+          "locator": "line 14",
+          "quote": "parameter Real wait2(unit=\"s\") = 10;"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "system_state_timing_tolerance",
+      "owner": "system",
+      "name": "state_timing_tolerance",
+      "value": 2,
+      "unit": "s",
+      "original": {
+        "value": "+/-2",
+        "unit": "s"
+      },
+      "status": "verification_only",
+      "authority": "tp_17",
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §5",
+          "quote": "A tolerance of +/-2 s is acceptable for state-boundary comparisons when the effective parameter set is used."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "system_stop_time",
+      "owner": "system",
+      "name": "stop_time",
+      "value": 900,
+      "unit": "s",
+      "original": {
+        "value": "900",
+        "unit": "s"
+      },
+      "status": "verification_only",
+      "authority": "tp_17",
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §2",
+          "quote": "Simulation duration 900 s"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 19, column H",
+          "quote": "Required duration."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_101_area",
+      "owner": "tk_101",
+      "name": "area",
+      "value": 1.2,
+      "unit": "m2",
+      "original": {
+        "value": "1.2",
+        "unit": "m^2"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 4, column E",
+          "quote": "1.2"
+        },
+        {
+          "source_id": "sim_legacy",
+          "locator": "line 4",
+          "quote": "parameter Real A1(unit=\"m2\") = 1.20;"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_101_height",
+      "owner": "tk_101",
+      "name": "height",
+      "value": 1.0,
+      "unit": "m",
+      "original": {
+        "value": "1",
+        "unit": "m"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 4, column F",
+          "quote": "1"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_101_high_level",
+      "owner": "tk_101",
+      "name": "high_level",
+      "value": 0.8,
+      "unit": "m",
+      "original": {
+        "value": "0.80",
+        "unit": "m"
+      },
+      "status": "effective",
+      "authority": "cr_004",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 22, column C",
+          "quote": "Tank 1 high-level setpoint shall be 0.80 m."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 7, column H",
+          "quote": "Effective setpoint."
+        },
+        {
+          "source_id": "controls_email_thread",
+          "locator": "message of Thu, 12 Mar 2026 09:14 from s.patel",
+          "quote": "CR-004 is now approved. Please treat 0.80 m as the effective T1 high limit."
+        },
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §4 AC-01",
+          "quote": "AC-01 - T1 shall reach the effective high-level setpoint of 0.80 m before the first transfer begins."
+        },
+        {
+          "source_id": "operator_shift_notes",
+          "locator": "line 5",
+          "quote": "Observed target is 0.80, not the 0.78 number in Jin's old model."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_101_high_level_urs_001",
+      "owner": "tk_101",
+      "name": "high_level",
+      "value": 0.78,
+      "unit": "m",
+      "original": {
+        "value": "0.78",
+        "unit": "m"
+      },
+      "status": "superseded",
+      "authority": "urs_001",
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §4",
+          "quote": "Tank 1 high limit 0.78 m Subject to later controls tuning"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 6, column H",
+          "quote": "Legacy requirement; still appears in model file."
+        },
+        {
+          "source_id": "sim_legacy",
+          "locator": "line 7",
+          "quote": "parameter Real h1High(unit=\"m\") = 0.78;"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_101_initial_level",
+      "owner": "tk_101",
+      "name": "initial_level",
+      "value": 0.05,
+      "unit": "m",
+      "original": {
+        "value": "0.05",
+        "unit": "m"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §4",
+          "quote": "Tank 1 initial level 0.05 m Demo initialization"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 4, column C",
+          "quote": "0.05"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_101_low_level",
+      "owner": "tk_101",
+      "name": "low_level",
+      "value": 0.05,
+      "unit": "m",
+      "original": {
+        "value": "0.05",
+        "unit": "m"
+      },
+      "status": "effective",
+      "authority": "urs_001",
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §4",
+          "quote": "Tank 1 low limit 0.05 m Residual heel"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 23, column C",
+          "quote": "Tank 1 low-level setpoint shall be 0.05 m."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_101_max_working_level",
+      "owner": "tk_101",
+      "name": "max_working_level",
+      "value": 0.9,
+      "unit": "m",
+      "original": {
+        "value": "0.9",
+        "unit": "m"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 4, column G",
+          "quote": "0.9"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_102_area",
+      "owner": "tk_102",
+      "name": "area",
+      "value": 1.4,
+      "unit": "m2",
+      "original": {
+        "value": "1.4",
+        "unit": "m^2"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 5, column E",
+          "quote": "1.4"
+        },
+        {
+          "source_id": "sim_legacy",
+          "locator": "line 5",
+          "quote": "parameter Real A2(unit=\"m2\") = 1.40;"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_102_height",
+      "owner": "tk_102",
+      "name": "height",
+      "value": 1.0,
+      "unit": "m",
+      "original": {
+        "value": "1",
+        "unit": "m"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 5, column F",
+          "quote": "1"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_102_initial_level",
+      "owner": "tk_102",
+      "name": "initial_level",
+      "value": 0.05,
+      "unit": "m",
+      "original": {
+        "value": "0.05",
+        "unit": "m"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §4",
+          "quote": "Tank 2 initial level 0.05 m Demo initialization"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 5, column C",
+          "quote": "0.05"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_102_low_level",
+      "owner": "tk_102",
+      "name": "low_level",
+      "value": 0.05,
+      "unit": "m",
+      "original": {
+        "value": "0.05",
+        "unit": "m"
+      },
+      "status": "effective",
+      "authority": "urs_001",
+      "trace": [
+        {
+          "source_id": "urs_001",
+          "locator": "p.2 §4",
+          "quote": "Tank 2 low limit 0.05 m Residual heel"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 24, column C",
+          "quote": "Tank 2 low-level setpoint shall be 0.05 m."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "tk_102_max_working_level",
+      "owner": "tk_102",
+      "name": "max_working_level",
+      "value": 0.9,
+      "unit": "m",
+      "original": {
+        "value": "0.9",
+        "unit": "m"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 5, column G",
+          "quote": "0.9"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "xv_101_nominal_flow",
+      "owner": "xv_101",
+      "name": "nominal_flow",
+      "value": 0.006,
+      "unit": "m3/s",
+      "original": {
+        "value": "0.006",
+        "unit": "m^3/s"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 15, column C",
+          "quote": "0.006"
+        },
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §1",
+          "quote": "Nominal demo flow coefficient equivalent 0.0060 m^3/s 0.0045 m^3/s 0.0050 m^3/s"
+        },
+        {
+          "source_id": "sim_legacy",
+          "locator": "line 10",
+          "quote": "parameter Real qFill(unit=\"m3/s\") = 0.0060;"
+        }
+      ],
+      "assumption_ids": [
+        "as_constant_flow"
+      ]
+    },
+    {
+      "id": "xv_101_open_stroke_time",
+      "owner": "xv_101",
+      "name": "open_stroke_time",
+      "value": 0.8,
+      "unit": "s",
+      "original": {
+        "value": "0.8",
+        "unit": "s"
+      },
+      "status": "effective",
+      "authority": "vd_vxs24",
+      "trace": [
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §1",
+          "quote": "Full open stroke time 0.8 s 0.8 s 0.8 s"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "xv_102_nominal_flow",
+      "owner": "xv_102",
+      "name": "nominal_flow",
+      "value": 0.0045,
+      "unit": "m3/s",
+      "original": {
+        "value": "0.0045",
+        "unit": "m^3/s"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 16, column C",
+          "quote": "0.0045"
+        },
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §1",
+          "quote": "Nominal demo flow coefficient equivalent 0.0060 m^3/s 0.0045 m^3/s 0.0050 m^3/s"
+        },
+        {
+          "source_id": "sim_legacy",
+          "locator": "line 11",
+          "quote": "parameter Real qTransfer(unit=\"m3/s\") = 0.0045;"
+        }
+      ],
+      "assumption_ids": [
+        "as_constant_flow"
+      ]
+    },
+    {
+      "id": "xv_102_open_stroke_time",
+      "owner": "xv_102",
+      "name": "open_stroke_time",
+      "value": 0.8,
+      "unit": "s",
+      "original": {
+        "value": "0.8",
+        "unit": "s"
+      },
+      "status": "effective",
+      "authority": "vd_vxs24",
+      "trace": [
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §1",
+          "quote": "Full open stroke time 0.8 s 0.8 s 0.8 s"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "xv_103_nominal_flow",
+      "owner": "xv_103",
+      "name": "nominal_flow",
+      "value": 0.005,
+      "unit": "m3/s",
+      "original": {
+        "value": "0.005",
+        "unit": "m^3/s"
+      },
+      "status": "effective",
+      "authority": "mds_01",
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 17, column C",
+          "quote": "0.005"
+        },
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §1",
+          "quote": "Nominal demo flow coefficient equivalent 0.0060 m^3/s 0.0045 m^3/s 0.0050 m^3/s"
+        },
+        {
+          "source_id": "sim_legacy",
+          "locator": "line 12",
+          "quote": "parameter Real qDrain(unit=\"m3/s\") = 0.0050;"
+        }
+      ],
+      "assumption_ids": [
+        "as_constant_flow"
+      ]
+    },
+    {
+      "id": "xv_103_open_stroke_time",
+      "owner": "xv_103",
+      "name": "open_stroke_time",
+      "value": 0.8,
+      "unit": "s",
+      "original": {
+        "value": "0.8",
+        "unit": "s"
+      },
+      "status": "effective",
+      "authority": "vd_vxs24",
+      "trace": [
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §1",
+          "quote": "Full open stroke time 0.8 s 0.8 s 0.8 s"
+        }
+      ],
+      "assumption_ids": []
+    }
+  ],
+  "state_machines": [
+    {
+      "id": "plc_101_sequence",
+      "owner": "plc_101",
+      "initial": "idle",
+      "events": [
+        {
+          "id": "start_cmd",
+          "port": "plc_101_start",
+          "edge": "rising"
+        },
+        {
+          "id": "stop_cmd",
+          "port": "plc_101_stop",
+          "edge": "rising"
+        },
+        {
+          "id": "shut_cmd",
+          "port": "plc_101_shut",
+          "edge": "rising"
+        }
+      ],
+      "timers": [
+        {
+          "id": "wait_after_fill_timer",
+          "duration": "plc_101_wait_after_fill"
+        },
+        {
+          "id": "wait_after_transfer_timer",
+          "duration": "plc_101_wait_after_transfer"
+        },
+        {
+          "id": "wait_after_drain_timer",
+          "duration": "plc_101_wait_after_drain"
+        }
+      ],
+      "states": [
+        {
+          "id": "idle",
+          "name": "IDLE",
+          "tags": [],
+          "entry_actions": [],
+          "outputs": {
+            "plc_101_valve1": false,
+            "plc_101_valve2": false,
+            "plc_101_valve3": false
+          }
+        },
+        {
+          "id": "fill_t1",
+          "name": "FILL_T1",
+          "tags": [
+            "FILL"
+          ],
+          "entry_actions": [],
+          "outputs": {
+            "plc_101_valve1": true,
+            "plc_101_valve2": false,
+            "plc_101_valve3": false
+          }
+        },
+        {
+          "id": "wait_after_fill",
+          "name": "WAIT_AFTER_FILL",
+          "tags": [
+            "HOLD1"
+          ],
+          "entry_actions": [],
+          "outputs": {
+            "plc_101_valve1": false,
+            "plc_101_valve2": false,
+            "plc_101_valve3": false
+          }
+        },
+        {
+          "id": "transfer_t1_t2",
+          "name": "TRANSFER_T1_T2",
+          "tags": [
+            "TRANSFER"
+          ],
+          "entry_actions": [],
+          "outputs": {
+            "plc_101_valve1": false,
+            "plc_101_valve2": true,
+            "plc_101_valve3": false
+          }
+        },
+        {
+          "id": "wait_after_transfer",
+          "name": "WAIT_AFTER_TRANSFER",
+          "tags": [
+            "HOLD2"
+          ],
+          "entry_actions": [],
+          "outputs": {
+            "plc_101_valve1": false,
+            "plc_101_valve2": false,
+            "plc_101_valve3": false
+          }
+        },
+        {
+          "id": "drain_t2",
+          "name": "DRAIN_T2",
+          "tags": [
+            "DRAIN"
+          ],
+          "entry_actions": [],
+          "outputs": {
+            "plc_101_valve1": false,
+            "plc_101_valve2": false,
+            "plc_101_valve3": true
+          }
+        },
+        {
+          "id": "wait_after_drain",
+          "name": "WAIT_AFTER_DRAIN",
+          "tags": [
+            "HOLD3"
+          ],
+          "entry_actions": [],
+          "outputs": {
+            "plc_101_valve1": false,
+            "plc_101_valve2": false,
+            "plc_101_valve3": false
+          }
+        },
+        {
+          "id": "paused",
+          "name": "PAUSED",
+          "tags": [],
+          "entry_actions": [],
+          "outputs": {
+            "plc_101_valve1": false,
+            "plc_101_valve2": false,
+            "plc_101_valve3": false
+          }
+        },
+        {
+          "id": "shutdown",
+          "name": "SHUTDOWN",
+          "tags": [],
+          "entry_actions": [],
+          "outputs": {
+            "plc_101_valve1": false,
+            "plc_101_valve2": true,
+            "plc_101_valve3": true
+          }
+        }
+      ],
+      "transitions": [
+        {
+          "id": "tr_idle_shut",
+          "from": "idle",
+          "to": "shutdown",
+          "trigger": "shut_cmd",
+          "guard": null,
+          "actions": [
+            "clear_history"
+          ],
+          "priority": 1
+        },
+        {
+          "id": "tr_idle_start",
+          "from": "idle",
+          "to": "fill_t1",
+          "trigger": "start_cmd",
+          "guard": null,
+          "actions": [],
+          "priority": 3
+        },
+        {
+          "id": "tr_fill_t1_shut",
+          "from": "fill_t1",
+          "to": "shutdown",
+          "trigger": "shut_cmd",
+          "guard": null,
+          "actions": [
+            "clear_history"
+          ],
+          "priority": 1
+        },
+        {
+          "id": "tr_fill_t1_stop",
+          "from": "fill_t1",
+          "to": "paused",
+          "trigger": "stop_cmd",
+          "guard": null,
+          "actions": [
+            "save_history"
+          ],
+          "priority": 2
+        },
+        {
+          "id": "tr_fill_t1_high",
+          "from": "fill_t1",
+          "to": "wait_after_fill",
+          "trigger": null,
+          "guard": "plc_101_level1 >= tk_101_high_level",
+          "actions": [
+            "start_timer(wait_after_fill_timer)"
+          ],
+          "priority": 4
+        },
+        {
+          "id": "tr_wait_after_fill_shut",
+          "from": "wait_after_fill",
+          "to": "shutdown",
+          "trigger": "shut_cmd",
+          "guard": null,
+          "actions": [
+            "clear_history"
+          ],
+          "priority": 1
+        },
+        {
+          "id": "tr_wait_after_fill_stop",
+          "from": "wait_after_fill",
+          "to": "paused",
+          "trigger": "stop_cmd",
+          "guard": null,
+          "actions": [
+            "save_history"
+          ],
+          "priority": 2
+        },
+        {
+          "id": "tr_wait_after_fill_done",
+          "from": "wait_after_fill",
+          "to": "transfer_t1_t2",
+          "trigger": null,
+          "guard": "timer_expired(wait_after_fill_timer)",
+          "actions": [],
+          "priority": 4
+        },
+        {
+          "id": "tr_transfer_t1_t2_shut",
+          "from": "transfer_t1_t2",
+          "to": "shutdown",
+          "trigger": "shut_cmd",
+          "guard": null,
+          "actions": [
+            "clear_history"
+          ],
+          "priority": 1
+        },
+        {
+          "id": "tr_transfer_t1_t2_stop",
+          "from": "transfer_t1_t2",
+          "to": "paused",
+          "trigger": "stop_cmd",
+          "guard": null,
+          "actions": [
+            "save_history"
+          ],
+          "priority": 2
+        },
+        {
+          "id": "tr_transfer_t1_t2_low",
+          "from": "transfer_t1_t2",
+          "to": "wait_after_transfer",
+          "trigger": null,
+          "guard": "plc_101_level1 <= tk_101_low_level",
+          "actions": [
+            "start_timer(wait_after_transfer_timer)"
+          ],
+          "priority": 4
+        },
+        {
+          "id": "tr_wait_after_transfer_shut",
+          "from": "wait_after_transfer",
+          "to": "shutdown",
+          "trigger": "shut_cmd",
+          "guard": null,
+          "actions": [
+            "clear_history"
+          ],
+          "priority": 1
+        },
+        {
+          "id": "tr_wait_after_transfer_stop",
+          "from": "wait_after_transfer",
+          "to": "paused",
+          "trigger": "stop_cmd",
+          "guard": null,
+          "actions": [
+            "save_history"
+          ],
+          "priority": 2
+        },
+        {
+          "id": "tr_wait_after_transfer_done",
+          "from": "wait_after_transfer",
+          "to": "drain_t2",
+          "trigger": null,
+          "guard": "timer_expired(wait_after_transfer_timer)",
+          "actions": [],
+          "priority": 4
+        },
+        {
+          "id": "tr_drain_t2_shut",
+          "from": "drain_t2",
+          "to": "shutdown",
+          "trigger": "shut_cmd",
+          "guard": null,
+          "actions": [
+            "clear_history"
+          ],
+          "priority": 1
+        },
+        {
+          "id": "tr_drain_t2_stop",
+          "from": "drain_t2",
+          "to": "paused",
+          "trigger": "stop_cmd",
+          "guard": null,
+          "actions": [
+            "save_history"
+          ],
+          "priority": 2
+        },
+        {
+          "id": "tr_drain_t2_low",
+          "from": "drain_t2",
+          "to": "wait_after_drain",
+          "trigger": null,
+          "guard": "plc_101_level2 <= tk_102_low_level",
+          "actions": [
+            "start_timer(wait_after_drain_timer)"
+          ],
+          "priority": 4
+        },
+        {
+          "id": "tr_wait_after_drain_shut",
+          "from": "wait_after_drain",
+          "to": "shutdown",
+          "trigger": "shut_cmd",
+          "guard": null,
+          "actions": [
+            "clear_history"
+          ],
+          "priority": 1
+        },
+        {
+          "id": "tr_wait_after_drain_stop",
+          "from": "wait_after_drain",
+          "to": "paused",
+          "trigger": "stop_cmd",
+          "guard": null,
+          "actions": [
+            "save_history"
+          ],
+          "priority": 2
+        },
+        {
+          "id": "tr_wait_after_drain_done",
+          "from": "wait_after_drain",
+          "to": "fill_t1",
+          "trigger": null,
+          "guard": "timer_expired(wait_after_drain_timer)",
+          "actions": [],
+          "priority": 4
+        },
+        {
+          "id": "tr_paused_shut",
+          "from": "paused",
+          "to": "shutdown",
+          "trigger": "shut_cmd",
+          "guard": null,
+          "actions": [
+            "clear_history"
+          ],
+          "priority": 1
+        },
+        {
+          "id": "tr_paused_start",
+          "from": "paused",
+          "to": "history",
+          "trigger": "start_cmd",
+          "guard": null,
+          "actions": [],
+          "priority": 3
+        },
+        {
+          "id": "tr_shutdown_done",
+          "from": "shutdown",
+          "to": "idle",
+          "trigger": null,
+          "guard": "plc_101_level1 <= tk_101_low_level and plc_101_level2 <= tk_102_low_level",
+          "actions": [],
+          "priority": 4
+        }
+      ],
+      "regions": [],
+      "trace": [
+        {
+          "source_id": "cds_02",
+          "locator": "§2 State Definitions, FILL_T1",
+          "quote": "Command XV-101 open. XV-102 and XV-103 closed. Transition when LT-101 >= T1_High."
+        },
+        {
+          "source_id": "cds_02",
+          "locator": "§2 State Definitions, SHUTDOWN",
+          "quote": "V1 closed; V2 and V3 commanded open together. Remain in SHUTDOWN until both tanks are at or below their low-level limits, then close all valves and go to IDLE."
+        },
+        {
+          "source_id": "cds_02",
+          "locator": "§3 Command Priority and Edge Semantics",
+          "quote": "SHUT has the highest command priority. A valid SHUT edge immediately abandons any stored resume context and enters SHUTDOWN."
+        },
+        {
+          "source_id": "cds_02",
+          "locator": "§3 Command Priority and Edge Semantics",
+          "quote": "START has the lowest priority. START from IDLE begins FILL_T1; START from PAUSED restores the interrupted state. START while already running is ignored."
+        },
+        {
+          "source_id": "cds_02",
+          "locator": "§4 Timer Resume Rule",
+          "quote": "When STOP occurs in WAIT_AFTER_FILL, WAIT_AFTER_TRANSFER or WAIT_AFTER_DRAIN, the remaining delay shall be retained. START shall resume with that remaining delay."
+        },
+        {
+          "source_id": "cds_02",
+          "locator": "§5 Interlocks and Constraints",
+          "quote": "Level threshold comparisons shall include equality (>= high, <= low)."
+        },
+        {
+          "source_id": "cds_02",
+          "locator": "§7 Naming Cross-Reference",
+          "quote": "Legacy simulation code uses states FILL, HOLD1, TRANSFER, HOLD2, DRAIN and HOLD3. These map to FILL_T1, WAIT_AFTER_FILL, TRANSFER_T1_T2, WAIT_AFTER_TRANSFER, DRAIN_T2 and WAIT_AFTER_DRAIN respectively."
+        },
+        {
+          "source_id": "dr_02",
+          "locator": "line 13",
+          "quote": "**D-01:** Command precedence is `SHUT > STOP > START`."
+        },
+        {
+          "source_id": "dr_02",
+          "locator": "line 15",
+          "quote": "**D-03:** STOP during any delay freezes the remaining delay; START resumes the remaining delay."
+        },
+        {
+          "source_id": "dr_02",
+          "locator": "line 17",
+          "quote": "**D-05:** START and STOP received during active SHUT are ignored."
+        },
+        {
+          "source_id": "dr_02",
+          "locator": "line 18",
+          "quote": "**D-06:** SHUT is complete only when both LT-101 and LT-102 are at or below their low-level setpoints."
+        },
+        {
+          "source_id": "sim_legacy",
+          "locator": "line 26",
+          "quote": "type StepState = enumeration(IDLE,FILL,HOLD1,TRANSFER,HOLD2,DRAIN,HOLD3);"
+        }
+      ],
+      "assumption_ids": [
+        "as_event_driven_controller"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "urs_fun_001",
+      "tags": [
+        "URS-FUN-001",
+        "URS-F-001"
+      ],
+      "text": "The controller shall start the automatic fill-transfer-drain sequence upon a valid START command when the process is idle or paused.",
+      "category": "functional",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "tr_idle_start",
+        "tr_paused_start"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 4, column C",
+          "quote": "The controller shall start the automatic fill-transfer-drain sequence upon a valid START command when the process is idle or paused."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-F-001 - START shall initiate automatic operation when the system is in its initial condition."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_fun_002",
+      "tags": [
+        "URS-FUN-002",
+        "URS-F-002"
+      ],
+      "text": "The automatic sequence shall open inlet valve V1 to fill Tank 1.",
+      "category": "functional",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "fill_t1",
+        "xv_101"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 5, column C",
+          "quote": "The automatic sequence shall open inlet valve V1 to fill Tank 1."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-F-002 - Normal operation shall fill Tank 1 by opening V1."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_fun_003",
+      "tags": [
+        "URS-FUN-003",
+        "URS-F-003"
+      ],
+      "text": "When Tank 1 reaches its high-level limit, V1 shall close.",
+      "category": "functional",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "tr_fill_t1_high",
+        "tk_101_high_level"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 6, column C",
+          "quote": "When Tank 1 reaches its high-level limit, V1 shall close."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-F-003 - V1 shall close when Tank 1 reaches the specified high-level limit."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_fun_004",
+      "tags": [
+        "URS-FUN-004",
+        "URS-F-004"
+      ],
+      "text": "After Tank 1 reaches the high-level limit, the controller shall wait 10 s before opening V2.",
+      "category": "timing",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "wait_after_fill",
+        "plc_101_wait_after_fill"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 7, column C",
+          "quote": "After Tank 1 reaches the high-level limit, the controller shall wait 10 s before opening V2."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-F-004 - After a 10 s waiting period, V2 shall open and transfer liquid from Tank 1 to Tank 2."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_fun_005",
+      "tags": [
+        "URS-FUN-005",
+        "URS-F-005"
+      ],
+      "text": "V2 shall transfer liquid from Tank 1 to Tank 2 until Tank 1 reaches its low-level limit.",
+      "category": "functional",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "transfer_t1_t2",
+        "xv_102",
+        "tk_101_low_level"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 8, column C",
+          "quote": "V2 shall transfer liquid from Tank 1 to Tank 2 until Tank 1 reaches its low-level limit."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-F-005 - V2 shall close when Tank 1 reaches its minimum operating level."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_fun_006",
+      "tags": [
+        "URS-FUN-006",
+        "URS-F-006"
+      ],
+      "text": "After Tank 1 reaches the low-level limit, the controller shall wait 10 s before opening V3.",
+      "category": "timing",
+      "status": "superseded",
+      "superseded_by": "urs_per_005",
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 9, column C",
+          "quote": "After Tank 1 reaches the low-level limit, the controller shall wait 10 s before opening V3."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-F-006 - After a 10 s waiting period, V3 shall open and drain Tank 2."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_fun_007",
+      "tags": [
+        "URS-FUN-007",
+        "URS-F-007"
+      ],
+      "text": "V3 shall drain Tank 2 until Tank 2 reaches its low-level limit.",
+      "category": "functional",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "drain_t2",
+        "xv_103",
+        "tk_102_low_level"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 10, column C",
+          "quote": "V3 shall drain Tank 2 until Tank 2 reaches its low-level limit."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-F-007 - V3 shall close when Tank 2 reaches its minimum operating level."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_fun_008",
+      "tags": [
+        "URS-FUN-008",
+        "URS-F-008"
+      ],
+      "text": "After Tank 2 reaches its low-level limit, the controller shall return to the Tank 1 filling operation after 10 s.",
+      "category": "timing",
+      "status": "superseded",
+      "superseded_by": "urs_per_006",
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 11, column C",
+          "quote": "After Tank 2 reaches its low-level limit, the controller shall return to the Tank 1 filling operation after 10 s."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-F-008 - The automatic process shall continue cyclically unless stopped or shut down."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_mod_001",
+      "tags": [
+        "URS-MOD-001",
+        "URS-M-001"
+      ],
+      "text": "STOP shall close V1, V2 and V3 and place the controller in a paused condition.",
+      "category": "mode",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "paused",
+        "tr_fill_t1_stop",
+        "tr_wait_after_fill_stop",
+        "tr_transfer_t1_t2_stop",
+        "tr_wait_after_transfer_stop",
+        "tr_drain_t2_stop",
+        "tr_wait_after_drain_stop"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 12, column C",
+          "quote": "STOP shall close V1, V2 and V3 and place the controller in a paused condition."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-M-001 - STOP shall close all three valves and suspend automatic operation until another operator command is received."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_mod_002",
+      "tags": [
+        "URS-MOD-002",
+        "URS-M-002"
+      ],
+      "text": "A START command following STOP shall continue the sequence from the point at which STOP was accepted.",
+      "category": "mode",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "tr_paused_start"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 13, column C",
+          "quote": "A START command following STOP shall continue the sequence from the point at which STOP was accepted."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-M-002 - START after STOP shall continue the process operation rather than force a new empty-cycle initialization."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_mod_003",
+      "tags": [
+        "URS-MOD-003",
+        "URS-M-003"
+      ],
+      "text": "SHUT shall command V2 and V3 open to drain both tanks and shall inhibit V1.",
+      "category": "mode",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "shutdown"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 14, column C",
+          "quote": "SHUT shall command V2 and V3 open to drain both tanks and shall inhibit V1."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-M-003 - SHUT shall empty both tanks by opening V2 and V3 and shall inhibit V1."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_mod_004",
+      "tags": [
+        "URS-MOD-004",
+        "URS-M-004"
+      ],
+      "text": "After shutdown draining is complete, all three valves shall be closed and the controller shall be in the initial idle configuration.",
+      "category": "mode",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "tr_shutdown_done"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 15, column C",
+          "quote": "After shutdown draining is complete, all three valves shall be closed and the controller shall be in the initial idle configuration."
+        },
+        {
+          "source_id": "urs_001",
+          "locator": "p.1 §3",
+          "quote": "URS-M-004 - When shutdown emptying is achieved, V2 and V3 shall close and the controller shall return to the start configuration."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_saf_001",
+      "tags": [
+        "URS-SAF-001"
+      ],
+      "text": "On loss of controller power, all process valves shall move to or remain in the closed position.",
+      "category": "safety",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "xv_101",
+        "xv_102",
+        "xv_103"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 16, column C",
+          "quote": "On loss of controller power, all process valves shall move to or remain in the closed position."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_saf_002",
+      "tags": [
+        "URS-SAF-002"
+      ],
+      "text": "SHUT shall have higher command priority than STOP; STOP shall have higher priority than START.",
+      "category": "safety",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "plc_101_sequence"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 17, column C",
+          "quote": "SHUT shall have higher command priority than STOP; STOP shall have higher priority than START."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_saf_003",
+      "tags": [
+        "URS-SAF-003"
+      ],
+      "text": "V1 shall never be commanded open while V2 is open.",
+      "category": "safety",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "plc_101_sequence"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 18, column C",
+          "quote": "V1 shall never be commanded open while V2 is open."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_saf_004",
+      "tags": [
+        "URS-SAF-004"
+      ],
+      "text": "During normal automatic operation, V2 and V3 shall not be open simultaneously.",
+      "category": "safety",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "plc_101_sequence"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 19, column C",
+          "quote": "During normal automatic operation, V2 and V3 shall not be open simultaneously."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_saf_005",
+      "tags": [
+        "URS-SAF-005"
+      ],
+      "text": "During SHUT mode, V2 and V3 may be open simultaneously.",
+      "category": "safety",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "shutdown"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 20, column C",
+          "quote": "During SHUT mode, V2 and V3 may be open simultaneously."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_per_001",
+      "tags": [
+        "URS-PER-001"
+      ],
+      "text": "Tank 1 high-level setpoint shall be 0.78 m.",
+      "category": "performance",
+      "status": "superseded",
+      "superseded_by": "urs_per_002",
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 21, column C",
+          "quote": "Tank 1 high-level setpoint shall be 0.78 m."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_per_002",
+      "tags": [
+        "URS-PER-002"
+      ],
+      "text": "Tank 1 high-level setpoint shall be 0.80 m.",
+      "category": "performance",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "tk_101_high_level"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 22, column C",
+          "quote": "Tank 1 high-level setpoint shall be 0.80 m."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_per_003",
+      "tags": [
+        "URS-PER-003"
+      ],
+      "text": "Tank 1 low-level setpoint shall be 0.05 m.",
+      "category": "performance",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "tk_101_low_level"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 23, column C",
+          "quote": "Tank 1 low-level setpoint shall be 0.05 m."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_per_004",
+      "tags": [
+        "URS-PER-004"
+      ],
+      "text": "Tank 2 low-level setpoint shall be 0.05 m.",
+      "category": "performance",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "tk_102_low_level"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 24, column C",
+          "quote": "Tank 2 low-level setpoint shall be 0.05 m."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_per_005",
+      "tags": [
+        "URS-PER-005"
+      ],
+      "text": "The post-transfer waiting time shall be 12 s.",
+      "category": "timing",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "plc_101_wait_after_transfer"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 25, column C",
+          "quote": "The post-transfer waiting time shall be 12 s."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_per_006",
+      "tags": [
+        "URS-PER-006"
+      ],
+      "text": "The inter-cycle waiting time after Tank 2 reaches low level shall be 8 s.",
+      "category": "timing",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "plc_101_wait_after_drain"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 26, column C",
+          "quote": "The inter-cycle waiting time after Tank 2 reaches low level shall be 8 s."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_int_001",
+      "tags": [
+        "URS-INT-001"
+      ],
+      "text": "The controller shall receive two analog level measurements designated LT-101 and LT-102.",
+      "category": "interface",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "lt_101",
+        "lt_102",
+        "if_ctl_01",
+        "if_ctl_02"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 27, column C",
+          "quote": "The controller shall receive two analog level measurements designated LT-101 and LT-102."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_int_002",
+      "tags": [
+        "URS-INT-002"
+      ],
+      "text": "The controller shall receive momentary START, STOP and SHUT digital commands.",
+      "category": "interface",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "pb_start",
+        "pb_stop",
+        "pb_shut",
+        "if_ctl_03",
+        "if_ctl_04",
+        "if_ctl_05"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 28, column C",
+          "quote": "The controller shall receive momentary START, STOP and SHUT digital commands."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_int_003",
+      "tags": [
+        "URS-INT-003"
+      ],
+      "text": "The controller shall provide three discrete valve-open commands to XV-101, XV-102 and XV-103.",
+      "category": "interface",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "if_ctl_06",
+        "if_ctl_07",
+        "if_ctl_08"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 29, column C",
+          "quote": "The controller shall provide three discrete valve-open commands to XV-101, XV-102 and XV-103."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_ctl_001",
+      "tags": [
+        "URS-CTL-001"
+      ],
+      "text": "A STOP command received during a wait state shall freeze the wait timer rather than restart it.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "tr_wait_after_fill_stop",
+        "tr_wait_after_transfer_stop",
+        "tr_wait_after_drain_stop",
+        "tr_paused_start"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 30, column C",
+          "quote": "A STOP command received during a wait state shall freeze the wait timer rather than restart it."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_ctl_002",
+      "tags": [
+        "URS-CTL-002"
+      ],
+      "text": "START commands received while already running shall be ignored.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "plc_101_sequence"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 31, column C",
+          "quote": "START commands received while already running shall be ignored."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_ctl_003",
+      "tags": [
+        "URS-CTL-003"
+      ],
+      "text": "STOP commands received during SHUT mode shall be ignored until shutdown is complete.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "shutdown"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 32, column C",
+          "quote": "STOP commands received during SHUT mode shall be ignored until shutdown is complete."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_ctl_004",
+      "tags": [
+        "URS-CTL-004"
+      ],
+      "text": "START commands received during SHUT mode shall be ignored until shutdown is complete.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "shutdown"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 33, column C",
+          "quote": "START commands received during SHUT mode shall be ignored until shutdown is complete."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_ctl_005",
+      "tags": [
+        "URS-CTL-005"
+      ],
+      "text": "Shutdown completion shall require Tank 1 and Tank 2 to both be at or below their low-level setpoints.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "tr_shutdown_done"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 34, column C",
+          "quote": "Shutdown completion shall require Tank 1 and Tank 2 to both be at or below their low-level setpoints."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_tst_001",
+      "tags": [
+        "URS-TST-001"
+      ],
+      "text": "The demonstration run shall simulate from 0 s through 900 s.",
+      "category": "verification",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "system_stop_time"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 35, column C",
+          "quote": "The demonstration run shall simulate from 0 s through 900 s."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_tst_002",
+      "tags": [
+        "URS-TST-002"
+      ],
+      "text": "The demonstration run shall apply START at 20 s, STOP at 220 s, START at 280 s, STOP at 650 s and SHUT at 700 s.",
+      "category": "verification",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "pb_start_press_times",
+        "pb_stop_press_times",
+        "pb_shut_press_times"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 36, column C",
+          "quote": "The demonstration run shall apply START at 20 s, STOP at 220 s, START at 280 s, STOP at 650 s and SHUT at 700 s."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_dat_001",
+      "tags": [
+        "URS-DAT-001"
+      ],
+      "text": "Level values shall be represented internally in metres with a nominal valid range of 0.0 to 1.0 m.",
+      "category": "data",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "lt_101",
+        "lt_102"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 37, column C",
+          "quote": "Level values shall be represented internally in metres with a nominal valid range of 0.0 to 1.0 m."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "urs_dat_002",
+      "tags": [
+        "URS-DAT-002"
+      ],
+      "text": "Valve commands shall be represented as Boolean open/closed commands.",
+      "category": "data",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [
+        "plc_101_valve1",
+        "plc_101_valve2",
+        "plc_101_valve3"
+      ],
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 38, column C",
+          "quote": "Valve commands shall be represented as Boolean open/closed commands."
+        }
+      ],
+      "assumption_ids": []
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ac_01",
+      "tags": [
+        "AC-01"
+      ],
+      "text": "T1 shall reach the effective high-level setpoint of 0.80 m before the first transfer begins.",
+      "check": null,
+      "reason": "Its time window is bounded by a state change of the model rather than by a fixed time, which a Check cannot express; phase 7 compares state-change times against the reference trace within the TP-17 tolerance instead.",
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §4 AC-01",
+          "quote": "AC-01 - T1 shall reach the effective high-level setpoint of 0.80 m before the first transfer begins."
+        }
+      ]
+    },
+    {
+      "id": "ac_02",
+      "tags": [
+        "AC-02"
+      ],
+      "text": "All valves shall be closed throughout the STOP interval from 220 s until the START command at 280 s.",
+      "check": {
+        "mode": "always",
+        "condition": "not plc_101_valve1 and not plc_101_valve2 and not plc_101_valve3",
+        "start_s": 220,
+        "end_s": 280
+      },
+      "reason": null,
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §4 AC-02",
+          "quote": "AC-02 - All valves shall be closed throughout the STOP interval from 220 s until the START command at 280 s."
+        }
+      ]
+    },
+    {
+      "id": "ac_03",
+      "tags": [
+        "AC-03"
+      ],
+      "text": "The START at 280 s shall resume the interrupted transfer rather than restart filling.",
+      "check": {
+        "mode": "at",
+        "condition": "in_state(transfer_t1_t2)",
+        "start_s": 280,
+        "end_s": null
+      },
+      "reason": null,
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §4 AC-03",
+          "quote": "AC-03 - The START at 280 s shall resume the interrupted transfer rather than restart filling."
+        }
+      ]
+    },
+    {
+      "id": "ac_04",
+      "tags": [
+        "AC-04"
+      ],
+      "text": "Following completion of the first T2 drain, the controller shall automatically begin another fill cycle after the effective 8 s inter-cycle delay.",
+      "check": null,
+      "reason": "Its time window is bounded by a state change of the model rather than by a fixed time, which a Check cannot express; phase 7 compares state-change times against the reference trace within the TP-17 tolerance instead.",
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §4 AC-04",
+          "quote": "AC-04 - Following completion of the first T2 drain, the controller shall automatically begin another fill cycle after the effective 8 s inter-cycle delay."
+        }
+      ]
+    },
+    {
+      "id": "ac_05",
+      "tags": [
+        "AC-05"
+      ],
+      "text": "All valves shall be closed throughout the STOP interval from 650 s until SHUT at 700 s.",
+      "check": {
+        "mode": "always",
+        "condition": "not plc_101_valve1 and not plc_101_valve2 and not plc_101_valve3",
+        "start_s": 650,
+        "end_s": 700
+      },
+      "reason": null,
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §4 AC-05",
+          "quote": "AC-05 - All valves shall be closed throughout the STOP interval from 650 s until SHUT at 700 s."
+        }
+      ]
+    },
+    {
+      "id": "ac_06",
+      "tags": [
+        "AC-06"
+      ],
+      "text": "At 700 s V1 shall remain closed and V2/V3 shall be commanded open together for controlled draining.",
+      "check": {
+        "mode": "at",
+        "condition": "not plc_101_valve1 and plc_101_valve2 and plc_101_valve3",
+        "start_s": 700,
+        "end_s": null
+      },
+      "reason": null,
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §4 AC-06",
+          "quote": "AC-06 - At 700 s V1 shall remain closed and V2/V3 shall be commanded open together for controlled draining."
+        }
+      ]
+    },
+    {
+      "id": "ac_07",
+      "tags": [
+        "AC-07"
+      ],
+      "text": "After shutdown drain completion the controller shall return to IDLE with all valves closed and shall remain there through 900 s because no subsequent START is scheduled.",
+      "check": null,
+      "reason": "Its time window is bounded by a state change of the model rather than by a fixed time, which a Check cannot express; phase 7 compares state-change times against the reference trace within the TP-17 tolerance instead.",
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §4 AC-07",
+          "quote": "AC-07 - After shutdown drain completion the controller shall return to IDLE with all valves closed and shall remain there through 900 s because no subsequent START is scheduled."
+        }
+      ]
+    },
+    {
+      "id": "ac_08",
+      "tags": [
+        "AC-08"
+      ],
+      "text": "Normal automatic operation shall never command V1 and V2 simultaneously, nor V2 and V3 simultaneously. The latter combination is permitted only in SHUTDOWN.",
+      "check": {
+        "mode": "always",
+        "condition": "not (plc_101_valve1 and plc_101_valve2) and (not (plc_101_valve2 and plc_101_valve3) or in_state(shutdown))",
+        "start_s": null,
+        "end_s": null
+      },
+      "reason": null,
+      "trace": [
+        {
+          "source_id": "tp_17",
+          "locator": "p.1 §4 AC-08",
+          "quote": "AC-08 - Normal automatic operation shall never command V1 and V2 simultaneously, nor V2 and V3 simultaneously. The latter combination is permitted only in SHUTDOWN."
+        }
+      ]
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "as_constant_flow",
+      "text": "Each valve passes its constant nominal flow when commanded open and none when closed, independent of tank level; valve stroke time is neglected.",
+      "basis": "engineering_convention",
+      "affects": [
+        "xv_101",
+        "xv_102",
+        "xv_103",
+        "xv_101_nominal_flow",
+        "xv_102_nominal_flow",
+        "xv_103_nominal_flow"
+      ],
+      "confidence": 0.95,
+      "trace": [
+        {
+          "source_id": "vd_vxs24",
+          "locator": "p.1 §3",
+          "quote": "For the hackathon simulation the dynamic valve stroke is neglected and each valve is treated as an ideal Boolean flow switch."
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 15, column H",
+          "quote": "Constant-flow demo assumption."
+        }
+      ]
+    },
+    {
+      "id": "as_ideal_level_sensor",
+      "text": "Level transmitters report the tank level exactly, with no 4-20 mA scaling, noise, delay or bad-quality handling.",
+      "basis": "engineering_convention",
+      "affects": [
+        "lt_101",
+        "lt_102"
+      ],
+      "confidence": 0.9,
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Equipment_Schedule row 9, column L",
+          "quote": "4-20 mA mapped 0.0-1.0 m."
+        }
+      ]
+    },
+    {
+      "id": "as_momentary_pulse",
+      "text": "No pulse width is given for the pushbuttons; each press is assumed to be true for one 1 s logging interval, as in the reference trace. Only its rising edge matters.",
+      "basis": "inferred",
+      "affects": [
+        "pb_start",
+        "pb_stop",
+        "pb_shut",
+        "pb_start_press_times",
+        "pb_stop_press_times",
+        "pb_shut_press_times"
+      ],
+      "confidence": 0.7,
+      "trace": [
+        {
+          "source_id": "demo_run_900s",
+          "locator": "line 22",
+          "quote": "20,1,0,0,0.055,0.05,1,0,0,FILL_T1,0"
+        },
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Requirements_Register row 28, column J",
+          "quote": "Rising-edge semantics."
+        }
+      ]
+    },
+    {
+      "id": "as_event_driven_controller",
+      "text": "The controller reacts to events and thresholds immediately rather than on its 100 ms scan; the scan time is recorded but not simulated.",
+      "basis": "engineering_convention",
+      "affects": [
+        "plc_101",
+        "plc_101_scan_time",
+        "plc_101_sequence"
+      ],
+      "confidence": 0.85,
+      "trace": [
+        {
+          "source_id": "engineering_data_register",
+          "locator": "sheet Operating_Parameters row 18, column H",
+          "quote": "Not the integration step."
+        }
+      ]
+    }
+  ],
+  "questions": [],
+  "conflicts": [
+    {
+      "id": "cf_tk_101_high_level",
+      "subject": {
+        "element_id": "tk_101_high_level",
+        "field": "value"
+      },
+      "candidates": [
+        {
+          "value": "0.80 m",
+          "source_id": "cr_004",
+          "authority_rank": 1,
+          "element_id": "tk_101_high_level"
+        },
+        {
+          "value": "0.78 m",
+          "source_id": "urs_001",
+          "authority_rank": 3,
+          "element_id": "tk_101_high_level_urs_001"
+        },
+        {
+          "value": "0.78 m",
+          "source_id": "sim_legacy",
+          "authority_rank": 5,
+          "element_id": null
+        }
+      ],
+      "resolution": "0.80 m",
+      "rationale": "CR-004 is an approved change record, the top of the precedence ladder; the change log calls it the 'Latest approved change; overrides older conflicts'. URS-001 Rev A is the baseline it replaces, and the archived legacy model 'Predates effective change; values may be stale'."
+    },
+    {
+      "id": "cf_plc_101_wait_after_transfer",
+      "subject": {
+        "element_id": "plc_101_wait_after_transfer",
+        "field": "value"
+      },
+      "candidates": [
+        {
+          "value": "12 s",
+          "source_id": "cr_004",
+          "authority_rank": 1,
+          "element_id": "plc_101_wait_after_transfer"
+        },
+        {
+          "value": "10 s",
+          "source_id": "urs_001",
+          "authority_rank": 3,
+          "element_id": "plc_101_wait_after_transfer_urs_001"
+        },
+        {
+          "value": "10 s",
+          "source_id": "sim_legacy",
+          "authority_rank": 5,
+          "element_id": null
+        }
+      ],
+      "resolution": "12 s",
+      "rationale": "CR-004 is an approved change record, the top of the precedence ladder; the change log calls it the 'Latest approved change; overrides older conflicts'. URS-001 Rev A is the baseline it replaces, and the archived legacy model 'Predates effective change; values may be stale'."
+    },
+    {
+      "id": "cf_plc_101_wait_after_drain",
+      "subject": {
+        "element_id": "plc_101_wait_after_drain",
+        "field": "value"
+      },
+      "candidates": [
+        {
+          "value": "8 s",
+          "source_id": "cr_004",
+          "authority_rank": 1,
+          "element_id": "plc_101_wait_after_drain"
+        },
+        {
+          "value": "10 s",
+          "source_id": "urs_001",
+          "authority_rank": 3,
+          "element_id": "plc_101_wait_after_drain_urs_001"
+        },
+        {
+          "value": "10 s",
+          "source_id": "sim_legacy",
+          "authority_rank": 5,
+          "element_id": null
+        }
+      ],
+      "resolution": "8 s",
+      "rationale": "CR-004 is an approved change record, the top of the precedence ladder; the change log calls it the 'Latest approved change; overrides older conflicts'. URS-001 Rev A is the baseline it replaces, and the archived legacy model 'Predates effective change; values may be stale'."
+    }
+  ]
+}

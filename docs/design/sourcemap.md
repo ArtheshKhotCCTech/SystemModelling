@@ -32,11 +32,12 @@
 ### `core/` — the contract
 | Source File | Phase | Purpose |
 |---|---|---|
-| `specalive/core/ir.py` | 2 | The Pydantic IR: parts, ports, connections, parameters, state machines, requirements, acceptance criteria, and the honesty records (TraceLink, Assumption, Question, Conflict). Single source of truth for both generated models. |
-| `specalive/core/catalogue.py` | 2 | Loads and validates `catalogue/components.yaml`; answers "which SysML def, which Modelica class, which connector names" for an IR kind. |
-| `specalive/core/units.py` | 2 | Explicit unit table to SI. An unknown unit is reported, never guessed. |
-| `specalive/core/ids.py` | 2 | Deterministic element ids from canonical tags, so naming is stable across runs. |
-| `catalogue/components.yaml` | 2 | The component catalogue: IR kind → SysML part def, Modelica class, parameters, port mapping. |
+| `specalive/core/__init__.py` | 2 | Layer marker for the contract layer. |
+| `specalive/core/ir.py` | 2 | The Pydantic IR: parts, ports, connections, parameters, state machines (events, timers, `history` resume target), requirements, acceptance criteria with checks, and the honesty records (TraceLink, Assumption, Question, Conflict). A `SystemModel` validator enforces trace-or-assumption and resolves every cross-reference; guards, actions and check conditions are parsed by a small expression language over IR ids. `python -m specalive.core.ir` prints the JSON Schema. |
+| `specalive/core/catalogue.py` | 2 | Loads and validates `catalogue/components.yaml` at load (connectors, required attributes, defaults with assumption text); answers "which SysML def, which Modelica class, which connector names" for an IR kind; `check_model` reports parts whose kind or port role the catalogue lacks. |
+| `specalive/core/units.py` | 2 | Explicit unit table to SI (scale and offset). An unknown unit raises `UnknownUnit`, never guessed. |
+| `specalive/core/ids.py` | 2 | Deterministic element ids from canonical tags, legal in Modelica and SysML; `IdRegistry` refuses two tags collapsing onto one id. |
+| `catalogue/components.yaml` | 2 | The component catalogue: IR kind → SysML part def and port defs, Modelica class and its source (MSL, SpecAlive component, generated), parameter and connector mappings, required attributes, defaults with assumption text. Phase 2 covers the seven L1 kinds. |
 
 ### `llm/`
 | Source File | Phase | Purpose |
@@ -116,3 +117,8 @@
 | `tests/test_toolchain.py` | 1 | `run_tool` timeouts and failures as data; omc and Pilot output parsing; real-tool probes, skipped with a reason when a tool is absent. |
 | `tests/test_cli.py` | 1 | Subcommand list, stub exit codes, `cache clear`, `doctor` output and exit code, key never shown. |
 | `tests/test_rules.py` | 1 | Structural rules as tests: import without a key, only `config` reads the environment, the layer import table, nothing imports `cli`, no case-specific values. |
+| `tests/test_ids.py` | 2 | Tag normalisation, determinism, reserved-word and leading-digit prefixes, registry collisions. |
+| `tests/test_units.py` | 2 | Every benchmark unit to SI, spelling variants, lists, `UnknownUnit`. |
+| `tests/test_ir.py` | 2 | IR contract on a small model: trace-or-assumption, dangling references, SI units, one effective value, expression language, state-machine rules. |
+| `tests/test_catalogue.py` | 2 | Shipped catalogue covers L1 and loads; each broken-entry case fails at load naming the kind; `check_model`. |
+| `tests/test_golden_l1.py` | 2 | FR-02 acceptance 1–5 on the L1 golden IR, its effective values, states, criteria and conflicts, and verbatim plain-text quotes. |

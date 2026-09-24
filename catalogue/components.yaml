@@ -1,0 +1,126 @@
+# Purpose: the component catalogue — the only way domain knowledge about component kinds enters
+# SpecAlive. Each IR `kind` maps to its SysML v2 part def and port defs, its Modelica class and
+# where that class comes from (msl | specalive | generated), the IR parameter -> Modelica
+# parameter mapping, the port role -> connector mapping, required attributes, and defaults with
+# the assumption text recorded when a default is used (R-CAT-2). Loaded by core/catalogue.py.
+#
+# Modelica sources:
+#   msl        a Modelica Standard Library 4.x class; checked to exist with omc before listing.
+#   specalive  a class in the lightweight SpecAlive component package written by phase 6
+#              (ADR "Model representation": constant-flow ideal valves, der(h) = (q_in - q_out)/A).
+#   generated  produced per model by generate/controller.py; no fixed class, ports from the IR.
+
+kinds:
+
+  tank:
+    description: Open vertical tank; level is the stored volume over a constant cross-section.
+    ports:
+      inlet: {direction: in, domain: fluid, unit: m3/s}
+      outlet: {direction: out, domain: fluid, unit: m3/s}
+      level_out: {direction: out, domain: signal_real, unit: m}
+    sysml:
+      part_def: Tank
+      ports: {inlet: FluidPort, outlet: FluidPort, level_out: RealSignal}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.Tank
+      parameters: {area: A, initial_level: h_start}
+      connectors: {inlet: inlet, outlet: outlet, level_out: level}
+    required: [area]
+    defaults:
+      initial_level:
+        value: 0.0
+        unit: m
+        assumption: No initial level was stated for the tank; it is assumed to start empty (0 m).
+
+  on_off_valve:
+    description: Two-position isolation valve treated as an ideal Boolean flow switch passing its nominal flow when commanded open.
+    ports:
+      inlet: {direction: in, domain: fluid, unit: m3/s}
+      outlet: {direction: out, domain: fluid, unit: m3/s}
+      cmd_in: {direction: in, domain: signal_bool}
+    sysml:
+      part_def: OnOffValve
+      ports: {inlet: FluidPort, outlet: FluidPort, cmd_in: BoolSignal}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.OnOffValve
+      parameters: {nominal_flow: q_nominal}
+      connectors: {inlet: inlet, outlet: outlet, cmd_in: open}
+    required: [nominal_flow]
+    defaults: {}
+
+  level_sensor:
+    description: Level transmitter passing the measured level to the controller unchanged.
+    ports:
+      level_in: {direction: in, domain: signal_real, unit: m}
+      level_out: {direction: out, domain: signal_real, unit: m}
+    sysml:
+      part_def: LevelSensor
+      ports: {level_in: RealSignal, level_out: RealSignal}
+    modelica:
+      source: msl
+      class: Modelica.Blocks.Routing.RealPassThrough
+      parameters: {}
+      connectors: {level_in: u, level_out: y}
+    required: []
+    defaults: {}
+
+  command_button:
+    description: Momentary operator pushbutton; true for a short pulse at each press time.
+    ports:
+      cmd_out: {direction: out, domain: signal_bool}
+    sysml:
+      part_def: CommandButton
+      ports: {cmd_out: BoolSignal}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.CommandButton
+      parameters: {press_times: pressTimes}
+      connectors: {cmd_out: y}
+    required: []
+    defaults: {}
+
+  sequence_controller:
+    description: Discrete sequence controller generated from the IR state machine it owns.
+    ports: {}
+    dynamic_ports: true
+    sysml:
+      part_def: SequenceController
+      ports: {}
+    modelica:
+      source: generated
+      parameters: {}
+      connectors: {}
+    required: []
+    defaults: {}
+
+  fluid_source:
+    description: Ideal supply boundary; delivers whatever flow downstream draws.
+    ports:
+      outlet: {direction: out, domain: fluid, unit: m3/s}
+    sysml:
+      part_def: FluidSource
+      ports: {outlet: FluidPort}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.FluidSource
+      parameters: {}
+      connectors: {outlet: outlet}
+    required: []
+    defaults: {}
+
+  fluid_sink:
+    description: Ideal drain boundary; accepts whatever flow arrives.
+    ports:
+      inlet: {direction: in, domain: fluid, unit: m3/s}
+    sysml:
+      part_def: FluidSink
+      ports: {inlet: FluidPort}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.FluidSink
+      parameters: {}
+      connectors: {inlet: inlet}
+    required: []
+    defaults: {}

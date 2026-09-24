@@ -1,0 +1,1226 @@
+{
+  "$defs": {
+    "AcceptanceCriterion": {
+      "additionalProperties": false,
+      "properties": {
+        "check": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Check"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "why there is no check",
+          "title": "Reason"
+        },
+        "tags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "trace": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TraceLink"
+          },
+          "title": "Trace",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "AcceptanceCriterion",
+      "type": "object"
+    },
+    "Assumption": {
+      "additionalProperties": false,
+      "properties": {
+        "affects": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Affects",
+          "type": "array"
+        },
+        "basis": {
+          "enum": [
+            "engineering_convention",
+            "default",
+            "inferred"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "trace": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TraceLink"
+          },
+          "title": "Trace",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "basis",
+        "confidence"
+      ],
+      "title": "Assumption",
+      "type": "object"
+    },
+    "Candidate": {
+      "additionalProperties": false,
+      "properties": {
+        "authority_rank": {
+          "description": "1 is the highest authority",
+          "minimum": 1,
+          "title": "Authority Rank",
+          "type": "integer"
+        },
+        "element_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "the parameter holding this value, if any",
+          "title": "Element Id"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "value": {
+          "description": "as written",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "source_id",
+        "authority_rank"
+      ],
+      "title": "Candidate",
+      "type": "object"
+    },
+    "Check": {
+      "additionalProperties": false,
+      "description": "A condition over a time window: [start_s, end_s), open ends meaning the run's bounds.",
+      "properties": {
+        "condition": {
+          "title": "Condition",
+          "type": "string"
+        },
+        "end_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End S"
+        },
+        "mode": {
+          "enum": [
+            "at",
+            "always",
+            "eventually"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "start_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start S"
+        }
+      },
+      "required": [
+        "mode",
+        "condition"
+      ],
+      "title": "Check",
+      "type": "object"
+    },
+    "Conflict": {
+      "additionalProperties": false,
+      "properties": {
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "minItems": 2,
+          "title": "Candidates",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "resolution": {
+          "description": "winning value, or 'unresolved'",
+          "title": "Resolution",
+          "type": "string"
+        },
+        "subject": {
+          "$ref": "#/$defs/ConflictSubject"
+        }
+      },
+      "required": [
+        "id",
+        "subject",
+        "candidates",
+        "resolution",
+        "rationale"
+      ],
+      "title": "Conflict",
+      "type": "object"
+    },
+    "ConflictSubject": {
+      "additionalProperties": false,
+      "properties": {
+        "element_id": {
+          "title": "Element Id",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "element_id",
+        "field"
+      ],
+      "title": "ConflictSubject",
+      "type": "object"
+    },
+    "Connection": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "from_port": {
+          "title": "From Port",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "medium_or_signal": {
+          "title": "Medium Or Signal",
+          "type": "string"
+        },
+        "to_port": {
+          "title": "To Port",
+          "type": "string"
+        },
+        "trace": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TraceLink"
+          },
+          "title": "Trace",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "from_port",
+        "to_port",
+        "medium_or_signal"
+      ],
+      "title": "Connection",
+      "type": "object"
+    },
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "edge": {
+          "default": "rising",
+          "enum": [
+            "rising",
+            "falling"
+          ],
+          "title": "Edge",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "port": {
+          "description": "input port of the machine's owner that carries the command",
+          "title": "Port",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "port"
+      ],
+      "title": "Event",
+      "type": "object"
+    },
+    "OriginalValue": {
+      "additionalProperties": false,
+      "properties": {
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "title": "OriginalValue",
+      "type": "object"
+    },
+    "Parameter": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "authority": {
+          "description": "source id",
+          "title": "Authority",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "original": {
+          "$ref": "#/$defs/OriginalValue"
+        },
+        "owner": {
+          "description": "part id or 'system'",
+          "title": "Owner",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "effective",
+            "superseded",
+            "as_built_only",
+            "verification_only"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "trace": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TraceLink"
+          },
+          "title": "Trace",
+          "type": "array"
+        },
+        "unit": {
+          "description": "SI unit from core/units.py",
+          "title": "Unit",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "SI",
+          "title": "Value"
+        }
+      },
+      "required": [
+        "id",
+        "owner",
+        "name",
+        "value",
+        "unit",
+        "original",
+        "status",
+        "authority"
+      ],
+      "title": "Parameter",
+      "type": "object"
+    },
+    "Part": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "attributes": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "default": {},
+          "description": "descriptive facts; numeric values are Parameters owned by the part",
+          "title": "Attributes",
+          "type": "object"
+        },
+        "confidence": {
+          "default": 1.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "description": "a catalogue key",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "ports": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Port"
+          },
+          "title": "Ports",
+          "type": "array"
+        },
+        "tags": {
+          "default": [],
+          "description": "every alias seen: formal tag, short name, legacy name",
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "trace": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TraceLink"
+          },
+          "title": "Trace",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "name"
+      ],
+      "title": "Part",
+      "type": "object"
+    },
+    "Port": {
+      "additionalProperties": false,
+      "description": "A port with no trace or assumption inherits its part's.",
+      "properties": {
+        "assumption_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "direction": {
+          "enum": [
+            "in",
+            "out",
+            "inout"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "domain": {
+          "enum": [
+            "fluid",
+            "signal_real",
+            "signal_bool",
+            "event",
+            "thermal",
+            "electric",
+            "magnetic"
+          ],
+          "title": "Domain",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "role": {
+          "description": "catalogue port role, e.g. inlet, level_out, cmd_in",
+          "title": "Role",
+          "type": "string"
+        },
+        "trace": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TraceLink"
+          },
+          "title": "Trace",
+          "type": "array"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "direction",
+        "domain"
+      ],
+      "title": "Port",
+      "type": "object"
+    },
+    "Question": {
+      "additionalProperties": false,
+      "properties": {
+        "affects": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Affects",
+          "type": "array"
+        },
+        "answer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer"
+        },
+        "default_if_unanswered": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default If Unanswered"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "options": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "Region": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "initial": {
+          "title": "Initial",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "type": "string"
+          },
+          "title": "States",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "states",
+        "initial"
+      ],
+      "title": "Region",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "satisfied_by": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Satisfied By",
+          "type": "array"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "superseded"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "superseded_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Superseded By"
+        },
+        "tags": {
+          "default": [],
+          "description": "identifiers as written in the sources, first is primary",
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "trace": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TraceLink"
+          },
+          "title": "Trace",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "category",
+        "status"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO date",
+          "title": "Date"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "bundle-relative path; None for a cited record",
+          "title": "Path"
+        },
+        "reliability": {
+          "anyOf": [
+            {
+              "enum": [
+                "high",
+                "medium",
+                "low"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reliability"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "role": {
+          "enum": [
+            "change_record",
+            "review_decision",
+            "requirement_spec",
+            "design_note",
+            "datasheet",
+            "verification_procedure",
+            "reference_data",
+            "legacy_model",
+            "legacy_architecture",
+            "correspondence",
+            "informal_note",
+            "register",
+            "other"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "tags": {
+          "default": [],
+          "description": "identifiers the source is cited by",
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "role"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "State": {
+      "additionalProperties": false,
+      "properties": {
+        "entry_actions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Entry Actions",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "outputs": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "default": {},
+          "description": "owner output port id -> value held while in this state",
+          "title": "Outputs",
+          "type": "object"
+        },
+        "tags": {
+          "default": [],
+          "description": "aliases, e.g. legacy state names",
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "State",
+      "type": "object"
+    },
+    "StateMachine": {
+      "additionalProperties": false,
+      "properties": {
+        "assumption_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumption Ids",
+          "type": "array"
+        },
+        "events": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Event"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "initial": {
+          "title": "Initial",
+          "type": "string"
+        },
+        "owner": {
+          "title": "Owner",
+          "type": "string"
+        },
+        "regions": {
+          "default": [],
+          "description": "parallel branches; empty for a flat machine",
+          "items": {
+            "$ref": "#/$defs/Region"
+          },
+          "title": "Regions",
+          "type": "array"
+        },
+        "states": {
+          "items": {
+            "$ref": "#/$defs/State"
+          },
+          "title": "States",
+          "type": "array"
+        },
+        "timers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Timer"
+          },
+          "title": "Timers",
+          "type": "array"
+        },
+        "trace": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/TraceLink"
+          },
+          "title": "Trace",
+          "type": "array"
+        },
+        "transitions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Transition"
+          },
+          "title": "Transitions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "owner",
+        "initial",
+        "states"
+      ],
+      "title": "StateMachine",
+      "type": "object"
+    },
+    "Timer": {
+      "additionalProperties": false,
+      "description": "Counts only while its state is active; save_history keeps its remaining time.",
+      "properties": {
+        "duration": {
+          "description": "parameter id",
+          "title": "Duration",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "duration"
+      ],
+      "title": "Timer",
+      "type": "object"
+    },
+    "TraceLink": {
+      "additionalProperties": false,
+      "properties": {
+        "locator": {
+          "description": "page, sheet+row, section or line",
+          "minLength": 1,
+          "title": "Locator",
+          "type": "string"
+        },
+        "quote": {
+          "description": "verbatim from the source",
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "source_id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Source Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "locator",
+        "quote"
+      ],
+      "title": "TraceLink",
+      "type": "object"
+    },
+    "Transition": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "from": {
+          "title": "From",
+          "type": "string"
+        },
+        "guard": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Guard"
+        },
+        "id": {
+          "pattern": "^[a-z_][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "priority": {
+          "description": "1 is evaluated first; unique per source state",
+          "minimum": 1,
+          "title": "Priority",
+          "type": "integer"
+        },
+        "to": {
+          "description": "state id or 'history'",
+          "title": "To",
+          "type": "string"
+        },
+        "trigger": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "event id",
+          "title": "Trigger"
+        }
+      },
+      "required": [
+        "id",
+        "from",
+        "to",
+        "priority"
+      ],
+      "title": "Transition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_criteria": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AcceptanceCriterion"
+      },
+      "title": "Acceptance Criteria",
+      "type": "array"
+    },
+    "assumptions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Assumption"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "conflicts": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Conflict"
+      },
+      "title": "Conflicts",
+      "type": "array"
+    },
+    "connections": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Connection"
+      },
+      "title": "Connections",
+      "type": "array"
+    },
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "parameters": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Parameter"
+      },
+      "title": "Parameters",
+      "type": "array"
+    },
+    "parts": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Part"
+      },
+      "title": "Parts",
+      "type": "array"
+    },
+    "questions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Question"
+      },
+      "title": "Questions",
+      "type": "array"
+    },
+    "requirements": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Requirement"
+      },
+      "title": "Requirements",
+      "type": "array"
+    },
+    "sources": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Source"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "state_machines": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StateMachine"
+      },
+      "title": "State Machines",
+      "type": "array"
+    }
+  },
+  "required": [
+    "name",
+    "description"
+  ],
+  "title": "SystemModel",
+  "type": "object"
+}
