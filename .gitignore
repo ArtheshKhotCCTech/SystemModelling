@@ -1,0 +1,23 @@
+# Run outputs and the LLM response cache
+out/
+.specalive_cache/
+
+# Local environment: holds the API key and machine paths
+.venv/
+environment.bat
+environment.sh
+.env
+
+# Downloaded external tools (SysML v2 Pilot Implementation, portable Java); see docs/devenv.md
+tools/
+
+# Agent memory and local settings (workingrules.md stays tracked)
+.claude/memory/
+.claude/settings.local.json
+
+# Python build and test artefacts
+__pycache__/
+*.egg-info/
+.pytest_cache/
+/.vs
+/.github

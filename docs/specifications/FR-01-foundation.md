@@ -37,7 +37,9 @@ team's machines.
 3. **`specalive doctor`** reports, each as OK / FAIL with the detail:
    - Python version;
    - `omc` found, its version, and whether a script that loads MSL and **simulates
-     `Modelica.StateGraph.Examples.ControlledTanks`** succeeds;
+     `Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks`** succeeds (not the
+     StateGraph example of the same name, which fails at runtime on OpenModelica 1.27.1; see
+     `ADR.md`);
    - the SysML v2 validator found, and whether it parses the fixture
      `tests/fixtures/probe.sysml` (a part, a port, a connection, an attribute with a unit, a
      state machine);

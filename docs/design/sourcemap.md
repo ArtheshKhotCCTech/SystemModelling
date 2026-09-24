@@ -10,9 +10,9 @@
 - Do not load all source code documents every time.
 - Update the index whenever you add, remove or rename a source code file.
 - The **Phase** column is the phase of `../implementation_plan.md` that delivers the file.
-- **Every entry below is planned; none exists yet.** The phase that creates a file replaces its
-  planned purpose with the real one if they differ. A file created that is not listed here must
-  be added in the same pull request.
+- Entries are planned until their phase lands; phase 1 files now exist. The phase that creates
+  a file replaces its planned purpose with the real one if they differ. A file created that is
+  not listed here must be added in the same pull request.
 
 ## Sourcemap Index
 
@@ -21,8 +21,8 @@
 |---|---|---|
 | `pyproject.toml` | 1 | Package metadata, runtime and `[dev]` dependencies, the `specalive` console script. |
 | `specalive/__init__.py` | 1 | Package marker and `__version__`. |
-| `specalive/config.py` | 1 | Every setting in one place: model name, cache directory, tool paths, timeouts, repair attempt limit. Read by every layer; reads nothing. |
-| `specalive/cli.py` | 1, 9 | Command-line entry point. Phase 1 stubs the subcommands; phase 9 wires the real pipeline, progress output and graceful failure. |
+| `specalive/config.py` | 1 | Every setting in one immutable `Settings` built by `load_settings()`: model name, cache directory, omc path and MSL version, SysML validator folder and Java path, timeouts, repair attempt limit, token prices, API key (hidden from repr). The only module that reads environment variables. |
+| `specalive/cli.py` | 1, 9 | Command-line entry point. Phase 1: argparse subcommands with the stages stubbed, `cache clear`, and `doctor` (four OK/FAIL toolchain checks). Phase 9 wires the real pipeline, progress output and graceful failure. |
 | `DECISIONS.md` | 1 | Daily decision log, written by the team. Phase 1 creates the header only. |
 | `AI-LOG.md` | 1 | Where AI output was overridden or discarded, written by the team. Phase 1 creates the header only. |
 | `README.md` | 1, 9 | Setup, the `run` command, **the command that compiles the committed model**, output layout. Phase 9 completes it. |
@@ -41,7 +41,8 @@
 ### `llm/`
 | Source File | Phase | Purpose |
 |---|---|---|
-| `specalive/llm/client.py` | 1 | OpenAI wrapper: structured outputs from Pydantic models, temperature 0, token and cost accounting. |
+| `specalive/llm/__init__.py` | 1 | Layer marker for the LLM layer. |
+| `specalive/llm/client.py` | 1 | OpenAI wrapper: strict structured outputs from Pydantic models, temperature 0, cache-first, token and cost logging, `LLMError` with request id; `openai` imported lazily. |
 | `specalive/llm/cache.py` | 1 | On-disk response cache keyed by model, prompt and input hash; makes runs repeatable and tests offline. |
 
 ### `ingest/` — inputs to evidence
@@ -73,8 +74,10 @@
 ### `toolchain/` — external tools
 | Source File | Phase | Purpose |
 |---|---|---|
+| `specalive/toolchain/__init__.py` | 1 | Layer marker for the external-tool layer. |
+| `specalive/toolchain/process.py` | 1 | The one subprocess runner: timeout, UTF-8 decoding, structured `ToolResult` (`ok`, `command`, `stdout`, `stderr`, `duration`, `returncode`) and `ProbeResult`; never raises for a tool failure. |
 | `specalive/toolchain/omc.py` | 1, 6, 7 | Runs `omc` scripts: probe (1), load/check/build (6), simulate (7). Returns structured results including the exact command. |
-| `specalive/toolchain/sysml_validate.py` | 1, 5 | Runs the chosen SysML v2 validator: probe (1), validate a generated model (5). |
+| `specalive/toolchain/sysml_validate.py` | 1, 5 | Drives the SysML v2 Pilot Implementation's interactive shell over stdin and parses its `ERROR:`/`WARNING:` lines into issues with line and column: probe and `validate_text`/`validate_file` (1), validating generated models (5). |
 
 ### `repair/`
 | Source File | Phase | Purpose |
@@ -107,3 +110,9 @@
 | `tests/goldens/L2_co2.ir.json` | 10 | Hand-written reference IR for L2. |
 | `tests/adversarial/*` | 9 | Unseen specs for generalisation and graceful-failure testing. |
 | `tests/test_*.py` | each | Unit tests for the phase's modules. |
+| `tests/test_config.py` | 1 | Settings defaults, environment overrides, bad values, immutability, key never in repr. |
+| `tests/test_llm_cache.py` | 1 | Cache key components (R-FND-5), round trip, corrupt entries, clear. |
+| `tests/test_llm_client.py` | 1 | Client with the network mocked: strict schema, temperature 0, one call for two identical requests, `LLMError` cases, cost logging, key never cached. |
+| `tests/test_toolchain.py` | 1 | `run_tool` timeouts and failures as data; omc and Pilot output parsing; real-tool probes, skipped with a reason when a tool is absent. |
+| `tests/test_cli.py` | 1 | Subcommand list, stub exit codes, `cache clear`, `doctor` output and exit code, key never shown. |
+| `tests/test_rules.py` | 1 | Structural rules as tests: import without a key, only `config` reads the environment, the layer import table, nothing imports `cli`, no case-specific values. |

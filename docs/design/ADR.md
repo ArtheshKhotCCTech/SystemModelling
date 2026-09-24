@@ -109,10 +109,32 @@ The index format is of two types
 - **Python 3.12.** The team's language; every library needed has wheels for it.
 - **OpenAI API.** The team's decision. Structured outputs give schema-valid JSON directly from
   the Pydantic models.
-- **Proposed (confirm in phase 1, T0.3): OMG SysML v2 Pilot Implementation as the SysML
-  validator.** It is the reference implementation the PRD cites. **Risk:** it is Java-based and
-  its command-line use needs to be proven on day 1. The spike records the alternative tried and
-  why it lost.
+- **The `omc` toolchain probe simulates `Modelica.Fluid.Examples.ControlledTankSystem.ControlledTanks`.**
+  FR-01 first named `Modelica.StateGraph.Examples.ControlledTanks`. On OpenModelica 1.27.1 that
+  model compiles but the run stops with "Simulation terminated due to too many, i.e. 20, event
+  iterations", on MSL 4.0.0 and 4.1.0 alike.
+  - **Rejected: raising the event-iteration limit.** With `-mei=1000` it fails the same way at
+    1000 iterations, so the model loops on an event and a bigger limit only delays the failure.
+  - **Consequence:** the Fluid example of the same name simulates to completion on 1.27.1 with
+    MSL 4.0.0, so it proves what the probe exists to prove: `omc` loads MSL, compiles and runs.
+- **Confirmed in phase 1 (T0.3): OMG SysML v2 Pilot Implementation as the SysML validator.** It
+  is the reference implementation the PRD cites, and the only candidate that checks name
+  resolution and typing, not just syntax: on a model referencing an undefined type it reports
+  `Couldn't resolve reference to Type 'NoSuchType'` with line and column. Release 2026-08
+  (kernel 0.62.0) was used.
+  - **How it runs:** it has no batch CLI. `SysMLInteractive` (in `jupyter-sysml-kernel-*-all.jar`)
+    is an interactive shell; `toolchain/sysml_validate.py` sends the model over stdin inside a
+    `%` … `%` block, then `%exit`, and parses the `ERROR:` / `WARNING:` lines. About 4 s per run.
+  - **Gotchas found in the spike:** it needs **Java 21** (class file 65), not 17; it exits 0 even
+    when the model has errors, so the verdict comes from the output; and it mis-resolves a
+    *relative* library path containing spaces (`Kernel%20Libraries`), so the library path is
+    always passed absolute.
+  - **Rejected: Sensmetry SysIDE (`syside` on PyPI).** It refuses to import without a commercial
+    licence key (`SYSIDE_LICENSE_KEY`), so it cannot run on judges' or teammates' machines by
+    default.
+  - **Rejected: `sysml2py`.** Pure Python and easy to install, but syntax-only: it accepted a
+    model with two undefined types that the Pilot rejected. A validator that passes unresolved
+    references would let generated SysML look valid when it is not.
 - **`.claude/workingrules.md` is tracked in git.** It is evidence of how the team directs its AI
   tools, which the briefing scores under AI collaboration. Agent memories and local settings stay
   ignored.
