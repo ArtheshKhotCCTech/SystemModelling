@@ -77,3 +77,35 @@ Format: `A<n> | what the AI produced | what we did instead | why`
 
 15. **The LLM gave duplicate transition priorities.** "Any state → SHUTDOWN" was given the same
    priority as other transitions from each state (7 transitions); the validator rejected them.
+
+16. **Invented transition-effect syntax.** The agent wrote `do save_history` (a bare reference to
+   an action def) as a transition effect.
+   Validator: `Couldn't resolve reference to Feature 'save_history'` and `Must reference an action`.
+   Replaced by `do action : save_history`. Pinned in `tests/fixtures/sysml/state_machine.sysml`.
+
+17. **Wrong redefinition of a directed parameter.** In the `exhibit state` bindings the agent wrote
+   `:>> plc_101_level1 = ...` for an `in attribute` of the state def.
+   Validator: `Redefining feature must have a compatible direction`.
+   Replaced by `in :>> ...` (and `out :>> ...` for outputs).
+
+18. **Missing library import.** The agent typed attributes `Real` / `Boolean` without importing
+   `ScalarValues`. Validator: `Couldn't resolve reference to Type 'Real'`.
+   Every generated package now has `private import ScalarValues::*;`.
+
+19. **Name clash with an inherited library feature.** The first design named controller ports by
+   their IR role (`start`, `stop`, ...). Every part inherits a `start` feature from the library.
+   Validator: `WARNING: Duplicate of inherited member name 'start' from Part`. Quoting (`'start'`)
+   does not help, because it is the same name. Dynamic ports are now named by IR port id
+   (`plc_101_start`). Exhibit bindings use full paths (`plc_101.plc_101_start.value`) so a
+   binding never resolves to itself.
+
+20. **Latent bug in the phase 1 validator wrapper, found in phase 5.** `sysml_validate._ROOT_RE`
+   expected the root-element echo to begin with the `1> ` prompt. After a warning, the Pilot
+   prints the echo on a line of its own without the prompt, so a model with warnings and no
+   errors was reported as failed (`validator parsed no model element`). Fixed the regex and
+   added a test on the recorded output (`test_interpret_warnings_only_is_ok_when_root_follows_the_warning`).
+
+21. **Template whitespace mistake, caught by reading the output rather than by the validator.**
+   The Purpose comment at the top of each partial used `-#}`, which also stripped the indentation
+   of the partial's first line: `port def` and `part def` landed at column 0. The validator
+   accepted it, because layout means nothing to it, so only a human read caught it. Changed to `#}`.

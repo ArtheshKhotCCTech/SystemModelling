@@ -11,6 +11,7 @@ description = "Messy engineering inputs to a traced IR, a SysML v2 model and a c
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "jinja2>=3.1",
     "openai>=1.40",
     "openpyxl>=3.1",
     "pydantic>=2.7",
@@ -30,6 +31,9 @@ specalive = "specalive.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["specalive*"]
+
+[tool.setuptools.package-data]
+"specalive.generate" = ["templates/*/*.j2"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

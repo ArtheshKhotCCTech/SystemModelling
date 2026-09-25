@@ -2,18 +2,24 @@
 # not yet delivered are honest stubs that exit non-zero, `ingest` writes evidence.json and exits
 # 2 on a missing input (phase 3), `cache clear` empties the response cache, and `doctor` prints
 # one OK/FAIL line per check, exits non-zero on any FAIL and never prints the API key. `extract`
-# (phase 4) is covered by test_extract_stage.py.
+# (phase 4) is covered by test_extract_stage.py. Phase 5: `generate --only sysml` writes
+# model.sysml and `compile --only sysml` writes sysml_validation.json, with FR-09 exit codes.
+import json
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
 from specalive import cli
 from specalive.llm.cache import ResponseCache
+from specalive.toolchain import sysml_validate
+from specalive.toolchain.process import ToolResult
 
 SUBCOMMANDS = ["ingest", "extract", "generate", "compile", "verify", "report", "run", "cache",
                "doctor"]
-STUBS = ["generate", "compile", "verify", "report", "run"]
+STUBS = ["verify", "report", "run"]
+GOLDEN = Path(__file__).parent / "goldens" / "L1_tank.ir.json"
 
 
 def test_help_lists_every_subcommand(capsys):
@@ -35,6 +41,80 @@ def test_console_entry_point_runs_as_module():
 def test_stubs_say_not_implemented_and_exit_nonzero(name, capsys):
     code = cli.main([name])
     assert code != 0
+    assert "not implemented in this phase" in capsys.readouterr().err
+
+
+def test_generate_sysml_writes_model_file(tmp_path, capsys):
+    assert cli.main(["generate", "--ir", str(GOLDEN), "-o", str(tmp_path), "--only", "sysml"]) == 0
+    model = tmp_path / "model.sysml"
+    assert model.is_file() and "state def plc_101_sequence" in model.read_text(encoding="utf-8")
+    assert "wrote" in capsys.readouterr().out
+
+
+def test_generate_reads_ir_json_from_the_out_folder_by_default(tmp_path):
+    (tmp_path / "ir.json").write_text(GOLDEN.read_text(encoding="utf-8"), encoding="utf-8")
+    assert cli.main(["generate", "-o", str(tmp_path), "--only", "sysml"]) == 0
+    assert (tmp_path / "model.sysml").is_file()
+
+
+def test_generate_modelica_is_not_implemented_in_this_phase(tmp_path, capsys):
+    assert cli.main(["generate", "--ir", str(GOLDEN), "-o", str(tmp_path),
+                     "--only", "modelica"]) == cli.EXIT_FAILED
+    assert "not implemented in this phase" in capsys.readouterr().err
+    assert not (tmp_path / "model.sysml").exists()
+
+
+def test_generate_without_only_writes_sysml_and_says_modelica_did_not_run(tmp_path, capsys):
+    assert cli.main(["generate", "--ir", str(GOLDEN), "-o", str(tmp_path)]) == cli.EXIT_FAILED
+    assert (tmp_path / "model.sysml").is_file()
+    assert "modelica" in capsys.readouterr().err
+
+
+def test_generate_missing_or_broken_ir_is_an_input_problem(tmp_path, capsys):
+    assert cli.main(["generate", "--ir", str(tmp_path / "nope.json"), "-o", str(tmp_path),
+                     "--only", "sysml"]) == cli.EXIT_INPUT
+    ir = json.loads(GOLDEN.read_text(encoding="utf-8"))
+    ir["connections"][0]["to_port"] = "no_such_port"
+    broken = tmp_path / "ir.json"
+    broken.write_text(json.dumps(ir), encoding="utf-8")
+    assert cli.main(["generate", "--ir", str(broken), "-o", str(tmp_path),
+                     "--only", "sysml"]) == cli.EXIT_INPUT
+    assert "no_such_port" in capsys.readouterr().err
+    assert not (tmp_path / "model.sysml").exists()
+
+
+def _fake_validation(status, stdout=""):
+    run = ToolResult(True, ("java", "-cp", "pilot.jar", "Main"), stdout, "", 1.0, 0)
+    if status == sysml_validate.NOT_RUN:
+        return lambda settings, path: sysml_validate.Validation(status, "Pilot not found")
+    return lambda settings, path: sysml_validate.interpret(run)
+
+
+@pytest.mark.parametrize("status,stdout,code", [
+    (sysml_validate.OK, "1> Package P (0e0e3b6a-7c65)\n", cli.EXIT_OK),
+    (sysml_validate.FAILED, "1> ERROR:bad (1.sysml line : 3 column : 4)\n", cli.EXIT_FAILED),
+    (sysml_validate.NOT_RUN, "", cli.EXIT_TOOLCHAIN),
+])
+def test_compile_sysml_writes_the_validation_report(tmp_path, monkeypatch, capsys, status,
+                                                    stdout, code):
+    (tmp_path / "model.sysml").write_text("package P {}\n", encoding="utf-8")
+    monkeypatch.setattr(cli.sysml_validate, "validate_file", _fake_validation(status, stdout))
+    assert cli.main(["compile", "-o", str(tmp_path), "--only", "sysml"]) == code
+    report = json.loads((tmp_path / "sysml_validation.json").read_text(encoding="utf-8"))
+    assert report["status"] == status
+    out = capsys.readouterr().out
+    assert status in out
+    if status != sysml_validate.NOT_RUN:
+        assert report["command"] and report["command"] in out
+
+
+def test_compile_without_model_is_an_input_problem(tmp_path, capsys):
+    assert cli.main(["compile", "-o", str(tmp_path), "--only", "sysml"]) == cli.EXIT_INPUT
+    assert "model.sysml" in capsys.readouterr().err
+
+
+def test_compile_modelica_is_not_implemented_in_this_phase(tmp_path, capsys):
+    assert cli.main(["compile", "-o", str(tmp_path), "--only", "modelica"]) == cli.EXIT_FAILED
     assert "not implemented in this phase" in capsys.readouterr().err
 
 

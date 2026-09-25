@@ -2,6 +2,7 @@
 # lowercase identifier legal in both Modelica and SysML v2 (AB-123 → ab_123), prefixing the kind
 # when the result starts with a digit or is a reserved word. IdRegistry is a per-run object that
 # refuses two different tags collapsing onto one id, so naming is stable and collision-free.
+# sysml_name() quotes any other name SysML v2 would read as a keyword or cannot parse (FR-05).
 from __future__ import annotations
 
 import re
@@ -28,6 +29,19 @@ RESERVED = frozenset("""
 
 _KIND = re.compile(r"^[a-z][a-z0-9_]*$")
 _NON_WORD = re.compile(r"[^a-z0-9]+")
+
+
+_PLAIN_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def sysml_name(name: str) -> str:
+    """`name` as a SysML v2 name: unchanged if it is a plain identifier and not reserved, else
+    written as an unrestricted name ('state'), which the language reads as the same name."""
+    if not name:
+        raise ValueError("a SysML name cannot be empty")
+    if _PLAIN_NAME.match(name) and name not in RESERVED:
+        return name
+    return "'" + name.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
 
 class IdCollision(ValueError):

@@ -1,12 +1,12 @@
 # Purpose: pins deterministic id construction (R-IR-3) — a canonical tag becomes a lowercase
 # identifier legal in both Modelica and SysML v2, the same tag always gives the same id, reserved
 # words and leading digits are prefixed with the kind, and a registry refuses two different tags
-# that would collapse onto one id.
+# that would collapse onto one id; sysml_name() quotes a name SysML v2 would read as a keyword.
 import re
 
 import pytest
 
-from specalive.core.ids import IdCollision, IdRegistry, make_id
+from specalive.core.ids import IdCollision, IdRegistry, make_id, sysml_name
 
 LEGAL = re.compile(r"^[a-z_][a-z0-9_]*$")
 
@@ -80,3 +80,23 @@ def test_registries_are_independent():
     a, b = IdRegistry(), IdRegistry()
     a.make("part", "TK-101")
     assert b.make("part", "TK_101") == "tk_101"
+
+
+# --- SysML names (FR-05 requirement 6: escaping lives here, not in the templates) -----------
+
+@pytest.mark.parametrize("name", ["tk_101", "FluidPort", "_x1"])
+def test_sysml_name_leaves_plain_identifiers_alone(name):
+    assert sysml_name(name) == name
+
+
+@pytest.mark.parametrize("name,expected", [
+    ("state", "'state'"), ("part", "'part'"), ("in", "'in'"), ("level-1", "'level-1'"),
+    ("1st", "'1st'"), ("it's", "'it\\'s'"), ("a\\b", "'a\\\\b'"),
+])
+def test_sysml_name_quotes_keywords_and_illegal_names(name, expected):
+    assert sysml_name(name) == expected
+
+
+def test_sysml_name_rejects_empty():
+    with pytest.raises(ValueError):
+        sysml_name("")

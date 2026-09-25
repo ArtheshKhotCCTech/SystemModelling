@@ -1,0 +1,37 @@
+{#- Purpose: the IR expression language's calls and actions (core/ir.py) as SysML calc and action
+    defs, emitted only when a guard or action uses them; fixture state_machine.sysml. #}
+{% if "timer_expired" in pkg.library %}
+
+    calc def timer_expired {
+        doc /* IR expression language: true once the timer's state has been active for its duration */
+        in timer : TimeValue;
+        return : Boolean;
+    }
+{% endif %}
+{% if "in_state" in pkg.library %}
+
+    calc def in_state {
+        doc /* IR expression language: true while the named state is active */
+        in state_ref;
+        return : Boolean;
+    }
+{% endif %}
+{% if "start_timer" in pkg.library %}
+
+    action def start_timer {
+        doc /* IR action: start the timer from its full duration */
+        in timer : TimeValue;
+    }
+{% endif %}
+{% if "save_history" in pkg.library %}
+
+    action def save_history {
+        doc /* IR action: remember the active state and the remaining time of its timers */
+    }
+{% endif %}
+{% if "clear_history" in pkg.library %}
+
+    action def clear_history {
+        doc /* IR action: forget the remembered state */
+    }
+{% endif %}

@@ -1,0 +1,6 @@
+{#- Purpose: one port def per IR port domain with its directed item; fixture port_defs.sysml. #}
+
+    port def {{ port_def.name }} {
+        doc /* domain: {{ port_def.domain }} */
+        out attribute {{ port_def.item }} : {{ port_def.item_type }};
+    }

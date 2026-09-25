@@ -2,6 +2,8 @@
 # back as a structured result, never an exception for a tool-reported failure; the omc and
 # SysML-validator output parsers are tested on recorded text; real-tool probes run only when
 # the tool is installed and are skipped with a stated reason otherwise, never silently passed.
+# Phase 5: a validation is ok, failed or NOT RUN, and its report names the command (R-SYS-6).
+import json
 import sys
 from pathlib import Path
 
@@ -181,6 +183,58 @@ def test_validator_missing_install_is_reported_without_raising(tmp_path):
     s = load_settings({"SPECALIVE_SYSML_VALIDATOR": str(tmp_path / "nowhere")})
     v = sysml_validate.validate_file(s, FIXTURE)
     assert not v.ok and "not found" in v.detail
+
+
+# Recorded from the Pilot (kernel 0.62.0): after a warning the root echo loses its "1> " prefix.
+PILOT_WARN_ONLY = (
+    "SysML v2 Pilot Implementation\r\n"
+    "1> WARNING:Duplicate of inherited member name 'start' from Part (1.sysml line : 30 column : 18)\n"
+    "Package FixturePartDefAttributes (0e0e3b6a-7c65-473c-a143-a399386bffed)\n2> "
+)
+
+
+def test_interpret_warnings_only_is_ok_when_root_follows_the_warning():
+    v = sysml_validate.interpret(ToolResult(True, ("java",), PILOT_WARN_ONLY, "", 1.0, 0))
+    assert v.ok and v.status == sysml_validate.OK and len(v.warnings) == 1
+
+
+def test_status_distinguishes_failed_from_not_run(tmp_path):
+    bad = sysml_validate.interpret(ToolResult(True, ("java",), PILOT_BAD, "", 1.0, 0))
+    assert bad.status == sysml_validate.FAILED
+    no_java = sysml_validate.interpret(
+        ToolResult(False, ("java",), "", "executable not found: java", 0.0, None))
+    assert no_java.status == sysml_validate.NOT_RUN and not no_java.ok
+    crash = sysml_validate.interpret(ToolResult(True, ("java",), "SysML v2 Pilot Implementation\n",
+                                                'Exception in thread "main" boom', 1.0, 0))
+    assert crash.status == sysml_validate.NOT_RUN
+    missing = sysml_validate.validate_file(
+        load_settings({"SPECALIVE_SYSML_VALIDATOR": str(tmp_path / "nowhere")}), FIXTURE)
+    assert missing.status == sysml_validate.NOT_RUN and "not found" in missing.detail
+
+
+def test_unreadable_model_is_not_run(tmp_path):
+    v = sysml_validate.validate_file(load_settings(), tmp_path / "missing.sysml")
+    assert v.status == sysml_validate.NOT_RUN and "cannot read" in v.detail
+
+
+def test_report_carries_status_issues_and_the_command(tmp_path):
+    run = ToolResult(True, ("java", "-cp", "pilot all.jar", "Main"), PILOT_BAD, "", 1.0, 0)
+    v = sysml_validate.interpret(run)
+    target = sysml_validate.write_report(v, tmp_path / "model.sysml", tmp_path / "v.json")
+    report = json.loads(target.read_text(encoding="utf-8"))
+    assert report["status"] == "failed" and report["ok"] is False
+    assert report["errors"][0] == {"line": 2, "column": 32,
+                                   "message": "Couldn't resolve reference to Type 'NoSuchType'."}
+    assert len(report["warnings"]) == 1
+    assert report["command"] == run.command_line and "%exit" in report["stdin"]
+    assert report["model"].endswith("model.sysml")
+
+
+def test_report_of_a_run_that_did_not_happen_says_not_run(tmp_path):
+    v = sysml_validate.Validation(sysml_validate.NOT_RUN, "SysML v2 Pilot Implementation not found")
+    report = sysml_validate.report(v, tmp_path / "model.sysml")
+    assert report["status"] == "NOT RUN" and report["ok"] is False
+    assert report["command"] is None and "not found" in report["detail"]
 
 
 # --- real tools: run only when installed ------------------------------------------------------

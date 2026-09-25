@@ -3,8 +3,9 @@
 # `doctor` proves the toolchain — Python, omc + MSL, the SysML v2 validator, the OpenAI API — and
 # must pass before any modelling phase starts (R-FND-1). `ingest` (phase 3) reads a bundle into
 # evidence.json and lists every file it could not fully read. `extract` (phase 4) turns
-# evidence.json, or plain text, into ir.json and extract_report.json. Top of the layer stack;
-# nothing imports it.
+# evidence.json, or plain text, into ir.json and extract_report.json. `generate --only sysml`
+# (phase 5) writes model.sysml and `compile --only sysml` writes sysml_validation.json with the
+# command that reproduces it; Modelica is phase 6. Top of the layer stack; nothing imports it.
 from __future__ import annotations
 
 import argparse
@@ -19,7 +20,9 @@ from pydantic import BaseModel
 
 from specalive import __version__
 from specalive.config import ConfigError, Settings, load_settings
+from specalive.core.catalogue import CatalogueError, load_catalogue
 from specalive.extract.extract import (
+    IR_FILE,
     EvidenceError,
     ExtractError,
     load_evidence,
@@ -28,6 +31,7 @@ from specalive.extract.extract import (
     write_report,
 )
 from specalive.extract.text_input import text_bundle
+from specalive.generate import sysml
 from specalive.ingest.evidence import EvidenceBundle
 from specalive.ingest.ingest import EVIDENCE_FILE, InputNotFound, ingest, write_evidence
 from specalive.llm.cache import ResponseCache
@@ -207,6 +211,64 @@ def cmd_stub(name: str) -> int:
     return EXIT_FAILED
 
 
+def _modelica_not_run(command: str) -> None:
+    print(f"specalive {command}: modelica: not implemented in this phase (phase 6)",
+          file=sys.stderr)
+
+
+def cmd_generate(ir: Path | None, out: Path | None, only: str | None) -> int:
+    if only == "modelica":
+        return cmd_stub("generate --only modelica")
+    ir_path = ir or (out or Path("out") / "run") / IR_FILE
+    out = out or ir_path.parent
+    try:
+        model = sysml.load_ir(ir_path)
+    except sysml.IRError as exc:
+        print(f"specalive generate: input problem: {exc}", file=sys.stderr)
+        return EXIT_INPUT
+    try:
+        catalogue = load_catalogue()
+    except CatalogueError as exc:
+        print(f"specalive generate: infrastructure problem: {exc}", file=sys.stderr)
+        return EXIT_TOOLCHAIN
+    try:
+        target = sysml.write_sysml(model, catalogue, out)
+    except sysml.SysmlGenerationError as exc:
+        print(f"specalive generate: input problem: {exc}", file=sys.stderr)
+        return EXIT_INPUT
+    print(f"wrote {target}")
+    if only is None:
+        _modelica_not_run("generate")
+        return EXIT_FAILED
+    return EXIT_OK
+
+
+def cmd_compile(settings: Settings, out: Path | None, only: str | None) -> int:
+    if only == "modelica":
+        return cmd_stub("compile --only modelica")
+    out = out or Path("out") / "run"
+    model = out / sysml.MODEL_FILE
+    if not model.is_file():
+        print(f"specalive compile: input problem: {model} not found; run specalive generate "
+              "first", file=sys.stderr)
+        return EXIT_INPUT
+    v = sysml_validate.validate_file(settings, model)
+    target = sysml_validate.write_report(v, model, out / sysml_validate.REPORT_FILE)
+    print(f"SysML validation: {v.status}: {v.detail}")
+    for issue in (*v.errors, *v.warnings):
+        print(f"  {issue.severity:<7}  line {issue.line}:{issue.column}  {issue.message}")
+    if v.run:
+        print(f"command: {v.run.command_line}")
+        print(f"  stdin: {sysml_validate.report(v, model)['stdin']}")
+    print(f"wrote {target}")
+    code = (EXIT_OK if v.ok else
+            EXIT_TOOLCHAIN if v.status == sysml_validate.NOT_RUN else EXIT_FAILED)
+    if only is None and code == EXIT_OK:
+        _modelica_not_run("compile")
+        return EXIT_FAILED
+    return code
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="specalive",
@@ -223,6 +285,11 @@ def build_parser() -> argparse.ArgumentParser:
                            help="evidence.json to read (default: <out>/evidence.json)")
             p.add_argument("--text", help="extract from this paragraph instead of evidence")
             p.add_argument("--text-file", help="extract from this text file instead of evidence")
+        if name == "generate":
+            p.add_argument("--ir", type=Path, help="ir.json to read (default: <out>/ir.json)")
+        if name in ("generate", "compile"):
+            p.add_argument("--only", choices=("sysml", "modelica"),
+                           help="run one model only (default: both)")
     cache = sub.add_parser("cache", help="manage the LLM response cache")
     cache_sub = cache.add_subparsers(dest="cache_command", required=True, metavar="<action>")
     cache_sub.add_parser("clear", help="delete every cached LLM response")
@@ -254,6 +321,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_ingest(settings, args.bundle, args.out)
     if args.command == "extract":
         return cmd_extract(settings, args.input, args.text, args.text_file, args.out)
+    if args.command == "generate":
+        return cmd_generate(args.ir, args.out, args.only)
+    if args.command == "compile":
+        return cmd_compile(settings, args.out, args.only)
     return cmd_stub(args.command)
 
 

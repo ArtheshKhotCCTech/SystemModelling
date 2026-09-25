@@ -19,10 +19,10 @@
 ### Top level
 | Source File | Phase | Purpose |
 |---|---|---|
-| `pyproject.toml` | 1 | Package metadata, runtime and `[dev]` dependencies, the `specalive` console script. |
+| `pyproject.toml` | 1, 5 | Package metadata, runtime and `[dev]` dependencies, the `specalive` console script. Phase 5 adds `jinja2` and ships the generator templates as package data. |
 | `specalive/__init__.py` | 1 | Package marker and `__version__`. |
 | `specalive/config.py` | 1, 3 | Every setting in one immutable `Settings` built by `load_settings()`: model name, cache directory, omc path and MSL version, SysML validator folder and Java path, timeouts, repair attempt limit, token prices, the vision switch (3), API key (hidden from repr). The only module that reads environment variables. |
-| `specalive/cli.py` | 1, 3, 4, 9 | Command-line entry point. Phase 1: argparse subcommands with the stages stubbed, `cache clear`, and `doctor` (four OK/FAIL toolchain checks). Phase 3: `ingest` writes `evidence.json`, lists every source not fully read, exits 2 on an input problem. Phase 4: `extract` (`-i`, `--text`, `--text-file`) writes `ir.json` and `extract_report.json`, exits 2 on an input problem and 3 on an LLM problem. Phase 9 wires the real pipeline, progress output and graceful failure. |
+| `specalive/cli.py` | 1, 3, 4, 5, 9 | Command-line entry point. Phase 1: argparse subcommands with the stages stubbed, `cache clear`, and `doctor` (four OK/FAIL toolchain checks). Phase 3: `ingest` writes `evidence.json`, lists every source not fully read, exits 2 on an input problem. Phase 4: `extract` (`-i`, `--text`, `--text-file`) writes `ir.json` and `extract_report.json`, exits 2 on an input problem and 3 on an LLM problem. Phase 5: `generate --ir --only sysml` writes `model.sysml` (exit 2 on a bad IR); `compile --only sysml` writes `sysml_validation.json` and prints the validator command (exit 1 on errors, 2 without a model, 3 when the validator did not run); `--only modelica` is a stub until phase 6. Phase 9 wires the real pipeline, progress output and graceful failure. |
 | `DECISIONS.md` | 1 | Daily decision log, written by the team. Phase 1 creates the header only. |
 | `AI-LOG.md` | 1 | Where AI output was overridden or discarded, written by the team. Phase 1 creates the header only. |
 | `README.md` | 1, 9 | Setup, the `run` command, **the command that compiles the committed model**, output layout. Phase 9 completes it. |
@@ -36,7 +36,7 @@
 | `specalive/core/ir.py` | 2 | The Pydantic IR: parts, ports, connections, parameters, state machines (events, timers, `history` resume target), requirements, acceptance criteria with checks, and the honesty records (TraceLink, Assumption, Question, Conflict). A `SystemModel` validator enforces trace-or-assumption and resolves every cross-reference; guards, actions and check conditions are parsed by a small expression language over IR ids. `python -m specalive.core.ir` prints the JSON Schema. |
 | `specalive/core/catalogue.py` | 2 | Loads and validates `catalogue/components.yaml` at load (connectors, required attributes, defaults with assumption text); answers "which SysML def, which Modelica class, which connector names" for an IR kind; `check_model` reports parts whose kind or port role the catalogue lacks. |
 | `specalive/core/units.py` | 2 | Explicit unit table to SI (scale and offset). An unknown unit raises `UnknownUnit`, never guessed. |
-| `specalive/core/ids.py` | 2 | Deterministic element ids from canonical tags, legal in Modelica and SysML; `IdRegistry` refuses two tags collapsing onto one id. |
+| `specalive/core/ids.py` | 2, 5 | Deterministic element ids from canonical tags, legal in Modelica and SysML; `IdRegistry` refuses two tags collapsing onto one id. Phase 5: `sysml_name()` writes a reserved or illegal name as a quoted SysML name (FR-05 requirement 6). |
 | `catalogue/components.yaml` | 2 | The component catalogue: IR kind → SysML part def and port defs, Modelica class and its source (MSL, SpecAlive component, generated), parameter and connector mappings, required attributes, defaults with assumption text. Phase 2 covers the seven L1 kinds. |
 
 ### `llm/`
@@ -81,8 +81,9 @@
 ### `generate/` — IR to models (no LLM)
 | Source File | Phase | Purpose |
 |---|---|---|
-| `specalive/generate/sysml.py` | 5 | Renders the IR as SysML v2 textual notation through Jinja2 templates; carries IR ids and traces as documentation. |
-| `specalive/generate/templates/sysml/*` | 5 | SysML v2 templates: package, part/port defs, connections, attributes, requirements, state machines. |
+| `specalive/generate/__init__.py` | 5 | Layer marker for the generate layer; imports config and core only, never the LLM. |
+| `specalive/generate/sysml.py` | 5 | IR + catalogue to SysML v2 text, deterministic and LLM-free: a sorted view model (effective values only, units to ISQ types from a validated table, guards translated from the IR expression tree, IR events/timers/actions as attribute, calc and action defs, IR history as a documented state, regions as parallel states, the machine exhibited on its owner with bindings to real ports and attributes, satisfy paths), a `doc` per element with IR id, primary source and ASSUMPTION marks, rendered by StrictUndefined Jinja2 templates. `load_ir`, `render_sysml`, `write_sysml`. |
+| `specalive/generate/templates/sysml/*` | 5 | SysML v2 templates, layout only: `package.sysml.j2` and one partial each for the behaviour library, port defs, part defs, events, state defs (flat or parallel), requirements and the system part. |
 | `specalive/generate/modelica.py` | 6 | Renders the IR as a Modelica package: components from the catalogue, `connect()` equations, parameters, experiment annotation, IR ids in comments. |
 | `specalive/generate/controller.py` | 6 | Renders an IR state machine as a Modelica enumeration state with timers, command priority and interlock assertions. |
 | `specalive/generate/templates/modelica/*` | 6 | Modelica templates, including the lightweight SpecAlive component package. |
@@ -93,7 +94,7 @@
 | `specalive/toolchain/__init__.py` | 1 | Layer marker for the external-tool layer. |
 | `specalive/toolchain/process.py` | 1 | The one subprocess runner: timeout, UTF-8 decoding, structured `ToolResult` (`ok`, `command`, `stdout`, `stderr`, `duration`, `returncode`) and `ProbeResult`; never raises for a tool failure. |
 | `specalive/toolchain/omc.py` | 1, 6, 7 | Runs `omc` scripts: probe (1), load/check/build (6), simulate (7). Returns structured results including the exact command. |
-| `specalive/toolchain/sysml_validate.py` | 1, 5 | Drives the SysML v2 Pilot Implementation's interactive shell over stdin and parses its `ERROR:`/`WARNING:` lines into issues with line and column: probe and `validate_text`/`validate_file` (1), validating generated models (5). |
+| `specalive/toolchain/sysml_validate.py` | 1, 5 | Drives the SysML v2 Pilot Implementation's interactive shell over stdin and parses its `ERROR:`/`WARNING:` lines into issues with line and column: probe and `validate_text`/`validate_file` (1). Phase 5: a verdict is `ok`, `failed` or `NOT RUN` (R-SYS-6); `write_report` writes `sysml_validation.json` with issues and the reproducing command; the root echo is found after a warning too. |
 
 ### `repair/`
 | Source File | Phase | Purpose |
@@ -123,7 +124,8 @@
 | `tests/fixtures/probe.sysml` | 1 | Minimal SysML v2 model (part, port, connection, attribute with unit, state machine) that `specalive doctor` validates to prove the toolchain. |
 | `tests/fixtures/ingest/two_pages.pdf`, `corrupt.pdf` | 3 | A minimal two-page PDF with a text layer, and a broken one, for the PDF reader and the unread path. |
 | `tests/fixtures/extract_cache/*` | 4 | Recorded LLM responses for the L1 bundle and the adversarial text spec, so FR-04 acceptance runs offline. Re-recorded, never hand-edited, after a prompt change. |
-| `tests/fixtures/sysml/*` | 5 | One minimal validated example per SysML construct the templates use (`R-SYS-5`). |
+| `tests/fixtures/sysml/*` | 5 | One minimal validated example per SysML construct the templates use (`R-SYS-5`): `port_defs`, `part_def_attributes`, `units`, `connection`, `requirement_satisfy`, `state_machine`, `parallel_regions`. |
+| `tests/fixtures/snapshots/L1_tank.sysml` | 5 | Byte-exact snapshot of the SysML generated from the golden L1 IR (FR-11 item 16). Regenerated deliberately and reviewed, never hand-edited. |
 | `tests/goldens/L1_tank.ir.json` | 2 | Hand-written reference IR for L1. Fixture for the generators and the reference for coverage. Never read by `specalive/`. |
 | `tests/goldens/L2_co2.ir.json` | 10 | Hand-written reference IR for L2. |
 | `tests/adversarial/*` | 4, 9 | Unseen specs for generalisation and graceful-failure testing. Phase 4 adds `one_paragraph_spec.txt` (FR-04 acceptance 6); phase 9 completes the set. |
@@ -131,10 +133,10 @@
 | `tests/test_config.py` | 1 | Settings defaults, environment overrides, bad values, immutability, key never in repr. |
 | `tests/test_llm_cache.py` | 1 | Cache key components (R-FND-5), round trip, corrupt entries, clear. |
 | `tests/test_llm_client.py` | 1 | Client with the network mocked: strict schema, temperature 0, one call for two identical requests, `LLMError` cases, cost logging, key never cached. |
-| `tests/test_toolchain.py` | 1 | `run_tool` timeouts and failures as data; omc and Pilot output parsing; real-tool probes, skipped with a reason when a tool is absent. |
-| `tests/test_cli.py` | 1 | Subcommand list, stub exit codes, `cache clear`, `doctor` output and exit code, key never shown. |
+| `tests/test_toolchain.py` | 1, 5 | `run_tool` timeouts and failures as data; omc and Pilot output parsing; real-tool probes, skipped with a reason when a tool is absent. |
+| `tests/test_cli.py` | 1, 5 | Subcommand list, stub exit codes, `cache clear`, `doctor` output and exit code, key never shown. Phase 5: `generate` and `compile --only sysml` outputs and exit codes. |
 | `tests/test_rules.py` | 1 | Structural rules as tests: import without a key, only `config` reads the environment, the layer import table, nothing imports `cli`, no case-specific values. |
-| `tests/test_ids.py` | 2 | Tag normalisation, determinism, reserved-word and leading-digit prefixes, registry collisions. |
+| `tests/test_ids.py` | 2, 5 | Tag normalisation, determinism, reserved-word and leading-digit prefixes, registry collisions; `sysml_name` quoting (5). |
 | `tests/test_units.py` | 2 | Every benchmark unit to SI, spelling variants, lists, `UnknownUnit`. |
 | `tests/test_ir.py` | 2 | IR contract on a small model: trace-or-assumption, dangling references, SI units, one effective value, expression language, state-machine rules. |
 | `tests/test_catalogue.py` | 2 | Shipped catalogue covers L1 and loads; each broken-entry case fails at load naming the kind; `check_model`. |
@@ -150,4 +152,5 @@
 | `tests/test_extract_gaps.py` | 4 | Catalogue defaults with assumptions, Questions for missing required values, conventions, stated assumptions, missing documents, the honesty gate. |
 | `tests/test_extract_text.py` | 4 | Plain text as a one-source bundle through the same extraction path. |
 | `tests/test_extract_stage.py` | 4 | `run_extract` on a scratch bundle, byte-identical `ir.json` (acceptance 7), and the `extract` CLI contract and exit codes. |
+| `tests/test_generate_sysml.py` | 5 | FR-05 acceptance 1-6 on the golden L1 IR (element types, one doc id per element, snapshot, effective values only, ASSUMPTION marks, no `llm` import, dangling port fails first) and small IRs for escaping, regions, history, list values and error paths; real-validator runs on every fixture and model. |
 | `tests/test_extract_l1.py` | 4 | FR-04 acceptance 1-7 on L1 and the text spec from recorded responses, including coverage against the golden IR. |

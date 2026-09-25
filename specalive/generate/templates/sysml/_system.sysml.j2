@@ -1,0 +1,44 @@
+{#- Purpose: the system part — part usages with their dynamic ports, effective values and
+    exhibited state machines, system-level values, connections and satisfy links; fixtures
+    part_def_attributes.sysml, connection.sysml, requirement_satisfy.sysml, state_machine.sysml. #}
+{% set system = pkg.system %}
+
+    part {{ system.name }} {
+{{ system.doc | doc(8) }}
+{% for part in system.parts %}
+        part {{ part.name }} : {{ part.definition }} {
+{{ part.doc | doc(12) }}
+{% for port in part.ports %}
+            {{ port.text }} {
+{{ port.doc | doc(16) }}
+            }
+{% endfor %}
+{% for attribute in part.attributes %}
+            {{ attribute.text }} {
+{{ attribute.doc | doc(16) }}
+            }
+{% endfor %}
+{% for exhibit in part.exhibits %}
+            exhibit state {{ exhibit.name }} : {{ exhibit.definition }} {
+{{ exhibit.doc | doc(16) }}
+{% for binding in exhibit.bindings %}
+                {{ binding }};
+{% endfor %}
+            }
+{% endfor %}
+        }
+{% endfor %}
+{% for attribute in system.attributes %}
+        {{ attribute.text }} {
+{{ attribute.doc | doc(12) }}
+        }
+{% endfor %}
+{% for connection in system.connections %}
+        {{ connection.text }} {
+{{ connection.doc | doc(12) }}
+        }
+{% endfor %}
+{% for satisfy in system.satisfies %}
+        {{ satisfy }};
+{% endfor %}
+    }

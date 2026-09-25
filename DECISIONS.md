@@ -122,3 +122,32 @@ Format: `D<n> | what we decided | why the alternative lost`
 32. **Phase 3 had no pull request of its own.** It reached `main` through PR #1 together with
     phase 4. Commit `70492ad` is titled "Add comprehensive tests…" but contains the whole phase 3
     implementation.
+
+33. **Controller ports named by IR port id on the part usage.** The alternative, the role name on
+  the part def, lost because roles like `start` clash with inherited library features.
+
+34. - **Guards kept in the IR expression form.** Operands are `in` attributes of the state def,
+  bound through `exhibit state` to real ports and parameters. `timer_expired` and `in_state` are
+  small `calc def`s. Two alternatives lost:
+  - Doc-only guards: nothing checks them.
+  - SysML `accept after <duration>` time triggers: they cannot express the IR rule that STOP
+    freezes a timer and START resumes the remaining time.
+
+35. **The IR `history` resume target becomes a documented `state history`.** SysML v2 has no
+  history pseudostate. The alternative, expanding it into one transition per resumable state,
+  lost because it adds elements the IR does not have and breaks the one-id-once correspondence.
+
+36. **Only effective parameter values become model values.** Superseded and verification-only
+  parameters (for example the TP-17 press times and the 900 s stop time) are listed in the
+  requirement's doc as "not modelled". The alternative, emitting them with a status tag, lost
+  because it breaks R-SYS-3, and phase 8 reports them anyway.
+
+37. **One port def per domain, with a single `out` item.** `in` ports are the conjugate (`~Def`).
+  The alternative, separate in/out port def pairs, doubles the defs for no extra checking.
+
+38. **`satisfy` links point at feature paths, including states and transitions through the
+  exhibited machine.** The alternative, satisfying only by parts, loses most of the L1
+  requirement-to-behaviour links.
+
+39. **`specalive generate` / `compile` without `--only` exit 1 until phase 6.** The SysML is
+  written and validated, but Modelica is not, so "all gates passed" would be a false pass.

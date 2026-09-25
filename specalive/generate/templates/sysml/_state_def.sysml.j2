@@ -1,0 +1,50 @@
+{#- Purpose: an IR state machine as a state def — operand, output and timer attributes, states
+    with entry assignments, the history resume target, transitions — flat, or one parallel
+    sub-state per IR region; fixtures state_machine.sysml and parallel_regions.sysml. #}
+{% macro states(region, pad) %}
+{{ pad }}entry; then {{ region.initial }};
+{% for state in region.states %}
+{{ pad }}state {{ state.name }} {
+{{ state.doc | doc(pad | length + 4) }}
+{% if state.entry %}
+{{ pad }}    entry action {
+{% for statement in state.entry %}
+{{ pad }}        {{ statement }}
+{% endfor %}
+{{ pad }}    }
+{% endif %}
+{{ pad }}}
+{% endfor %}
+{% if region.history %}
+{{ pad }}state history {
+{{ region.history | doc(pad | length + 4) }}
+{{ pad }}}
+{% endif %}
+{% for transition in region.transitions %}
+{{ pad }}{{ transition.text }} {
+{{ transition.doc | doc(pad | length + 4) }}
+{{ pad }}}
+{% endfor %}
+{% endmacro %}
+
+    state def {{ state_def.name }}{{ " parallel" if state_def.parallel else "" }} {
+{{ state_def.doc | doc(8) }}
+{% for declaration in state_def.declarations %}
+        {{ declaration }};
+{% endfor %}
+{% for timer in state_def.timers %}
+        {{ timer.text }} {
+{{ timer.doc | doc(12) }}
+        }
+{% endfor %}
+{% if state_def.parallel %}
+{% for region in state_def.regions %}
+        state {{ region.name }} {
+{{ region.doc | doc(12) }}
+{{ states(region, "            ") | trim("\n") }}
+        }
+{% endfor %}
+{% else %}
+{{ states(state_def.body, "        ") | trim("\n") }}
+{% endif %}
+    }

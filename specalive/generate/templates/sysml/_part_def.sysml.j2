@@ -1,0 +1,9 @@
+{#- Purpose: one part def per catalogue kind used, with its typed attributes and catalogue
+    ports; fixture part_def_attributes.sysml. #}
+
+    part def {{ part_def.name }} {
+{{ part_def.doc | doc(8) }}
+{% for member in part_def.members %}
+        {{ member }};
+{% endfor %}
+    }
