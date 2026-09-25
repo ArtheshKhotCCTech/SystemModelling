@@ -1,9 +1,8 @@
-# Purpose: runs OpenModelica `omc`. Phase 1: the toolchain probe (`omc --version`, then a .mos
-# script that loads the pinned MSL and simulates an MSL example). Phase 6: compile — a
-# compile.mos that loads the pinned MSL and one model file, runs checkModel and buildModel, and a
-# parser for omc's `[file:line:col] Error: ...` messages. omc reports most failures through
-# getErrorString() rather than its exit code, so every result is printed behind a SPECALIVE_*
-# marker and any "Error:" text is failure. Results carry the exact command that reproduces them.
+# Purpose: runs OpenModelica `omc`: the toolchain probe (1); compile, checkModel and buildModel on
+# one file with omc's `[file:line:col] Error:` messages parsed (6); simulate, a model file or MSL
+# class to CSV, an assert that stops the run read as data with its time and message (7). omc
+# reports most failures through getErrorString(), not its exit code, so results are printed behind
+# SPECALIVE_* markers and any "Error:" text is failure. Each result carries its reproducing command.
 from __future__ import annotations
 
 import os
@@ -237,3 +236,149 @@ def compile_model(settings: Settings, mo_path: Path, model_name: str,
         status, detail = FAILED, f"omc exited with {run.returncode}: {run.stderr.strip()}"
     return CompileResult(status, model_name, tuple(messages), detail,
                          compile_command(settings, work_dir), run)
+
+
+# --- simulate (phase 7) --------------------------------------------------------------------
+
+SIMULATE_SCRIPT = "simulate.mos"
+_SIMULATE_MARKERS = ("MSL", "FILE", "MSLERR", "LOADERR", "SIMERR", "MESSAGES", "END")
+_SIMULATE_ERROR_KEYS = ("MSLERR", "LOADERR", "SIMERR")
+# The runtime prints a violated assert as "...violated at time 13.000000" and then, on its own
+# line, `((condition)) --> "message"`. The last one is the assert that stopped the run; it may be
+# reported first at the event where it became false, then again at the step where the run threw.
+_ASSERT_RE = re.compile(r"violated at time\s+(?P<time>[-+0-9.eE]+)\s*\n.*?-->\s*\"(?P<msg>.*)\"")
+
+
+@dataclass(frozen=True)
+class AssertionStop:
+    time: float  # when the stopping assert was first reported violated
+    message: str  # the assert's message string, as the model wrote it
+    stopped_at: float | None = None  # when the run threw, if later
+
+
+@dataclass(frozen=True)
+class SimulateResult:
+    status: str  # OK | FAILED | NOT_RUN
+    model_name: str
+    result_file: Path | None  # omc's CSV, also when an assert stopped the run part way
+    messages: tuple[OmcMessage, ...]
+    log: str  # the simulation runtime's messages, verbatim
+    detail: str
+    command: str | None  # what reproduces this simulation; None if omc did not run
+    assertion: AssertionStop | None = None
+    run: ToolResult | None = None
+
+    @property
+    def ok(self) -> bool:
+        return self.status == OK
+
+
+def simulate_script(model_file: str | None, model_name: str, msl_version: str) -> str:
+    """Load the pinned MSL (and `model_file`, if any) and simulate `model_name` to CSV. Stop time
+    and interval are left to the model's experiment annotation (FR-07 requirement 1)."""
+    load = ([f'fileLoaded := loadFile("{model_file}");', "loadErr := getErrorString();"]
+            if model_file is not None else ["fileLoaded := true;", 'loadErr := "";'])
+    prints = [("MSL", "String(mslLoaded)"), ("FILE", "String(fileLoaded)"), ("MSLERR", "mslErr"),
+              ("LOADERR", "loadErr"), ("SIMERR", "simErr"), ("MESSAGES", "simMessages")]
+    return "\n".join([
+        "echo(false);",
+        f'mslLoaded := loadModel(Modelica, {{"{msl_version}"}});',
+        "mslErr := getErrorString();",
+        *load,
+        f'res := simulate({model_name}, outputFormat="csv");',
+        "simErr := getErrorString();",
+        "simMessages := res.messages;",
+        "echo(true);",
+        *(f'print("SPECALIVE_{marker}=" + {value} + "\n");' for marker, value in prints),
+        'print("SPECALIVE_END\n");',
+        "",
+    ])
+
+
+def parse_assertion(log: str) -> AssertionStop | None:
+    """The assert that stopped a run, from the runtime's messages; None if none did."""
+    found = list(_ASSERT_RE.finditer(log))
+    if not found:
+        return None
+    last = found[-1]
+    first = next(m for m in found if m["msg"] == last["msg"])
+    return AssertionStop(float(first["time"]), last["msg"], float(last["time"]))
+
+
+def _simulate_fields(stdout: str) -> dict[str, str] | None:
+    values: dict[str, str] = {}
+    for name, nxt in zip(_SIMULATE_MARKERS, _SIMULATE_MARKERS[1:]):
+        m = re.search(rf"SPECALIVE_{name}=(.*?)\n?SPECALIVE_{nxt}\b", stdout, re.DOTALL)
+        if m is None:
+            return None
+        values[name] = m.group(1).strip()
+    return values
+
+
+def _last_line(text: str) -> str:
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    return lines[-1] if lines else "no message"
+
+
+def interpret_simulate(stdout: str) -> tuple[str, str, list[OmcMessage], str,
+                                             AssertionStop | None]:
+    """(status, one-line detail, omc messages, runtime log, the assert that stopped the run)."""
+    f = _simulate_fields(stdout)
+    if f is None:
+        tail = stdout.strip()[-300:] or "(no output)"
+        return FAILED, f"unexpected omc output: {tail}", parse_messages(stdout), "", None
+    messages = [m for key in _SIMULATE_ERROR_KEYS for m in parse_messages(f[key])]
+    first_error = next((m.message for m in messages if m.severity == "Error"), None)
+    log = f["MESSAGES"]
+    if f["MSL"] != "true":
+        return (NOT_RUN, "the Modelica Standard Library (MSL) did not load: "
+                f"{first_error or 'no message'}", messages, log, None)
+    if f["FILE"] != "true":
+        return (FAILED, f"the model file did not load: {first_error or 'no message'}", messages,
+                log, None)
+    assertion = parse_assertion(log)
+    if assertion is not None:
+        return (FAILED, f"stopped by an assertion violated at time {assertion.time:g} s: "
+                f"{assertion.message}", messages, log, assertion)
+    if first_error is not None:
+        return FAILED, first_error.splitlines()[0], messages, log, None
+    if "finished successfully" not in log:
+        return FAILED, f"the simulation did not finish: {_last_line(log)}", messages, log, None
+    return OK, _last_line(log), messages, log, None
+
+
+def simulate_command(settings: Settings, work_dir: Path) -> str:
+    omc_cmd = subprocess.list2cmdline([settings.omc_path, SIMULATE_SCRIPT])
+    return f'cd "{Path(work_dir).resolve()}" && {omc_cmd}'
+
+
+def simulate(settings: Settings, model_name: str, work_dir: Path,
+             mo_path: Path | None = None) -> SimulateResult:
+    """Simulate `model_name` (from `mo_path`, or an MSL class when None) in `work_dir`, which
+    receives simulate.mos, the build files and `<model>_res.csv`. A missing omc is NOT RUN; a
+    failure, a timeout or an assert stop is FAILED; none of them raises."""
+    work_dir = Path(work_dir)
+    work_dir.mkdir(parents=True, exist_ok=True)
+    rel = (Path(os.path.relpath(Path(mo_path).resolve(), work_dir.resolve())).as_posix()
+           if mo_path is not None else None)
+    (work_dir / SIMULATE_SCRIPT).write_text(simulate_script(rel, model_name, settings.msl_version),
+                                            encoding="utf-8", newline="\n")
+    result_file = work_dir / f"{model_name}_res.csv"
+    result_file.unlink(missing_ok=True)
+    run = run_tool([settings.omc_path, SIMULATE_SCRIPT], timeout=settings.omc_timeout_s,
+                   cwd=work_dir)
+    command = simulate_command(settings, work_dir)
+    if run.returncode is None:
+        reason = run.stderr.strip()
+        if reason.startswith("timed out"):
+            return SimulateResult(FAILED, model_name, None, (), "", f"simulation {reason}",
+                                  command, None, run)
+        return SimulateResult(NOT_RUN, model_name, None, (), "", f"omc did not run: {reason}",
+                              None, None, run)
+    status, detail, messages, log, assertion = interpret_simulate(run.stdout)
+    if status == OK and not run.ok:
+        status, detail = FAILED, f"omc exited with {run.returncode}: {run.stderr.strip()}"
+    if status == OK and not result_file.is_file():
+        status, detail = FAILED, f"omc reported success but wrote no {result_file.name}"
+    return SimulateResult(status, model_name, result_file if result_file.is_file() else None,
+                          tuple(messages), log, detail, command, assertion, run)

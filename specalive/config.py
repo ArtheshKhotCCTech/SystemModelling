@@ -1,6 +1,6 @@
 # Purpose: every tunable of SpecAlive in one immutable Settings object — model name, cache
 # directory, tool paths, per-tool timeouts, repair attempt limit, token prices, whether images go
-# to the vision model. This is the only
+# to the vision model, and the declared default verification tolerances. This is the only
 # module that reads environment variables or `.env` (R-FND-2); real variables override `.env`.
 # Callers build Settings once with load_settings() and pass it down. The API key is excluded
 # from repr so it is never printed.
@@ -41,6 +41,10 @@ class Settings:
     price_out_per_mtok: float = 10.00
     # Send images to the vision model at ingest (FR-03 requirement 7). Off: images are unread.
     vision: bool = False
+    # Declared default tolerances for verification (R-VER-3), used only when the IR states none:
+    # state and event change times, and continuous error as a fraction of the reference's range.
+    event_time_tolerance_s: float = 2.0
+    continuous_abs_tolerance_frac: float = 0.02
     openai_api_key: str | None = field(default=None, repr=False)
 
     @property
@@ -124,5 +128,9 @@ def load_settings(environ: Mapping[str, str] | None = None,
         price_out_per_mtok=_read(env, "SPECALIVE_PRICE_OUT", _non_negative_float,
                                  d.price_out_per_mtok),
         vision=_read(env, "SPECALIVE_VISION", _bool, d.vision),
+        event_time_tolerance_s=_read(env, "SPECALIVE_EVENT_TOLERANCE", _positive_float,
+                                     d.event_time_tolerance_s),
+        continuous_abs_tolerance_frac=_read(env, "SPECALIVE_CONTINUOUS_TOLERANCE",
+                                            _positive_float, d.continuous_abs_tolerance_frac),
         openai_api_key=key,
     )

@@ -5,6 +5,7 @@
 # (phase 4) is covered by test_extract_stage.py. Phase 5: `generate --only sysml` writes
 # model.sysml and `compile --only sysml` writes sysml_validation.json, with FR-09 exit codes.
 # Phase 6: `generate` writes model.mo, and `compile` runs the Modelica compile-and-repair loop.
+# Phase 7: `verify` writes sim/result.csv, verification.json and coverage.json, with its exit codes.
 import json
 import subprocess
 import sys
@@ -19,7 +20,7 @@ from specalive.toolchain.process import ToolResult
 
 SUBCOMMANDS = ["ingest", "extract", "generate", "compile", "verify", "report", "run", "cache",
                "doctor"]
-STUBS = ["verify", "report", "run"]
+STUBS = ["report", "run"]
 GOLDEN = Path(__file__).parent / "goldens" / "L1_tank.ir.json"
 
 
@@ -256,3 +257,151 @@ def test_openai_check_never_shows_the_key(monkeypatch, tmp_path):
     s = load_settings({"OPENAI_API_KEY": "sk-dont-print", "SPECALIVE_CACHE_DIR": str(tmp_path)})
     check = cli.check_openai(s)
     assert not check.ok and "sk-dont-print" not in check.detail and "req_x" in check.detail
+
+
+# --- verify (phase 7) ------------------------------------------------------------------------
+
+L1_BUNDLE = next((p for p in (Path(__file__).parent.parent / "Testcases").glob("tank*/tank*")
+                  if p.is_dir()), None)
+
+
+def _verify_run(tmp_path, ir_path=GOLDEN):
+    """A run folder as generate and a successful compile leave it."""
+    from specalive.core.catalogue import load_catalogue
+    from specalive.core.ir import SystemModel
+    from specalive.generate import modelica
+
+    ir_text = Path(ir_path).read_text(encoding="utf-8")
+    (tmp_path / "ir.json").write_text(ir_text, encoding="utf-8")
+    generated = modelica.render_modelica(SystemModel.model_validate_json(ir_text),
+                                         load_catalogue())
+    (tmp_path / "model.mo").write_text(generated.text, encoding="utf-8")
+    log = {"status": "ok", "model": generated.model_name, "delivered": "model.mo",
+           "command": "cd build && omc compile.mos", "detail": "", "errors": [], "attempts": []}
+    (tmp_path / "repair_log.json").write_text(json.dumps(log), encoding="utf-8")
+    return generated.model_name
+
+
+def _fake_simulation(status, values=None, times=(0.0, 900.0), assertion=None):
+    from specalive.toolchain import omc
+    from specalive.verify import simulate
+
+    def fake(settings, choice, run_dir):
+        trace, csv = None, None
+        if values is not None:
+            trace = simulate.Trace(list(times), {k: list(v) for k, v in values.items()})
+            csv = Path(run_dir) / "sim" / "result.csv"
+            csv.parent.mkdir(parents=True, exist_ok=True)
+            csv.write_text("time\n0\n", encoding="utf-8")
+        command = None if status == omc.NOT_RUN else "cd sim && omc simulate.mos"
+        result = omc.SimulateResult(status, choice.name, csv, (), "", f"scripted {status}",
+                                    command, assertion)
+        return simulate.Simulation(result, choice, trace, csv)
+    return fake
+
+
+def test_verify_without_ir_is_an_input_problem(tmp_path, capsys):
+    assert cli.main(["verify", "-o", str(tmp_path)]) == cli.EXIT_INPUT
+    assert "ir.json" in capsys.readouterr().err
+
+
+def test_verify_without_a_compiled_model_is_an_input_problem_and_still_reports(tmp_path, capsys):
+    (tmp_path / "ir.json").write_text(GOLDEN.read_text(encoding="utf-8"), encoding="utf-8")
+    assert cli.main(["verify", "-o", str(tmp_path)]) == cli.EXIT_INPUT
+    report = json.loads((tmp_path / "verification.json").read_text(encoding="utf-8"))
+    assert report["simulation"]["status"] == "NOT RUN"
+    assert all(c["status"] == "NOT CHECKED" for c in report["criteria"])
+    assert "specalive compile" in capsys.readouterr().err
+
+
+def test_verify_with_omc_missing_exits_three(tmp_path, monkeypatch, capsys):
+    _verify_run(tmp_path)
+    monkeypatch.setattr(cli.simulate, "run_simulation", _fake_simulation("NOT RUN"))
+    assert cli.main(["verify", "-o", str(tmp_path)]) == cli.EXIT_TOOLCHAIN
+    report = json.loads((tmp_path / "verification.json").read_text(encoding="utf-8"))
+    assert report["simulation"]["status"] == "NOT RUN"
+    assert report["status"] == "NOT RUN"
+
+
+def test_verify_writes_every_artefact_and_fails_on_a_failed_criterion(tmp_path, monkeypatch,
+                                                                       capsys):
+    _verify_run(tmp_path)
+    flat = {"plc_101.state": [1.0, 1.0], "plc_101.valve1": [0.0, 0.0],
+            "plc_101.valve2": [0.0, 0.0], "plc_101.valve3": [0.0, 0.0]}
+    monkeypatch.setattr(cli.simulate, "run_simulation", _fake_simulation("ok", flat))
+    assert cli.main(["verify", "-o", str(tmp_path)]) == cli.EXIT_FAILED
+    report = json.loads((tmp_path / "verification.json").read_text(encoding="utf-8"))
+    criteria = {c["id"]: c for c in report["criteria"]}
+    assert criteria["ac_03"]["status"] == "FAIL"  # never reaches TRANSFER_T1_T2 at 280 s
+    assert criteria["ac_02"]["status"] == "PASS"
+    assert criteria["ac_01"]["status"] == "NOT CHECKED" and criteria["ac_01"]["detail"]
+    assert report["status"] == "FAIL"
+    assert report["reference"]["status"] == "NOT RUN"  # no evidence.json, no --reference
+    assert {t["name"] for t in report["tolerances"]} == {"event_time", "continuous_fraction"}
+    assert (tmp_path / "sim" / "result.csv").is_file()
+    cov = json.loads((tmp_path / "coverage.json").read_text(encoding="utf-8"))
+    assert cov["status"] == "NOT RUN" and "--golden" in cov["reason"]
+    out = capsys.readouterr().out
+    assert "verification.json" in out and "ac_03" in out
+
+
+def test_verify_passes_when_every_check_passes(tmp_path, monkeypatch, capsys):
+    ir = json.loads(GOLDEN.read_text(encoding="utf-8"))
+    ir["acceptance_criteria"] = [c for c in ir["acceptance_criteria"] if c["id"] == "ac_02"]
+    ir_path = tmp_path / "in.json"
+    ir_path.write_text(json.dumps(ir), encoding="utf-8")
+    _verify_run(tmp_path, ir_path)
+    zeros = {"plc_101.valve1": [0.0, 0.0], "plc_101.valve2": [0.0, 0.0],
+             "plc_101.valve3": [0.0, 0.0]}
+    monkeypatch.setattr(cli.simulate, "run_simulation", _fake_simulation("ok", zeros))
+    assert cli.main(["verify", "-o", str(tmp_path)]) == cli.EXIT_OK
+    report = json.loads((tmp_path / "verification.json").read_text(encoding="utf-8"))
+    assert report["status"] == "PASS"
+
+
+def test_verify_with_golden_writes_coverage(tmp_path, monkeypatch):
+    _verify_run(tmp_path)
+    monkeypatch.setattr(cli.simulate, "run_simulation", _fake_simulation("NOT RUN"))
+    cli.main(["verify", "-o", str(tmp_path), "--golden", str(GOLDEN)])
+    cov = json.loads((tmp_path / "coverage.json").read_text(encoding="utf-8"))
+    assert cov["status"] == "ok" and cov["parts"]["percent"] == 100.0
+
+
+def test_verify_with_a_missing_reference_is_an_input_problem(tmp_path, monkeypatch, capsys):
+    _verify_run(tmp_path)
+    monkeypatch.setattr(cli.simulate, "run_simulation", _fake_simulation("NOT RUN"))
+    code = cli.main(["verify", "-o", str(tmp_path), "--reference", str(tmp_path / "none.csv")])
+    assert code == cli.EXIT_INPUT and "none.csv" in capsys.readouterr().err
+
+
+def test_verify_report_is_deterministic(tmp_path, monkeypatch):
+    _verify_run(tmp_path)
+    flat = {"plc_101.state": [1.0, 1.0], "plc_101.valve1": [0.0, 0.0]}
+    monkeypatch.setattr(cli.simulate, "run_simulation", _fake_simulation("ok", flat))
+    cli.main(["verify", "-o", str(tmp_path)])
+    first = (tmp_path / "verification.json").read_bytes()
+    cli.main(["verify", "-o", str(tmp_path)])
+    assert (tmp_path / "verification.json").read_bytes() == first
+
+
+@pytest.mark.skipif(L1_BUNDLE is None, reason="Testcases/ L1 bundle not present")
+def test_acceptance_2_l1_golden_model_against_tp17_and_the_reference_trace(tmp_path):
+    from specalive.config import load_settings
+    from specalive.toolchain import omc
+
+    if not omc.version(load_settings()).ok:
+        pytest.skip("omc not installed or not on PATH/SPECALIVE_OMC")
+    _verify_run(tmp_path)
+    reference = L1_BUNDLE / "09_datasets" / "10_demo_run_900s.csv"
+    code = cli.main(["verify", "-o", str(tmp_path), "--reference", str(reference)])
+    report = json.loads((tmp_path / "verification.json").read_text(encoding="utf-8"))
+    assert report["simulation"]["status"] == "ok"
+    # FR-07 acceptance 2: every TP-17 criterion PASS, or NOT CHECKED with a reason
+    for c in report["criteria"]:
+        assert c["status"] == "PASS" or (c["status"] == "NOT CHECKED" and c["detail"]), c
+    signals = {s["column"]: s for s in report["signals"]}
+    state = signals["controller_state"]
+    assert state["status"] == "PASS", state
+    assert state["numbers"]["max_time_error"] <= 2.0
+    assert signals["wait_remaining_s"]["status"] == "NOT COMPARED"
+    assert code == cli.EXIT_OK

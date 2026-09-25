@@ -19,6 +19,7 @@ def test_defaults_when_environment_is_empty():
     assert s.llm_timeout_s > 0
     assert s.repair_attempts == 3
     assert s.vision is False
+    assert (s.event_time_tolerance_s, s.continuous_abs_tolerance_frac) == (2.0, 0.02)
     assert s.openai_api_key is None
     assert s.has_api_key is False
 
@@ -38,6 +39,8 @@ def test_environment_overrides_every_tunable(tmp_path):
         "SPECALIVE_PRICE_IN": "1.5",
         "SPECALIVE_PRICE_OUT": "6",
         "SPECALIVE_VISION": "true",
+        "SPECALIVE_EVENT_TOLERANCE": "0.5",
+        "SPECALIVE_CONTINUOUS_TOLERANCE": "0.1",
         "OPENAI_API_KEY": "sk-test",
     }
     s = load_settings(env)
@@ -51,6 +54,7 @@ def test_environment_overrides_every_tunable(tmp_path):
     assert s.repair_attempts == 2
     assert (s.price_in_per_mtok, s.price_out_per_mtok) == (1.5, 6.0)
     assert s.vision is True
+    assert (s.event_time_tolerance_s, s.continuous_abs_tolerance_frac) == (0.5, 0.1)
     assert s.has_api_key is True
 
 
@@ -58,7 +62,8 @@ def test_environment_overrides_every_tunable(tmp_path):
     "name,value",
     [("SPECALIVE_OMC_TIMEOUT", "soon"), ("SPECALIVE_OMC_TIMEOUT", "-1"),
      ("SPECALIVE_REPAIR_ATTEMPTS", "2.5"), ("SPECALIVE_PRICE_IN", "x"),
-     ("SPECALIVE_VISION", "maybe")],
+     ("SPECALIVE_VISION", "maybe"), ("SPECALIVE_EVENT_TOLERANCE", "0"),
+     ("SPECALIVE_CONTINUOUS_TOLERANCE", "-0.1")],
 )
 def test_bad_value_names_the_variable(name, value):
     with pytest.raises(ConfigError, match=name):

@@ -4,6 +4,7 @@
 # the tool is installed and are skipped with a stated reason otherwise, never silently passed.
 # Phase 5: a validation is ok, failed or NOT RUN, and its report names the command (R-SYS-6).
 # Phase 6: the compile script, omc message parsing, and compile verdicts ok / failed / NOT RUN.
+# Phase 7: the simulate script, simulation verdicts, and an assert stop read as data.
 import json
 import sys
 from pathlib import Path
@@ -202,6 +203,107 @@ def test_compile_model_without_omc_is_not_run(tmp_path):
     assert result.status == omc.NOT_RUN and "not found" in result.detail
     assert not result.ok and result.command is None
     assert (tmp_path / "build" / omc.COMPILE_SCRIPT).is_file()
+
+
+# --- omc simulate (phase 7) ------------------------------------------------------------------
+
+def test_simulate_script_loads_msl_and_file_then_simulates_to_csv():
+    # FR-07 requirement 1: the experiment annotation gives stop time and interval; CSV output.
+    script = omc.simulate_script("../model.mo", "Pkg.System", "4.0.0")
+    lines = script.splitlines()
+    steps = ['loadModel(Modelica, {"4.0.0"})', 'loadFile("../model.mo")',
+             'simulate(Pkg.System, outputFormat="csv")']
+    positions = [next(i for i, line in enumerate(lines) if step in line) for step in steps]
+    assert positions == sorted(positions)
+    for pos in positions:
+        assert "getErrorString()" in lines[pos + 1]
+    assert "stopTime" not in script and "numberOfIntervals" not in script
+
+
+def test_simulate_script_without_file_simulates_an_msl_class():
+    script = omc.simulate_script(None, "Modelica.Blocks.Examples.PID_Controller", "4.0.0")
+    assert "loadFile" not in script
+    assert 'simulate(Modelica.Blocks.Examples.PID_Controller, outputFormat="csv")' in script
+
+
+def _simulate_out(msl="true", loaded="true", msl_err="", load_err="", sim_err="",
+                  messages="LOG_SUCCESS       | info    | The simulation finished successfully.\n"):
+    return ("true\n"
+            f"SPECALIVE_MSL={msl}\nSPECALIVE_FILE={loaded}\nSPECALIVE_MSLERR={msl_err}\n"
+            f"SPECALIVE_LOADERR={load_err}\nSPECALIVE_SIMERR={sim_err}\n"
+            f"SPECALIVE_MESSAGES={messages}\nSPECALIVE_END\n")
+
+
+# Runtime messages omc 1.27.1 returned when an assert stopped a run (captured by hand).
+ASSERT_LOG = """Simulation execution failed for model: A
+LOG_SUCCESS       | info    | The initialization finished successfully without homotopy method.
+LOG_ASSERT        | info    | [C:/w/a.mo:4:3-4:44:writable]
+|                 | |       | The following assertion has been violated at time 12.500000
+|                 | |       | ((not y)) --> "ac_x: never y after 12.5"
+LOG_ASSERT        | info    | Found event, previous asserts are ignored.
+LOG_ASSERT        | info    | [C:/w/a.mo:4:3-4:44:writable]
+|                 | |       | The following assertion has been violated at time 13.000000
+|                 | |       | ((not y)) --> "ac_x: never y after 12.5"
+LOG_ASSERT        | error   | No event found, but assert was triggered. Throwing now!
+"""
+
+
+def test_interpret_clean_simulation():
+    status, detail, msgs, log, assertion = omc.interpret_simulate(
+        _simulate_out(sim_err="Warning: The initial conditions are not fully specified.\n"))
+    assert status == omc.OK and assertion is None
+    assert "finished successfully" in detail and "finished successfully" in log
+    assert [m.severity for m in msgs] == ["Warning"]
+
+
+def test_interpret_assert_stop_is_a_failure_with_time_and_message():
+    # FR-07 requirement 2: an interlock assert is data, with the time the run stopped.
+    status, detail, _, log, assertion = omc.interpret_simulate(_simulate_out(messages=ASSERT_LOG))
+    assert status == omc.FAILED
+    # first reported at the event (12.5 s); the run threw at the next step (13 s)
+    assert assertion == omc.AssertionStop(12.5, "ac_x: never y after 12.5", 13.0)
+    assert "12.5" in detail and "ac_x" in detail
+    assert log == ASSERT_LOG.strip()
+
+
+def test_parse_assertion_of_a_clean_log_is_none():
+    assert omc.parse_assertion("LOG_SUCCESS | info | The simulation finished successfully.") is None
+
+
+@pytest.mark.parametrize("kwargs,status,needle", [
+    ({"msl": "false", "msl_err": "Error: no MSL"}, omc.NOT_RUN, "MSL"),
+    ({"loaded": "false", "load_err": OMC_ERROR}, omc.FAILED, "did not load"),
+    ({"sim_err": OMC_ERROR, "messages": ""}, omc.FAILED, "SI.Area"),
+    ({"messages": "Simulation execution failed for model: P.System\nLOG_STDOUT | error | "
+                  "division by zero\n"}, omc.FAILED, "division by zero"),
+])
+def test_interpret_failed_simulation(kwargs, status, needle):
+    got, detail, _, _, _ = omc.interpret_simulate(_simulate_out(**kwargs))
+    assert got == status and needle in detail
+
+
+def test_interpret_garbled_simulation_output_is_failure():
+    status, detail, *_ = omc.interpret_simulate("Segmentation fault")
+    assert status == omc.FAILED and "unexpected" in detail
+
+
+def test_simulate_without_omc_is_not_run(tmp_path):
+    mo = tmp_path / "model.mo"
+    mo.write_text("package P end P;\n", encoding="utf-8")
+    s = load_settings({"SPECALIVE_OMC": str(tmp_path / "no-omc.exe")})
+    result = omc.simulate(s, "P.System", tmp_path / "sim", mo)
+    assert result.status == omc.NOT_RUN and "not found" in result.detail
+    assert result.command is None and result.result_file is None
+    assert (tmp_path / "sim" / omc.SIMULATE_SCRIPT).is_file()
+
+
+def test_simulate_timeout_is_a_failure_not_a_crash(tmp_path, monkeypatch):
+    mo = tmp_path / "model.mo"
+    mo.write_text("package P end P;\n", encoding="utf-8")
+    monkeypatch.setattr(omc, "run_tool", lambda *a, **k: ToolResult(
+        False, ("omc",), "", "timed out after 5 s", 5.0, None))
+    result = omc.simulate(load_settings({}), "P.System", tmp_path / "sim", mo)
+    assert result.status == omc.FAILED and "timed out" in result.detail
 
 
 # --- SysML validator output parsing ----------------------------------------------------------

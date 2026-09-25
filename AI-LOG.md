@@ -145,3 +145,46 @@ Format: `A<n> | what the AI produced | what we did instead | why`
     the spec text was AI-drafted; otherwise it belongs in `DECISIONS.md` alone.
     - Caught by a spike before any code was written: omc 1.27.1 reports `Invalid unit expression`
       as a Notification.
+   
+28. **The phase 6 pushbutton was confidently wrong, and phase 7 caught it.** This is the
+    strongest entry for the AI-collaboration walk.
+    - `CommandButton` tested `time >= pressTimes[i]` inside a `for` loop. It compiled, it passed
+      every phase 6 test, and the phase 6 summary called it correct.
+    - Under omc 1.27.1 only the last index's crossing is tracked, and the pulse never ends. In
+      the L1 run START at 20 s and STOP at 220/650 s never happened; the whole run was 260 s
+      late.
+    - The phase 6 pause/resume simulation test passed only because the solver's steps landed on
+      its press times.
+    - Caught by `specalive verify` against the reference trace: "change to fill_t1 at 20 s in
+      the reference, the model changes to fill_t1 at 280 s". The AI then reproduced it in a
+      10-line standalone model.
+    - Fix: D68. There is now a phase 6 test that every L1 press gives exactly one pulse.
+    - This shows compiling is not the same as being right, which is the briefing's own point.
+
+29. **The AI's first assert parser reported the wrong time.**
+    - omc prints a violated assert once at the event where it became false (65.0 s), then again
+      where the run throws (65.2 s). The parser took the last one.
+    - Caught by the FR-07 acceptance 5 test, which expected the draining state to begin at 65 s.
+    - Fix: record the first violation of the stopping assert as the time, and the throw time as
+      `stopped_at`.
+
+30. **A test the AI wrote first was wrong, not the code.** The discrete-tolerance test's
+    reference ended at 6 s, but the model change it was meant to match was at 6.5 s, outside the
+    common time span. The fix was to lengthen the reference.
+
+31. **The AI's first `compare_signals` quietly guessed.** When no variable map was passed, it
+    fell back to assuming the controller's enumeration follows the IR state order. The AI removed
+    the fallback before review and made the variable map a required argument. Keep this only if
+    the team wants a self-caught example; it never reached a test run.
+
+32. **The AI wrote a case-specific value into the package.** A docstring example in
+    `verify/coverage.py` read "so TK-101 meets tk_101". The FR-11 grep (`TK-10`) caught it before
+    the suite ran (`tests/test_rules.py` would have failed too). Changed to a neutral example.
+
+33. **Heredoc edits failed a third time (see A11, A23).** Two multi-line Python edits through a
+    bash heredoc failed with "unexpected EOF while looking for matching `'`". No file was damaged
+    this time, because the shell refused before running. The AI switched to writing the edit
+    scripts as files. Worth making the working rule suggested in A23.
+
+34. **FR-07 named an MSL example already known to fail** (see D55). Record this here only if the
+    spec text was AI-drafted; otherwise it belongs in `DECISIONS.md` alone.

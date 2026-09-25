@@ -309,3 +309,32 @@ def test_small_plant_compiles(catalogue, tmp_path):
     mo.write_text(generated.text, encoding="utf-8", newline="\n")
     result = omc.compile_model(load_settings(), mo, generated.model_name, tmp_path / "build")
     assert result.ok, [m.text for m in result.messages]
+
+
+@requires_omc
+@pytest.mark.slow
+def test_every_button_press_gives_one_pulse(generated):
+    # Found in phase 7: a `time >= pressTimes[i]` test inside a for loop is not tracked as an
+    # event for every index by omc 1.27.1, so presses between output points were lost. L1's
+    # START at 20 s and 280 s and STOP at 220 s must each give one 1 s pulse.
+    from tests._modelica_support import simulate_values
+
+    probes = [("pb_start.y", 19.5), ("pb_start.y", 20.5), ("pb_start.y", 21.5),
+              ("pb_start.y", 280.5), ("pb_start.y", 281.5), ("pb_stop.y", 220.5),
+              ("pb_stop.y", 221.5), ("pb_stop.y", 650.5), ("pb_shut.y", 700.5),
+              ("pb_shut.y", 890.0)]
+    got = simulate_values(generated.text, generated.model_name, probes)
+    assert [got[p] for p in probes] == [0, 1, 0, 1, 0, 1, 0, 1, 1, 0]
+
+
+@requires_omc
+@pytest.mark.slow
+def test_a_button_with_no_presses_stays_released(catalogue):
+    ir = plant_ir()
+    ir["parameters"] = [p for p in ir["parameters"] if p["id"] != "pb_halt_press_times"]
+    generated = modelica.render_modelica(SystemModel.model_validate(ir), catalogue)
+    from tests._modelica_support import simulate_values
+
+    got = simulate_values(generated.text, generated.model_name,
+                          [("pb_halt.y", 0.0), ("pb_halt.y", 100.0)])
+    assert set(got.values()) == {0}

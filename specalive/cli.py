@@ -7,11 +7,16 @@
 # (phase 5) writes model.sysml and `compile --only sysml` writes sysml_validation.json with the
 # command that reproduces it. Phase 6: `generate` also writes model.mo, and `compile` runs the
 # Modelica compile-and-repair loop (compile.log, repair_log.json, model.repaired.mo) and prints
-# the omc command that reproduces the compile. Top of the layer stack; nothing imports it.
+# the omc command that reproduces the compile. Phase 7: `verify` simulates the compiled model to
+# sim/result.csv and writes verification.json (variable map, reference comparison, acceptance
+# criteria, tolerances with their source) and coverage.json (only with --golden). Top of the layer
+# stack; nothing imports it.
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import io
+import json
 import re
 import sys
 from collections.abc import Sequence
@@ -40,6 +45,7 @@ from specalive.llm.cache import ResponseCache
 from specalive.llm.client import LLMClient, LLMError
 from specalive.repair import compile_loop
 from specalive.toolchain import omc, sysml_validate
+from specalive.verify import acceptance, compare, coverage, simulate
 
 # FR-09 exit codes: 0 all gates passed, 1 a gate failed, 2 input problem, 3 toolchain problem.
 EXIT_OK, EXIT_FAILED, EXIT_INPUT, EXIT_TOOLCHAIN = 0, 1, 2, 3
@@ -304,6 +310,157 @@ def cmd_compile(settings: Settings, out: Path | None, only: str | None) -> int:
     return max(codes)
 
 
+VERIFICATION_FILE = "verification.json"
+COVERAGE_FILE = "coverage.json"
+_TOLERANCES = ("event_time", "continuous_fraction")
+
+
+def _write_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8",
+                    newline="\n")
+
+
+def _coverage_report(model, golden: Path | None) -> dict | str:
+    """coverage.json content, or the input problem with the reference IR."""
+    if golden is None:
+        return {"status": "NOT RUN", "reason": "no reference IR given (--golden)"}
+    try:
+        reference = sysml.load_ir(golden)
+    except sysml.IRError as exc:
+        return f"the reference IR {golden}: {exc}"
+    return {"status": "ok", "reference": str(golden), **coverage.coverage(model, reference)}
+
+
+def _reference_section(model, out: Path, explicit: Path | None, sim, vm,
+                       tol) -> tuple[dict, list[dict]]:
+    """The reference part of verification.json and one result per reference column. A bad
+    --reference raises VerifyInputError; a bad reference found by ingestion is NOT RUN."""
+    path, how = compare.find_reference(out, explicit)
+    if path is None:
+        return {"status": "NOT RUN", "reason": how}, []
+    try:
+        ref = compare.load_reference(path)
+    except simulate.VerifyInputError as exc:
+        if explicit is not None:
+            raise
+        return {"status": "NOT RUN", "path": str(path), "reason": str(exc)}, []
+    mappings = compare.map_columns(ref, model, vm)
+    section = {"status": "ok", "path": str(path), "found": how,
+               "mapping": [dataclasses.asdict(m) for m in mappings]}
+    if sim is None or sim.trace is None:
+        return section, [{"column": m.column, "variable": m.variable, "ir_id": m.ir_id,
+                          "kind": m.kind, "status": compare.NOT_COMPARED,
+                          "detail": "no simulation result to compare", "numbers": {}}
+                         for m in mappings]
+    signals = compare.compare_signals(ref, sim.trace, mappings, model, vm, tol)
+    return section, [dataclasses.asdict(s) for s in signals]
+
+
+def _overall(sim_status: str, signals: list[dict], criteria: list[dict]) -> str:
+    """FAIL on any failure; PASS only when something passed and the simulation ran clean."""
+    statuses = [s["status"] for s in signals] + [c["status"] for c in criteria]
+    if sim_status == omc.FAILED or "FAIL" in statuses:
+        return "FAIL"
+    if sim_status != omc.OK:
+        return "NOT RUN"
+    return "PASS" if "PASS" in statuses else "NOT CHECKED"
+
+
+def _simulation_section(sim) -> dict:
+    r = sim.result
+    return {"status": r.status, "detail": r.detail, "command": r.command,
+            "result": str(sim.result_csv) if sim.result_csv else None,
+            "assertion": dataclasses.asdict(r.assertion) if r.assertion else None,
+            "messages": [m.text for m in r.messages], "log": r.log}
+
+
+def _print_verification(report: dict, cov: dict, out: Path) -> None:
+    sim = report["simulation"]
+    print(f"simulation: {sim['status']}: {sim['detail']}")
+    if sim.get("command"):
+        print(f"command: {sim['command']}")
+    if report["reference"].get("status") != "ok":
+        print(f"reference: NOT RUN: {report['reference'].get('reason')}")
+    for s in report["signals"]:
+        print(f"  signal     {s['status']:<12}  {s['column']}: {s['detail']}")
+    for c in report["criteria"]:
+        print(f"  criterion  {c['status']:<12}  {c['id']}: {c['detail']}")
+    if cov.get("status") == "ok":
+        print("coverage: " + ", ".join(f"{k} {cov[k]['percent']:g}%"
+                                       for k in coverage.CATEGORIES))
+    print(f"verification: {report['status']}")
+    print(f"wrote {out / VERIFICATION_FILE} and {out / COVERAGE_FILE}")
+
+
+def cmd_verify(settings: Settings, out: Path | None, reference: Path | None,
+               golden: Path | None) -> int:
+    out = out or Path("out") / "run"
+    try:
+        model = sysml.load_ir(out / IR_FILE)
+    except sysml.IRError as exc:
+        print(f"specalive verify: input problem: {exc}", file=sys.stderr)
+        return EXIT_INPUT
+    try:
+        catalogue = load_catalogue()
+    except CatalogueError as exc:
+        print(f"specalive verify: infrastructure problem: {exc}", file=sys.stderr)
+        return EXIT_TOOLCHAIN
+    cov = _coverage_report(model, golden)
+    if isinstance(cov, str):
+        print(f"specalive verify: input problem: {cov}", file=sys.stderr)
+        return EXIT_INPUT
+    _write_json(out / COVERAGE_FILE, cov)
+
+    tol = compare.tolerances(model, settings)
+    report: dict = {
+        "status": "NOT RUN", "model": None, "simulation": {}, "reference": {},
+        "tolerances": [{"name": n, **dataclasses.asdict(getattr(tol, n))} for n in _TOLERANCES],
+        "assumptions": [f"{n}: {getattr(tol, n).value:g} {getattr(tol, n).unit}, "
+                        f"{getattr(tol, n).source}"
+                        for n in _TOLERANCES if getattr(tol, n).declared_default],
+        "variable_map": {}, "signals": [], "criteria": []}
+    sim, vm, input_problem = None, simulate.VariableMap(), None
+    try:
+        choice = simulate.choose_model(out)
+    except simulate.VerifyInputError as exc:
+        input_problem = str(exc)
+        report["simulation"] = {"status": omc.NOT_RUN, "detail": input_problem}
+    else:
+        sim = simulate.run_simulation(settings, choice, out)
+        report["model"] = {"file": str(choice.path), "name": choice.name}
+        report["simulation"] = _simulation_section(sim)
+        vm = simulate.variable_map(model, catalogue, choice.path.read_text(encoding="utf-8"),
+                                   choice.name)
+        report["variable_map"] = {
+            "ports": dict(sorted(vm.ports.items())),
+            "states": {k: dataclasses.asdict(v) for k, v in sorted(vm.states.items())},
+            "notes": vm.notes}
+    try:
+        report["reference"], report["signals"] = _reference_section(model, out, reference, sim,
+                                                                    vm, tol)
+    except simulate.VerifyInputError as exc:
+        print(f"specalive verify: input problem: {exc}", file=sys.stderr)
+        return EXIT_INPUT
+    trace = sim.trace if sim else None
+    criteria = acceptance.evaluate_criteria(
+        model, trace, vm, complete=bool(sim and sim.result.ok),
+        assertion=sim.result.assertion if sim else None,
+        not_run_reason=input_problem or (sim.result.detail if sim and trace is None else None))
+    report["criteria"] = [dataclasses.asdict(c) for c in criteria]
+    sim_status = report["simulation"]["status"]
+    report["status"] = _overall(sim_status, report["signals"], report["criteria"])
+    _write_json(out / VERIFICATION_FILE, report)
+    _print_verification(report, cov, out)
+
+    if input_problem:
+        print(f"specalive verify: input problem: {input_problem}", file=sys.stderr)
+        return EXIT_INPUT
+    if sim_status == omc.NOT_RUN:
+        return EXIT_TOOLCHAIN
+    return EXIT_FAILED if report["status"] == "FAIL" else EXIT_OK
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="specalive",
@@ -322,6 +479,11 @@ def build_parser() -> argparse.ArgumentParser:
             p.add_argument("--text-file", help="extract from this text file instead of evidence")
         if name == "generate":
             p.add_argument("--ir", type=Path, help="ir.json to read (default: <out>/ir.json)")
+        if name == "verify":
+            p.add_argument("--reference", type=Path,
+                           help="reference trace CSV (default: ingestion's reference_data CSV)")
+            p.add_argument("--golden", type=Path,
+                           help="reference IR to score structural coverage against")
         if name in ("generate", "compile"):
             p.add_argument("--only", choices=("sysml", "modelica"),
                            help="run one model only (default: both)")
@@ -360,6 +522,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_generate(args.ir, args.out, args.only)
     if args.command == "compile":
         return cmd_compile(settings, args.out, args.only)
+    if args.command == "verify":
+        return cmd_verify(settings, args.out, args.reference, args.golden)
     return cmd_stub(args.command)
 
 
