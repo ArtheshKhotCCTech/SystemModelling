@@ -1,7 +1,8 @@
 # Purpose: pins the CLI contract — `--help` lists every subcommand (FR-01 acceptance 1), stages
 # not yet delivered are honest stubs that exit non-zero, `ingest` writes evidence.json and exits
 # 2 on a missing input (phase 3), `cache clear` empties the response cache, and `doctor` prints
-# one OK/FAIL line per check, exits non-zero on any FAIL and never prints the API key.
+# one OK/FAIL line per check, exits non-zero on any FAIL and never prints the API key. `extract`
+# (phase 4) is covered by test_extract_stage.py.
 import subprocess
 import sys
 
@@ -12,7 +13,7 @@ from specalive.llm.cache import ResponseCache
 
 SUBCOMMANDS = ["ingest", "extract", "generate", "compile", "verify", "report", "run", "cache",
                "doctor"]
-STUBS = ["extract", "generate", "compile", "verify", "report", "run"]
+STUBS = ["generate", "compile", "verify", "report", "run"]
 
 
 def test_help_lists_every_subcommand(capsys):

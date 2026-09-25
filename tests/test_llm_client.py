@@ -14,6 +14,7 @@ from specalive.llm.cache import ResponseCache
 from specalive.llm.client import (
     LLMClient,
     LLMError,
+    LLMIncomplete,
     OpenAITransport,
     RawResponse,
     strict_json_schema,
@@ -154,6 +155,14 @@ def test_bad_reply_raises_instead_of_returning_partial_object(tmp_path, reply):
         client.complete(prompt="p", input_text="i", schema=Part)
     assert exc.value.request_id == reply.request_id
     assert not list((tmp_path / "cache").glob("*.json"))
+
+
+def test_reply_cut_off_at_the_length_limit_is_its_own_error(tmp_path):
+    reply = RawResponse('{"tag": "T1"', 5, 5, "req_t", "length")
+    with pytest.raises(LLMIncomplete) as exc:
+        make_client(tmp_path, FakeTransport(reply=reply)).complete(prompt="p", input_text="i",
+                                                                    schema=Part)
+    assert isinstance(exc.value, LLMError) and exc.value.request_id == "req_t"
 
 
 def test_logs_tokens_and_estimated_cost(tmp_path, caplog):

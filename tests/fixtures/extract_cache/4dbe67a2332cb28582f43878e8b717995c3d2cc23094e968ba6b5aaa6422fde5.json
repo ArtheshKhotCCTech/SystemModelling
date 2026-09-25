@@ -1,0 +1,153 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [],
+  "parameters": [],
+  "parts": [],
+  "requirements": [
+   {
+    "category": "Safety",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#14",
+    "quote": "Req ID: URS-SAF-002 | Source / Rev: DR-02 | Requirement Text: SHUT shall have higher command priority than STOP; STOP shall have higher priority than START.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-SAF-002",
+    "text": "SHUT shall have higher command priority than STOP; STOP shall have higher priority than START."
+   },
+   {
+    "category": "Safety",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#15",
+    "quote": "Req ID: URS-SAF-003 | Source / Rev: DR-02 | Requirement Text: V1 shall never be commanded open while V2 is open.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-SAF-003",
+    "text": "V1 shall never be commanded open while V2 is open."
+   },
+   {
+    "category": "Safety",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#16",
+    "quote": "Req ID: URS-SAF-004 | Source / Rev: DR-02 | Requirement Text: During normal automatic operation, V2 and V3 shall not be open simultaneously.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-SAF-004",
+    "text": "During normal automatic operation, V2 and V3 shall not be open simultaneously."
+   },
+   {
+    "category": "Safety",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#17",
+    "quote": "Req ID: URS-SAF-005 | Source / Rev: DR-02 | Requirement Text: During SHUT mode, V2 and V3 may be open simultaneously.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-SAF-005",
+    "text": "During SHUT mode, V2 and V3 may be open simultaneously."
+   },
+   {
+    "category": "Performance",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#18",
+    "quote": "Req ID: URS-PER-001 | Source / Rev: URS-001 Rev A | Requirement Text: Tank 1 high-level setpoint shall be 0.78 m.",
+    "status": "superseded",
+    "superseded_by": "CR-004",
+    "tag": "URS-PER-001",
+    "text": "Tank 1 high-level setpoint shall be 0.78 m."
+   },
+   {
+    "category": "Performance",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#19",
+    "quote": "Req ID: URS-PER-002 | Source / Rev: CR-004 | Requirement Text: Tank 1 high-level setpoint shall be 0.80 m.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-PER-002",
+    "text": "Tank 1 high-level setpoint shall be 0.80 m."
+   },
+   {
+    "category": "Performance",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#20",
+    "quote": "Req ID: URS-PER-003 | Source / Rev: URS-001 Rev A | Requirement Text: Tank 1 low-level setpoint shall be 0.05 m.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-PER-003",
+    "text": "Tank 1 low-level setpoint shall be 0.05 m."
+   },
+   {
+    "category": "Performance",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#21",
+    "quote": "Req ID: URS-PER-004 | Source / Rev: URS-001 Rev A | Requirement Text: Tank 2 low-level setpoint shall be 0.05 m.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-PER-004",
+    "text": "Tank 2 low-level setpoint shall be 0.05 m."
+   },
+   {
+    "category": "Timing",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#22",
+    "quote": "Req ID: URS-PER-005 | Source / Rev: CR-004 | Requirement Text: The post-transfer waiting time shall be 12 s.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-PER-005",
+    "text": "The post-transfer waiting time shall be 12 s."
+   },
+   {
+    "category": "Timing",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#23",
+    "quote": "Req ID: URS-PER-006 | Source / Rev: CR-004 | Requirement Text: The inter-cycle waiting time after Tank 2 reaches low level shall be 8 s.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-PER-006",
+    "text": "The inter-cycle waiting time after Tank 2 reaches low level shall be 8 s."
+   },
+   {
+    "category": "Interface",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#24",
+    "quote": "Req ID: URS-INT-001 | Source / Rev: ICD-01 | Requirement Text: The controller shall receive two analog level measurements designated LT-101 and LT-102.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-INT-001",
+    "text": "The controller shall receive two analog level measurements designated LT-101 and LT-102."
+   },
+   {
+    "category": "Interface",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#25",
+    "quote": "Req ID: URS-INT-002 | Source / Rev: ICD-01 | Requirement Text: The controller shall receive momentary START, STOP and SHUT digital commands.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-INT-002",
+    "text": "The controller shall receive momentary START, STOP and SHUT digital commands."
+   },
+   {
+    "category": "Interface",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#26",
+    "quote": "Req ID: URS-INT-003 | Source / Rev: ICD-01 | Requirement Text: The controller shall provide three discrete valve-open commands to XV-101, XV-102 and XV-103.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-INT-003",
+    "text": "The controller shall provide three discrete valve-open commands to XV-101, XV-102 and XV-103."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#27",
+    "quote": "Req ID: URS-CTL-001 | Source / Rev: DR-02 | Requirement Text: A STOP command received during a wait state shall freeze the wait timer rather than restart it.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-CTL-001",
+    "text": "A STOP command received during a wait state shall freeze the wait timer rather than restart it."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#28",
+    "quote": "Req ID: URS-CTL-002 | Source / Rev: DR-02 | Requirement Text: START commands received while already running shall be ignored.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-CTL-002",
+    "text": "START commands received while already running shall be ignored."
+   }
+  ],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

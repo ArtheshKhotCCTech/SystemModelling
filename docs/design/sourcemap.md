@@ -22,7 +22,7 @@
 | `pyproject.toml` | 1 | Package metadata, runtime and `[dev]` dependencies, the `specalive` console script. |
 | `specalive/__init__.py` | 1 | Package marker and `__version__`. |
 | `specalive/config.py` | 1, 3 | Every setting in one immutable `Settings` built by `load_settings()`: model name, cache directory, omc path and MSL version, SysML validator folder and Java path, timeouts, repair attempt limit, token prices, the vision switch (3), API key (hidden from repr). The only module that reads environment variables. |
-| `specalive/cli.py` | 1, 3, 9 | Command-line entry point. Phase 1: argparse subcommands with the stages stubbed, `cache clear`, and `doctor` (four OK/FAIL toolchain checks). Phase 3: `ingest` writes `evidence.json`, lists every source not fully read, exits 2 on an input problem. Phase 9 wires the real pipeline, progress output and graceful failure. |
+| `specalive/cli.py` | 1, 3, 4, 9 | Command-line entry point. Phase 1: argparse subcommands with the stages stubbed, `cache clear`, and `doctor` (four OK/FAIL toolchain checks). Phase 3: `ingest` writes `evidence.json`, lists every source not fully read, exits 2 on an input problem. Phase 4: `extract` (`-i`, `--text`, `--text-file`) writes `ir.json` and `extract_report.json`, exits 2 on an input problem and 3 on an LLM problem. Phase 9 wires the real pipeline, progress output and graceful failure. |
 | `DECISIONS.md` | 1 | Daily decision log, written by the team. Phase 1 creates the header only. |
 | `AI-LOG.md` | 1 | Where AI output was overridden or discarded, written by the team. Phase 1 creates the header only. |
 | `README.md` | 1, 9 | Setup, the `run` command, **the command that compiles the committed model**, output layout. Phase 9 completes it. |
@@ -69,11 +69,13 @@
 ### `extract/` — evidence to IR
 | Source File | Phase | Purpose |
 |---|---|---|
-| `specalive/extract/extract.py` | 4 | LLM passes over evidence producing IR fragments, each with its supporting quote. |
-| `specalive/extract/merge.py` | 4 | Entity resolution: unifies aliases (tag, short name, legacy name) into one element per real component. |
-| `specalive/extract/precedence.py` | 4 | Ranks competing values by source authority, keeps the winner, records every loser as a Conflict; unrankable conflicts become Questions. |
-| `specalive/extract/gaps.py` | 4 | Assumptions for implicit conventions and missing values, and the honesty gate that rejects untraced elements. |
-| `specalive/extract/text_input.py` | 4 | Plain-text input path: a pasted paragraph becomes a one-chunk evidence bundle. |
+| `specalive/extract/__init__.py` | 4 | Layer marker for the extract layer. |
+| `specalive/extract/fragments.py` | 4 | The LLM's structured-output schemas (part, connection, parameter, requirement, criterion, document, alias and assumption fragments; the behaviour reply), each with chunk id and verbatim quote; `Found` (a verified fragment with its location and chunk role), `Draft` (the IR under construction), `ExtractReport`, and `name_key`. |
+| `specalive/extract/extract.py` | 4 | The stage: per-source structure passes in a fixed role order over size-capped batches, a glossary handed to later passes, verbatim quote checking (unverified fragments discarded and counted), a behaviour pass per controller validated item by item against the IR expression language, then merge, precedence, gaps and the honesty gate; `run_extract`, `extract_text`, `write_ir`. |
+| `specalive/extract/merge.py` | 4 | Entity resolution: union-find over name keys (same tag, names given together, alias tables), look-alike names merged only with an Assumption; deterministic part ids, catalogue ports, aliases and trace union; connections resolved through aliases, controller ports made from them; evidence to IR source mapping. |
+| `specalive/extract/precedence.py` | 4 | The ADR ladder by source role (a register row takes its cited record's rank); evidence status columns first, approval over recency, later date within a rank; winner effective, losers superseded, a Conflict naming every candidate; configuration variants kept without conflict; ties and provisional winners become Questions; document registry and cited-record sources. |
+| `specalive/extract/gaps.py` | 4 | Explicit convention rules and catalogue defaults, each with a declared Assumption; Questions for required values with no default; source-stated simplifications as traced Assumptions; missing documents; the honesty gate that removes untraced elements, cascading, and never adds a trace. |
+| `specalive/extract/text_input.py` | 4 | Plain-text input path: a paragraph or text file becomes a one-source `requirement_spec` evidence bundle chunked like the text reader, then runs through the same extraction. |
 | `specalive/extract/questions.py` | 4 (stretch) | Interactive clarifying questions; answers are recorded as evidence with their own trace. |
 
 ### `generate/` — IR to models (no LLM)
@@ -120,10 +122,11 @@
 |---|---|---|
 | `tests/fixtures/probe.sysml` | 1 | Minimal SysML v2 model (part, port, connection, attribute with unit, state machine) that `specalive doctor` validates to prove the toolchain. |
 | `tests/fixtures/ingest/two_pages.pdf`, `corrupt.pdf` | 3 | A minimal two-page PDF with a text layer, and a broken one, for the PDF reader and the unread path. |
+| `tests/fixtures/extract_cache/*` | 4 | Recorded LLM responses for the L1 bundle and the adversarial text spec, so FR-04 acceptance runs offline. Re-recorded, never hand-edited, after a prompt change. |
 | `tests/fixtures/sysml/*` | 5 | One minimal validated example per SysML construct the templates use (`R-SYS-5`). |
 | `tests/goldens/L1_tank.ir.json` | 2 | Hand-written reference IR for L1. Fixture for the generators and the reference for coverage. Never read by `specalive/`. |
 | `tests/goldens/L2_co2.ir.json` | 10 | Hand-written reference IR for L2. |
-| `tests/adversarial/*` | 9 | Unseen specs for generalisation and graceful-failure testing. |
+| `tests/adversarial/*` | 4, 9 | Unseen specs for generalisation and graceful-failure testing. Phase 4 adds `one_paragraph_spec.txt` (FR-04 acceptance 6); phase 9 completes the set. |
 | `tests/test_*.py` | each | Unit tests for the phase's modules. |
 | `tests/test_config.py` | 1 | Settings defaults, environment overrides, bad values, immutability, key never in repr. |
 | `tests/test_llm_cache.py` | 1 | Cache key components (R-FND-5), round trip, corrupt entries, clear. |
@@ -140,3 +143,11 @@
 | `tests/test_ingest_pipeline.py` | 3 | Scratch bundles: every file a Source, deterministic ids and order, corrupt file isolated, byte-identical `evidence.json`, evidence model validation. |
 | `tests/test_ingest_bundles.py` | 3 | FR-03 acceptance 1-5 on the four `Testcases/` bundles. |
 | `tests/test_golden_l1.py` | 2 | FR-02 acceptance 1–5 on the L1 golden IR, its effective values, states, criteria and conflicts, and verbatim plain-text quotes. |
+| `tests/_extract_support.py` | 4 | Shared phase 4 test builders: small evidence bundles, `Found` fragments without an LLM, and `FakeLLM`, which serves canned replies by schema and records its calls. |
+| `tests/test_extract_passes.py` | 4 | Chunk ids, fixed pass order, batching, quote verification (acceptance 8), chunk roles, catalogue in the prompt, the glossary, and the behaviour pass discarding invalid items. |
+| `tests/test_extract_merge.py` | 4 | Alias unification, look-alike merges only with an Assumption, unknown kinds as Questions, kind conflicts, catalogue and controller ports, connection resolution, IR source mapping. |
+| `tests/test_extract_precedence.py` | 4 | The ladder, cited-record ranks, evidence status first, approval over recency, losers kept and named, variants, ties and provisional values as Questions, units and value parsing, requirements. |
+| `tests/test_extract_gaps.py` | 4 | Catalogue defaults with assumptions, Questions for missing required values, conventions, stated assumptions, missing documents, the honesty gate. |
+| `tests/test_extract_text.py` | 4 | Plain text as a one-source bundle through the same extraction path. |
+| `tests/test_extract_stage.py` | 4 | `run_extract` on a scratch bundle, byte-identical `ir.json` (acceptance 7), and the `extract` CLI contract and exit codes. |
+| `tests/test_extract_l1.py` | 4 | FR-04 acceptance 1-7 on L1 and the text spec from recorded responses, including coverage against the golden IR. |

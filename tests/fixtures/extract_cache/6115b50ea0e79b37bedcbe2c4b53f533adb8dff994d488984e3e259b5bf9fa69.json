@@ -1,0 +1,272 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "TK-101",
+     "tank1",
+     "T1"
+    ],
+    "quote": "TK-101 [tank] aka tank1, T1"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "TK-102",
+     "tank2",
+     "T2"
+    ],
+    "quote": "TK-102 [tank] aka tank2, T2"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "XV-101",
+     "valve1",
+     "V1"
+    ],
+    "quote": "XV-101 [on_off_valve] aka valve1, V1"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "XV-102",
+     "valve2",
+     "V2"
+    ],
+    "quote": "XV-102 [on_off_valve] aka valve2, V2"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "XV-103",
+     "valve3",
+     "V3"
+    ],
+    "quote": "XV-103 [on_off_valve] aka valve3, V3"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "LT-101",
+     "level1"
+    ],
+    "quote": "LT-101 [level_sensor] aka level1"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "LT-102",
+     "level2"
+    ],
+    "quote": "LT-102 [level_sensor] aka level2"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "PB-START",
+     "start"
+    ],
+    "quote": "PB-START [command_button] aka start"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "PB-STOP",
+     "stop"
+    ],
+    "quote": "PB-STOP [command_button] aka stop"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "PB-SHUT",
+     "shut"
+    ],
+    "quote": "PB-SHUT [command_button] aka shut"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "PLC-101",
+     "tankController"
+    ],
+    "quote": "PLC-101 [sequence_controller] aka tankController"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "SRC-101",
+     "source"
+    ],
+    "quote": "SRC-101 [fluid_source] aka source"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#0",
+    "names": [
+     "DRN-101",
+     "ambient1"
+    ],
+    "quote": "DRN-101 [fluid_sink] aka ambient1"
+   }
+  ],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_04_design_notes_04_control_logic_design_notes_docx#9",
+   "src_04_design_notes_04_control_logic_design_notes_docx#10",
+   "src_04_design_notes_04_control_logic_design_notes_docx#11",
+   "src_04_design_notes_04_control_logic_design_notes_docx#12",
+   "src_04_design_notes_04_control_logic_design_notes_docx#13",
+   "src_04_design_notes_04_control_logic_design_notes_docx#14",
+   "src_04_design_notes_04_control_logic_design_notes_docx#15",
+   "src_04_design_notes_04_control_logic_design_notes_docx#16",
+   "src_04_design_notes_04_control_logic_design_notes_docx#17",
+   "src_04_design_notes_04_control_logic_design_notes_docx#18",
+   "src_04_design_notes_04_control_logic_design_notes_docx#19",
+   "src_04_design_notes_04_control_logic_design_notes_docx#20",
+   "src_04_design_notes_04_control_logic_design_notes_docx#21",
+   "src_04_design_notes_04_control_logic_design_notes_docx#22",
+   "src_04_design_notes_04_control_logic_design_notes_docx#24",
+   "src_04_design_notes_04_control_logic_design_notes_docx#26",
+   "src_04_design_notes_04_control_logic_design_notes_docx#27",
+   "src_04_design_notes_04_control_logic_design_notes_docx#28",
+   "src_04_design_notes_04_control_logic_design_notes_docx#29",
+   "src_04_design_notes_04_control_logic_design_notes_docx#30",
+   "src_04_design_notes_04_control_logic_design_notes_docx#32",
+   "src_04_design_notes_04_control_logic_design_notes_docx#33",
+   "src_04_design_notes_04_control_logic_design_notes_docx#34"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#1",
+    "date": "2026-02-20",
+    "file_name": null,
+    "quote": "Document: CDS-02",
+    "revision": "B",
+    "role": "design_note",
+    "tag": "CDS-02",
+    "title": "CONTROL LOGIC DESIGN NOTE Two-Tank Fill/Transfer/Drain Controller"
+   }
+  ],
+  "parameters": [],
+  "parts": [
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#9",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "State: IDLE | Valve Command Pattern (V1,V2,V3): 0,0,0",
+    "tag": "PLC-101"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#10",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "State: FILL_T1 | Valve Command Pattern (V1,V2,V3): 1,0,0",
+    "tag": "PLC-101"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#11",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "State: WAIT_AFTER_FILL | Valve Command Pattern (V1,V2,V3): 0,0,0",
+    "tag": "PLC-101"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#12",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "State: TRANSFER_T1_T2 | Valve Command Pattern (V1,V2,V3): 0,1,0",
+    "tag": "PLC-101"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#13",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "State: WAIT_AFTER_TRANSFER | Valve Command Pattern (V1,V2,V3): 0,0,0",
+    "tag": "PLC-101"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#14",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "State: DRAIN_T2 | Valve Command Pattern (V1,V2,V3): 0,0,1",
+    "tag": "PLC-101"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#15",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "State: WAIT_AFTER_DRAIN | Valve Command Pattern (V1,V2,V3): 0,0,0",
+    "tag": "PLC-101"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#16",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "State: PAUSED | Valve Command Pattern (V1,V2,V3): 0,0,0",
+    "tag": "PLC-101"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#17",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "State: SHUTDOWN | Valve Command Pattern (V1,V2,V3): 0,1,1",
+    "tag": "PLC-101"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

@@ -1,0 +1,231 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [
+   {
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#1",
+    "from_role": "outlet",
+    "from_tag": "SRC-101",
+    "medium_or_signal": "liquid",
+    "quote": "SRC --> V1 : liquid",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "inlet",
+    "to_tag": "XV-101"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#1",
+    "from_role": "outlet",
+    "from_tag": "XV-101",
+    "medium_or_signal": "liquid",
+    "quote": "V1 --> T1 : liquid",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "inlet",
+    "to_tag": "TK-101"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#1",
+    "from_role": "outlet",
+    "from_tag": "TK-101",
+    "medium_or_signal": "liquid",
+    "quote": "T1 --> V2 : liquid",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "inlet",
+    "to_tag": "XV-102"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#1",
+    "from_role": "outlet",
+    "from_tag": "XV-102",
+    "medium_or_signal": "liquid",
+    "quote": "V2 --> T2 : liquid",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "inlet",
+    "to_tag": "TK-102"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#1",
+    "from_role": "outlet",
+    "from_tag": "TK-102",
+    "medium_or_signal": "liquid",
+    "quote": "T2 --> V3 : liquid",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "inlet",
+    "to_tag": "XV-103"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#1",
+    "from_role": "outlet",
+    "from_tag": "XV-103",
+    "medium_or_signal": "liquid",
+    "quote": "V3 --> DRN : liquid",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "inlet",
+    "to_tag": "DRN-101"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#1",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "signal_bool",
+    "quote": "PLC ..> V1 : valve1",
+    "signal_name": "valve1",
+    "tag": null,
+    "to_role": "cmd_in",
+    "to_tag": "XV-101"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#1",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "signal_bool",
+    "quote": "PLC ..> V2 : valve2",
+    "signal_name": "valve2",
+    "tag": null,
+    "to_role": "cmd_in",
+    "to_tag": "XV-102"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#1",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "signal_bool",
+    "quote": "PLC ..> V3 : valve3",
+    "signal_name": "valve3",
+    "tag": null,
+    "to_role": "cmd_in",
+    "to_tag": "XV-103"
+   }
+  ],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#0",
+    "date": "2026-01-28",
+    "file_name": null,
+    "quote": "@startuml\n' Synthetic legacy architecture draft - intentionally incomplete",
+    "revision": "Draft",
+    "role": "legacy_architecture",
+    "tag": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml",
+    "title": null
+   }
+  ],
+  "parameters": [],
+  "parts": [
+   {
+    "aliases": [
+     "tank1",
+     "T1"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#0",
+    "description": null,
+    "kind": "tank",
+    "name": null,
+    "quote": "component \"tank1\n(TK-101)\" as T1",
+    "tag": "TK-101"
+   },
+   {
+    "aliases": [
+     "tank2",
+     "T2"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#0",
+    "description": null,
+    "kind": "tank",
+    "name": null,
+    "quote": "component \"tank2\n(TK-102)\" as T2",
+    "tag": "TK-102"
+   },
+   {
+    "aliases": [
+     "valve1",
+     "V1"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#0",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "component \"valve1\n(XV-101)\" as V1",
+    "tag": "XV-101"
+   },
+   {
+    "aliases": [
+     "valve2",
+     "V2"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#0",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "component \"valve2\n(XV-102)\" as V2",
+    "tag": "XV-102"
+   },
+   {
+    "aliases": [
+     "valve3",
+     "V3"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#0",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "component \"valve3\n(XV-103)\" as V3",
+    "tag": "XV-103"
+   },
+   {
+    "aliases": [
+     "source"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#0",
+    "description": null,
+    "kind": "fluid_source",
+    "name": null,
+    "quote": "component \"source\n(SRC-101)\" as SRC",
+    "tag": "SRC-101"
+   },
+   {
+    "aliases": [
+     "ambient1"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#0",
+    "description": null,
+    "kind": "fluid_sink",
+    "name": null,
+    "quote": "component \"ambient1\n(DRN-101)\" as DRN",
+    "tag": "DRN-101"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_11_partial_legacy_architecture_puml#0",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "component \"tankController\n(PLC-101)\" as PLC",
+    "tag": "PLC-101"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

@@ -2,8 +2,9 @@
 # plus `run`, `cache clear` and `doctor`); the stage commands are stubs until their phases land.
 # `doctor` proves the toolchain — Python, omc + MSL, the SysML v2 validator, the OpenAI API — and
 # must pass before any modelling phase starts (R-FND-1). `ingest` (phase 3) reads a bundle into
-# evidence.json and lists every file it could not fully read. Top of the layer stack; nothing
-# imports it.
+# evidence.json and lists every file it could not fully read. `extract` (phase 4) turns
+# evidence.json, or plain text, into ir.json and extract_report.json. Top of the layer stack;
+# nothing imports it.
 from __future__ import annotations
 
 import argparse
@@ -18,7 +19,17 @@ from pydantic import BaseModel
 
 from specalive import __version__
 from specalive.config import ConfigError, Settings, load_settings
-from specalive.ingest.ingest import InputNotFound, ingest, write_evidence
+from specalive.extract.extract import (
+    EvidenceError,
+    ExtractError,
+    load_evidence,
+    run_extract,
+    write_ir,
+    write_report,
+)
+from specalive.extract.text_input import text_bundle
+from specalive.ingest.evidence import EvidenceBundle
+from specalive.ingest.ingest import EVIDENCE_FILE, InputNotFound, ingest, write_evidence
 from specalive.llm.cache import ResponseCache
 from specalive.llm.client import LLMClient, LLMError
 from specalive.toolchain import omc, sysml_validate
@@ -134,6 +145,63 @@ def cmd_ingest(settings: Settings, bundle: str | None, out: Path | None) -> int:
     return EXIT_OK
 
 
+def _extract_input(evidence: Path | None, text: str | None, text_file: str | None,
+                   out: Path | None) -> tuple[EvidenceBundle, Path] | str:
+    """The evidence to extract from and the output folder, or the input problem."""
+    if text is not None or text_file is not None:
+        name = "text"
+        if text_file is not None:
+            try:
+                text = Path(text_file).read_text(encoding="utf-8")
+            except OSError as exc:
+                return f"cannot read {text_file}: {exc.strerror or exc}"
+            name = Path(text_file).name
+        if not (text or "").strip():
+            return "the text is empty"
+        return text_bundle(text or "", name), out or Path("out") / (Path(name).stem or "text")
+    if out is None:
+        out = evidence.parent if evidence is not None else Path("out") / "run"
+    try:
+        bundle = load_evidence(evidence or out / EVIDENCE_FILE)
+    except EvidenceError as exc:
+        return str(exc)
+    if not bundle.chunks:
+        return "the evidence holds nothing that could be read"
+    return bundle, out
+
+
+def cmd_extract(settings: Settings, evidence: Path | None, text: str | None,
+                text_file: str | None, out: Path | None) -> int:
+    got = _extract_input(evidence, text, text_file, out)
+    if isinstance(got, str):
+        print(f"specalive extract: input problem: {got}", file=sys.stderr)
+        return EXIT_INPUT
+    bundle, out = got
+    try:
+        result = run_extract(bundle, LLMClient(settings))
+    except LLMError as exc:
+        print(f"specalive extract: infrastructure problem: {_redact(str(exc), settings)}",
+              file=sys.stderr)
+        return EXIT_TOOLCHAIN
+    except ExtractError as exc:
+        write_report(exc.report, out)
+        print(f"specalive extract: the extracted IR failed its integrity check: {exc}",
+              file=sys.stderr)
+        return EXIT_FAILED
+    target = write_ir(result, out)
+    m, r = result.model, result.report
+    print(f"{len(m.parts)} part(s), {len(m.connections)} connection(s), "
+          f"{len(m.parameters)} parameter(s), {len(m.state_machines)} state machine(s), "
+          f"{len(m.requirements)} requirement(s)")
+    print(f"{len(m.conflicts)} conflict(s), {len(m.questions)} question(s), "
+          f"{len(m.assumptions)} assumption(s)")
+    print(f"{len(r.discarded_fragments)} fragment(s) discarded, {len(r.unresolved)} unresolved, "
+          f"{len(r.rejected_untraced)} element(s) rejected as untraced, "
+          f"{len(r.missing_information)} missing-information item(s)")
+    print(f"wrote {target}")
+    return EXIT_OK
+
+
 def cmd_stub(name: str) -> int:
     print(f"specalive {name}: not implemented in this phase", file=sys.stderr)
     return EXIT_FAILED
@@ -150,6 +218,11 @@ def build_parser() -> argparse.ArgumentParser:
         if name in STAGE_INPUT:
             p.add_argument(STAGE_INPUT[name], nargs="?")
         p.add_argument("-o", "--out", type=Path, help="run output folder")
+        if name == "extract":
+            p.add_argument("-i", "--input", type=Path,
+                           help="evidence.json to read (default: <out>/evidence.json)")
+            p.add_argument("--text", help="extract from this paragraph instead of evidence")
+            p.add_argument("--text-file", help="extract from this text file instead of evidence")
     cache = sub.add_parser("cache", help="manage the LLM response cache")
     cache_sub = cache.add_subparsers(dest="cache_command", required=True, metavar="<action>")
     cache_sub.add_parser("clear", help="delete every cached LLM response")
@@ -179,6 +252,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_cache_clear(settings)
     if args.command == "ingest":
         return cmd_ingest(settings, args.bundle, args.out)
+    if args.command == "extract":
+        return cmd_extract(settings, args.input, args.text, args.text_file, args.out)
     return cmd_stub(args.command)
 
 

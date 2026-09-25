@@ -1,0 +1,144 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [
+   {
+    "affects_tags": [
+     "XV-101",
+     "XV-102",
+     "XV-103"
+    ],
+    "chunk_id": "src_07_datasheets_08_valve_datasheet_pdf#3",
+    "quote": "For the hackathon simulation the dynamic valve stroke is neglected and each valve is treated as an ideal Boolean flow switch.",
+    "text": "The dynamic valve stroke is neglected and each valve is treated as an ideal Boolean flow switch."
+   }
+  ],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_07_datasheets_08_valve_datasheet_pdf#0",
+    "date": "2026-02-05",
+    "file_name": null,
+    "quote": "Supplier document\nVD-VXS24\nRevision\nB\nDate\n05 Feb 2026",
+    "revision": "B",
+    "role": "datasheet",
+    "tag": "VD-VXS24",
+    "title": "07_datasheets/08_valve_datasheet.pdf"
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_07_datasheets_08_valve_datasheet_pdf#1",
+    "cited_document": "VD-VXS24",
+    "configuration": "nominal",
+    "name": "nominal_flow",
+    "owner_tag": "XV-101",
+    "provisional": false,
+    "quote": "Nominal demo flow coefficient equivalent\n0.0060 m^3/s",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.0060"
+   },
+   {
+    "chunk_id": "src_07_datasheets_08_valve_datasheet_pdf#1",
+    "cited_document": "VD-VXS24",
+    "configuration": "nominal",
+    "name": "nominal_flow",
+    "owner_tag": "XV-102",
+    "provisional": false,
+    "quote": "Nominal demo flow coefficient equivalent\n0.0045 m^3/s",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.0045"
+   },
+   {
+    "chunk_id": "src_07_datasheets_08_valve_datasheet_pdf#1",
+    "cited_document": "VD-VXS24",
+    "configuration": "nominal",
+    "name": "nominal_flow",
+    "owner_tag": "XV-103",
+    "provisional": false,
+    "quote": "Nominal demo flow coefficient equivalent\n0.0050 m^3/s",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.0050"
+   }
+  ],
+  "parts": [
+   {
+    "aliases": [
+     "valve1",
+     "V1"
+    ],
+    "attributes": [
+     {
+      "key": "project_service",
+      "value": "Feed to Tank 1"
+     },
+     {
+      "key": "de-energized_position",
+      "value": "Closed"
+     }
+    ],
+    "chunk_id": "src_07_datasheets_08_valve_datasheet_pdf#1",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "Synthetic VXS-24 spring-return, two-position liquid isolation valve with 24 VDC actuator. Project tags XV-101, XV-102 and XV-103 use this family.",
+    "tag": "XV-101"
+   },
+   {
+    "aliases": [
+     "valve2",
+     "V2"
+    ],
+    "attributes": [
+     {
+      "key": "project_service",
+      "value": "Tank 1 transfer"
+     },
+     {
+      "key": "de-energized_position",
+      "value": "Closed"
+     }
+    ],
+    "chunk_id": "src_07_datasheets_08_valve_datasheet_pdf#1",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "Synthetic VXS-24 spring-return, two-position liquid isolation valve with 24 VDC actuator. Project tags XV-101, XV-102 and XV-103 use this family.",
+    "tag": "XV-102"
+   },
+   {
+    "aliases": [
+     "valve3",
+     "V3"
+    ],
+    "attributes": [
+     {
+      "key": "project_service",
+      "value": "Tank 2 drain"
+     },
+     {
+      "key": "de-energized_position",
+      "value": "Closed"
+     }
+    ],
+    "chunk_id": "src_07_datasheets_08_valve_datasheet_pdf#1",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "Synthetic VXS-24 spring-return, two-position liquid isolation valve with 24 VDC actuator. Project tags XV-101, XV-102 and XV-103 use this family.",
+    "tag": "XV-103"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

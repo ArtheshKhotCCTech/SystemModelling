@@ -1,6 +1,7 @@
 # Purpose: the one way SpecAlive calls an LLM. complete() takes a Pydantic model as the response
 # schema, sends it as an OpenAI strict structured output at temperature 0, and returns a validated
-# instance — or raises LLMError with the request id, never a partial object. An optional image
+# instance — or raises LLMError with the request id, never a partial object (LLMIncomplete when
+# the reply hit the output length limit, so a caller can retry with less input). An optional image
 # goes beside the text as a data URL, and its hash joins the cache key. Every result is
 # cached on disk (llm/cache.py), so a repeat call makes no network request; tokens and estimated
 # cost are logged per call. `openai` is imported lazily so importing this module needs no key.
@@ -31,6 +32,10 @@ class LLMError(Exception):
     def __init__(self, message: str, request_id: str | None = None) -> None:
         super().__init__(message if request_id is None else f"{message} (request_id={request_id})")
         self.request_id = request_id
+
+
+class LLMIncomplete(LLMError):
+    """The reply stopped at the output length limit; a smaller request may succeed."""
 
 
 @dataclass(frozen=True)
@@ -165,6 +170,8 @@ class LLMClient:
     def _validate(self, raw: RawResponse, schema: type[M]) -> M:
         if raw.refusal:
             raise LLMError(f"model refused: {raw.refusal}", raw.request_id)
+        if raw.finish_reason == "length":
+            raise LLMIncomplete("incomplete reply (finish_reason=length)", raw.request_id)
         if raw.finish_reason != "stop":
             raise LLMError(f"incomplete reply (finish_reason={raw.finish_reason})", raw.request_id)
         if raw.content is None:
