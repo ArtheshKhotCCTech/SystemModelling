@@ -6,6 +6,8 @@
 # model.sysml and `compile --only sysml` writes sysml_validation.json, with FR-09 exit codes.
 # Phase 6: `generate` writes model.mo, and `compile` runs the Modelica compile-and-repair loop.
 # Phase 7: `verify` writes sim/result.csv, verification.json and coverage.json, with its exit codes.
+# Phase 8: `report --run` writes the four reports and the plots; a missing artefact makes its
+# section NOT RUN (FR-08 acceptance 1, 3, 4, with the real toolchain for acceptance 1).
 import json
 import subprocess
 import sys
@@ -20,7 +22,7 @@ from specalive.toolchain.process import ToolResult
 
 SUBCOMMANDS = ["ingest", "extract", "generate", "compile", "verify", "report", "run", "cache",
                "doctor"]
-STUBS = ["report", "run"]
+STUBS = ["run"]
 GOLDEN = Path(__file__).parent / "goldens" / "L1_tank.ir.json"
 
 
@@ -405,3 +407,81 @@ def test_acceptance_2_l1_golden_model_against_tp17_and_the_reference_trace(tmp_p
     assert state["numbers"]["max_time_error"] <= 2.0
     assert signals["wait_remaining_s"]["status"] == "NOT COMPARED"
     assert code == cli.EXIT_OK
+
+
+# --- report (phase 8) ------------------------------------------------------------------------
+
+REPORTS = ("summary.md", "traceability.md", "assumptions.md", "correspondence.md")
+
+
+def test_report_writes_every_report_and_the_plots(tmp_path, monkeypatch, capsys):
+    from tests._report_support import build_run
+
+    run = build_run(tmp_path / "run", monkeypatch)
+    capsys.readouterr()
+    assert cli.main(["report", "--run", str(run)]) == cli.EXIT_OK
+    for name in REPORTS:
+        assert (run / "report" / name).is_file()
+    assert sorted(p.name for p in (run / "report" / "plots").glob("*.png"))
+    out = capsys.readouterr().out
+    assert "summary.md" in out and "0 MISSING" in out
+
+
+def test_report_accepts_out_as_the_run_folder(tmp_path):
+    from tests._report_support import build_run
+
+    run = build_run(tmp_path / "run")
+    assert cli.main(["report", "-o", str(run)]) == cli.EXIT_OK
+    assert (run / "report" / "summary.md").is_file()
+
+
+def test_report_without_a_run_folder_is_an_input_problem(tmp_path, capsys):
+    assert cli.main(["report", "--run", str(tmp_path / "none")]) == cli.EXIT_INPUT
+    assert "none" in capsys.readouterr().err
+
+
+def test_acceptance_4_deleted_verification_reads_not_run(tmp_path, monkeypatch):
+    from tests._report_support import build_run
+
+    run = build_run(tmp_path / "run", monkeypatch)
+    (run / "verification.json").unlink()
+    assert cli.main(["report", "--run", str(run)]) == cli.EXIT_OK
+    text = (run / "report" / "summary.md").read_text(encoding="utf-8")
+    assert "- Simulates: NOT RUN — verification.json not found" in text
+    assert "Plots: NOT RUN — " in text
+
+
+def test_report_is_deterministic(tmp_path, monkeypatch):
+    from tests._report_support import build_run
+
+    run = build_run(tmp_path / "run", monkeypatch)
+    cli.main(["report", "--run", str(run)])
+    first = {n: (run / "report" / n).read_bytes() for n in REPORTS}
+    cli.main(["report", "--run", str(run)])
+    assert {n: (run / "report" / n).read_bytes() for n in REPORTS} == first
+
+
+@pytest.mark.slow
+@pytest.mark.skipif(L1_BUNDLE is None, reason="Testcases/ L1 bundle not present")
+def test_acceptance_1_l1_golden_run_through_the_real_toolchain(tmp_path):
+    from specalive.config import load_settings
+    from specalive.toolchain import omc
+
+    if not omc.version(load_settings()).ok:
+        pytest.skip("omc not installed or not on PATH/SPECALIVE_OMC")
+    run = tmp_path / "run"
+    run.mkdir()
+    (run / "ir.json").write_text(GOLDEN.read_text(encoding="utf-8"), encoding="utf-8")
+    assert cli.main(["generate", "-o", str(run)]) == cli.EXIT_OK
+    assert cli.main(["compile", "--only", "modelica", "-o", str(run)]) == cli.EXIT_OK
+    reference = L1_BUNDLE / "09_datasets" / "10_demo_run_900s.csv"
+    assert cli.main(["verify", "-o", str(run), "--reference", str(reference)]) == cli.EXIT_OK
+    assert cli.main(["report", "--run", str(run)]) == cli.EXIT_OK
+    for name in REPORTS:
+        assert (run / "report" / name).is_file()
+    plots = sorted(p.name for p in (run / "report" / "plots").glob("*.png"))
+    assert "state_plc_101_sequence.png" in plots and "continuous_m.png" in plots
+    summary = (run / "report" / "summary.md").read_text(encoding="utf-8")
+    assert len(summary.splitlines()) <= 60 and "omc" in summary
+    correspondence = (run / "report" / "correspondence.md").read_text(encoding="utf-8")
+    assert "| MISSING" not in correspondence

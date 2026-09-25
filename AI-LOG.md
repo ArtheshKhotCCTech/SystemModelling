@@ -188,3 +188,54 @@ Format: `A<n> | what the AI produced | what we did instead | why`
 
 34. **FR-07 named an MSL example already known to fail** (see D55). Record this here only if the
     spec text was AI-drafted; otherwise it belongs in `DECISIONS.md` alone.
+
+35. **The AI's first correspondence rules called three superseded requirements MISSING.**
+    - Its N/A rules assumed every requirement appears in SysML. The SysML generator emits
+      only active ones (`urs_fun_006`, `urs_fun_008`, `urs_per_001` are superseded).
+    - Caught by the test written first: golden L1 must have no MISSING rows (acceptance 3).
+    - Fix: D72. The rule was learned from the generator's behaviour, not from a spec. Check
+      that Track B agrees it is intended, not a gap.
+
+36. **The AI wrote case-specific values into the package again (see A32).**
+    - A docstring in `report/summary.py` used the L1 conflict,
+      "TK-101 high_level: 0.80 m (CR-004 Rev 1) over 0.78 m", as its example.
+    - A purpose comment said "(task B6)", which matches the FR-11 pattern `B[1-7]\b`.
+    - Caught by the FR-11 grep during review, before hand-off. Replaced with a neutral template
+      and "FR-08 req 4".
+    - Second phase running with the same mistake. The grep works, but this is worth a working
+      rule: no worked examples from test cases in package docstrings.
+
+37. **The plan said "matplotlib 3.10.3 is installed". It was not, in the project's
+    environment.**
+    - The AI had checked with the `python` on PATH, which is 3.13. The project `.venv` is 3.12
+      and had no matplotlib.
+    - The same mistake made the first baseline `pytest` run fail with 4 collection errors
+      (`No module named 'docx'`) before anything had changed. `docs/devenv.md` already says to
+      use `.venv`.
+    - Fix: ran everything through `.venv/Scripts/python`, and installed matplotlib there as the
+      plan's new dependency.
+
+38. **The AI's first Boolean plot hid data.**
+    - The legend listed 12 entries, sat on the plot and covered the SHUT press at 700 s.
+      Simulation and reference for the same signal were drawn in unrelated colours.
+    - No test caught it; tests check files and groups, not legibility. The AI saw it when it
+      opened the PNG.
+    - Fix: one colour per signal, the reference in black dashed lines, and a two-entry legend
+      outside the axes. Keep only if the team wants an example of reviewing output by eye.
+
+39. **The AI's first correspondence draft had code it cleaned up before any test ran.**
+    - A contradictory Modelica class-start condition.
+    - A dead loop (`for heading in (NA,): del heading`).
+    - An `ir:` regex that could match inside a requirement's text.
+    - Self-caught, never ran. Keep only if the team wants a self-review example.
+
+40. **A heredoc edit failed again (see A11, A23, A33).**
+    - A Python edit script sent through a bash heredoc had `\s` in a non-raw string. The search
+      text did not match, and the script stopped on its own `assert` before writing.
+    - No file was damaged.
+    - The AI moved the remaining edits into script files. A23's suggested working rule would
+      have prevented it.
+
+41. **One test the AI wrote first was wrong about wording, not behaviour.** It expected
+    "more in assumptions.md"; the code writes "… and 22 more open questions in assumptions.md".
+    The test was tightened to the exact text. This is minor; drop it unless it is useful.

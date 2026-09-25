@@ -1,6 +1,6 @@
 # Purpose: package metadata for SpecAlive — runtime and [dev] dependencies, and the `specalive`
 # console script that exposes the CLI in specalive/cli.py. Phase 6 ships the Modelica templates
-# and the SpecAlive component package as package data.
+# and the SpecAlive component package as package data. Phase 8 adds matplotlib for the plots.
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
@@ -13,6 +13,7 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "jinja2>=3.1",
+    "matplotlib>=3.8",
     "openai>=1.40",
     "openpyxl>=3.1",
     "pydantic>=2.7",

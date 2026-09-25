@@ -310,3 +310,98 @@ Format: `D<n> | what we decided | why the alternative lost`
       time, including with an empty press list.
     - Open edge: two presses closer than one pulse width. BooleanTable expects increasing switch
       times, and this is untested.
+
+69. **`report` takes `--run`, as FR-08 writes it, and keeps `-o/--out` as an alias.**
+    - Lost: `-o/--out` only, like every other stage. FR-08 names `--run` explicitly.
+    - Lost: `--run` only. It would break the pattern every other stage and the phase 9 `run`
+      will use.
+    - This contradicts D54, where `verify` rejected "accepting both" for the same situation.
+      The owners should pick one rule for both stages and correct FR-07 or FR-08 to match.
+
+70. **Correspondence statuses are `OK`, `MISSING (<layer>)`, `N/A — <reason>` and
+    `NOT RUN (<layer>)`, with the N/A rules printed at the top of `correspondence.md`.**
+    - Some elements are absent from a layer on purpose: requirements have no Modelica, acceptance
+      criteria have no SysML, and superseded parameters are in neither model.
+    - Lost: `MISSING` for every absence. FR-08 acceptance 3 (no MISSING rows on golden L1) could
+      never pass.
+    - Lost: dropping those rows. FR-08 asks for one row per IR element.
+
+71. **Correspondence is built by parsing the generated files, not by asking the generator**
+    (R-REP-2).
+    - SysML: a small brace-and-comment scanner. Each `doc /* ir: <id>` gets the qualified name of
+      the element it sits in, e.g. `two_tank_sequence::system::tk_101`.
+    - Modelica: `"[IR <id>]"` strings, `// IR <id>:` transition comments, enumeration literals
+      for states, `assert(..., "<criterion id>: ...")`, and ports through the verify layer's
+      `variable_map`.
+    - Lost: importing the generators' view models. `report/` may not import `generate/`, and it
+      would assert agreement instead of checking it.
+    - Lost: a full SysML parser or the Pilot's API. Too heavy for reading ids back.
+    - Cost: correspondence depends on the generator's comment conventions (`ir:` opens every doc;
+      `[IR id]` ends every declaration). If they change, rows turn MISSING, not silently OK.
+    - Weak spot: a Modelica port counts as present if its part instance exists and the catalogue
+      maps its role to a connector. It does not check that the connector is declared in the
+      component class.
+
+72. **Superseded requirements are N/A in both layers.** The SysML generator emits only active
+    requirements. See A35 for how this was found.
+
+73. **An acceptance criterion shows its Modelica assert when there is one, otherwise N/A.**
+    - Only window-free `always` criteria the controller can state become asserts; the rest are
+      checked against the simulation.
+    - Cost: deleting an assert from the `.mo` turns that row N/A, not MISSING. Knowing which
+      criteria should be asserts would mean repeating the generator's rules in `report/`.
+
+74. **The summary caps its lists at 8 open questions, 5 assumptions and 5 conflicts, then "… and
+    n more in assumptions.md".**
+    - That keeps it within FR-08's 60 lines. Worst case is about 58.
+    - Unresolved conflicts are listed first, because they are open, not settled.
+    - An `Assumptions` section was added, which FR-08 req 1 does not list, because R-REP-1 puts
+      assumptions beside the open questions.
+    - Lost: no cap. A messy input with 30 questions would push the compile command off the
+      screen.
+
+75. **One extra module, `report/artefacts.py`, loads the run folder once for all five reports.**
+    Approved with the plan.
+    - Each artefact comes back loaded, missing or invalid, with the reason the section prints as
+      `NOT RUN — <reason>` (R-REP-3).
+    - Lost: each report reading its own files. That means five copies of the NOT RUN handling,
+      and five chances to disagree.
+
+76. **`report` exits 0 once the reports are written, whatever the gates say.** It exits 2 only
+    when the run folder does not exist.
+    - A catalogue that fails to load only degrades the Modelica port rows.
+    - Lost: returning the verification exit code. Reporting never fails the work; the gates are
+      the other stages' job.
+
+77. **The reports load `ir.json` through `core.ir.SystemModel`, not `generate.sysml.load_ir`.**
+    `report/` may import only `config`, `core` and `verify`.
+    - An invalid IR is the IR gate's `FAIL` with the validation error. A missing one is NOT RUN.
+
+78. **Correspondence reads the model the compile stage delivered** (`repair_log.json`: the
+    repaired file if there is one), otherwise `model.mo`. This is the same rule as D58 for
+    verify.
+
+79. **Plots:**
+    - One PNG per group: continuous signals by unit, Boolean signals as offset step traces, and
+      one state trace per machine.
+    - The reference is overlaid only on signals `verification.json` actually compared.
+      Without a reference, it plots the variable map's outputs and states.
+    - It uses matplotlib's object API (`matplotlib.figure.Figure`), not `pyplot`, which keeps
+      global state (FR-11 item 21).
+    - PNG metadata is stripped so output is byte-identical between runs, and old PNGs are
+      deleted first so a vanished group leaves no stale figure.
+    - `matplotlib>=3.8` is now a runtime dependency.
+
+80. **Traceability rows:**
+    - The IR's own assumption records get a group too.
+    - Ports, states, transitions, events, timers and regions have no trace of their own in the
+      schema. They say `inherits <owner>` rather than copying the owner's quote.
+    - Confidence shows `—` where the IR records none; only parts and assumptions carry one.
+    - `Assumed` lists the element's own `assumption_ids` plus every assumption whose `affects`
+      names it.
+
+81. **Conflict lines cite sources as the inputs do:** first tag plus revision, e.g.
+    `TK-101 high_level: 0.80 m (CR-004 Rev 1) over 0.78 m (URS-001 Rev A, SIM-LEGACY Rev 1.2)`.
+    - Losing candidates with the same value are grouped.
+    - FR-08's example writes plain "(CR-004)". Printing the revision is more precise; drop it if
+      the team prefers the spec's form.

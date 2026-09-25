@@ -9,8 +9,10 @@
 # Modelica compile-and-repair loop (compile.log, repair_log.json, model.repaired.mo) and prints
 # the omc command that reproduces the compile. Phase 7: `verify` simulates the compiled model to
 # sim/result.csv and writes verification.json (variable map, reference comparison, acceptance
-# criteria, tolerances with their source) and coverage.json (only with --golden). Top of the layer
-# stack; nothing imports it.
+# criteria, tolerances with their source) and coverage.json (only with --golden). Phase 8:
+# `report --run` writes report/summary.md, traceability.md, assumptions.md, correspondence.md and
+# report/plots/*.png from whatever artefacts the run folder holds. Top of the layer stack; nothing
+# imports it.
 from __future__ import annotations
 
 import argparse
@@ -44,6 +46,7 @@ from specalive.ingest.ingest import EVIDENCE_FILE, InputNotFound, ingest, write_
 from specalive.llm.cache import ResponseCache
 from specalive.llm.client import LLMClient, LLMError
 from specalive.repair import compile_loop
+from specalive.report import artefacts, assumptions, correspondence, plots, summary, traceability
 from specalive.toolchain import omc, sysml_validate
 from specalive.verify import acceptance, compare, coverage, simulate
 
@@ -461,6 +464,40 @@ def cmd_verify(settings: Settings, out: Path | None, reference: Path | None,
     return EXIT_FAILED if report["status"] == "FAIL" else EXIT_OK
 
 
+def cmd_report(run: Path | None) -> int:
+    run = run or Path("out") / "run"
+    if not run.is_dir():
+        print(f"specalive report: input problem: run folder {run} not found", file=sys.stderr)
+        return EXIT_INPUT
+    try:
+        catalogue = load_catalogue()
+    except CatalogueError as exc:
+        print(f"specalive report: catalogue not loaded, ports not checked: {exc}",
+              file=sys.stderr)
+        catalogue = None
+    loaded = artefacts.load_run(run)
+    out = run / artefacts.REPORT_DIR
+    figures = plots.write_plots(loaded, out / plots.PLOTS_DIR)
+    table = correspondence.correspond(loaded, catalogue)
+    written = [summary.write_summary(loaded, out, figures),
+               traceability.write_traceability(loaded, out),
+               assumptions.write_assumptions(loaded, out),
+               correspondence.write_correspondence(loaded, catalogue, out)]
+    for target in written:
+        print(f"wrote {target}")
+    counts = table.counts()
+    print(f"correspondence: {len(table.rows)} element(s), {counts.get(correspondence.OK, 0)} OK, "
+          f"{counts.get(correspondence.MISSING, 0)} MISSING, "
+          f"{counts.get(artefacts.NOT_RUN, 0)} NOT RUN")
+    if figures.status == "ok":
+        print(f"plots: {len(figures.figures)} figure(s) in {out / plots.PLOTS_DIR}")
+    else:
+        print(f"plots: {figures.status}: {figures.reason}")
+    for note in figures.notes:
+        print(f"  {note}")
+    return EXIT_OK
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="specalive",
@@ -471,7 +508,11 @@ def build_parser() -> argparse.ArgumentParser:
         p = sub.add_parser(name, help=help_text)
         if name in STAGE_INPUT:
             p.add_argument(STAGE_INPUT[name], nargs="?")
-        p.add_argument("-o", "--out", type=Path, help="run output folder")
+        if name == "report":
+            p.add_argument("--run", "-o", "--out", dest="out", type=Path,
+                           help="run folder to report on (default: out/run)")
+        else:
+            p.add_argument("-o", "--out", type=Path, help="run output folder")
         if name == "extract":
             p.add_argument("-i", "--input", type=Path,
                            help="evidence.json to read (default: <out>/evidence.json)")
@@ -524,6 +565,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_compile(settings, args.out, args.only)
     if args.command == "verify":
         return cmd_verify(settings, args.out, args.reference, args.golden)
+    if args.command == "report":
+        return cmd_report(args.out)
     return cmd_stub(args.command)
 
 
