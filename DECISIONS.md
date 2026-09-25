@@ -62,3 +62,63 @@ Format: `D<n> | what we decided | why the alternative lost`
 13. **A superseded parameter's id is the effective id plus the losing source**, for example
     `tk_101_high_level_urs_001`.
     - Why: ids stay unique and readable, and the conflict record can point at the losing value.
+
+14. **Vision is built in but off by default** (SPECALIVE_VISION=0). Images are recorded unread, with the reason.
+   - Alternative: never read images in phase 3, and leave llm/client.py unchanged.
+
+15. **Phase 3 started without a recorded phase 2 sign-off** (FR-02 acceptance 6).
+
+16. **Email messages are ordered newest first by parsed date**, not by position in the file.
+   - The IAQ thread gets newer as you read down, so file order would be wrong.
+   - This follows FR-03 requirement 4 over R-ING-5 (order in the file).
+
+17. **Classification order:** source-index row, then the document's title and header, then the
+   format default, then the LLM only if every rule finds nothing.
+   - This goes beyond `ARCHITECTURE.md`, which allows `ingest/` to use `llm/` for vision only.
+     The document has not been updated.
+     
+18. **The source index is found by its columns** (file name, type, reliability), never by the
+   sheet name (R-ING-4).
+   
+19. **Diagrams are classified `other`.**
+   - Alternative: add a diagram role to `SourceRole`. That is an IR schema change and needs all
+     three owners.
+     
+20. **Evidence has its own `Source` model** (`ingest/evidence.py`). The IR schema is untouched;
+   phase 4 maps one onto the other.
+   
+21. **Every source id starts with `src_`.** Without it, `make_id` added the prefix only to
+   paths starting with a digit. **Title keyword rules apply to document formats only** (pdf, docx, md, txt, xlsx), not to
+   code, data or email.
+   
+22. **Two-column Word tables are read as `key: value` rows.** Document header tables have that
+    shape. Tables with three or more columns use their first row as headers.
+
+23. **Extraction runs one source at a time in a fixed role order, register first**, over
+    batches capped in size.
+    - Alternative: one pass over the whole bundle.
+    
+24. **A glossary of aliases found so far is carried into later passes.**
+
+25. **A separate behaviour pass per controller.** Each item is validated separately, and a
+    rejected item gets one retry with the error fed back.
+    
+26. **Replies cut off at the length limit are split and retried** (`LLMIncomplete` added to
+    `llm/client.py`).
+    
+27. **Entity merging uses union-find.** Two formal tags never join; names that only look alike
+    merge only with an `Assumption`.
+    
+28. **Status columns in the evidence come before the precedence ladder** (FR-04 requirement 12).
+    A register row takes the rank of the record it cites. Approval outranks recency.
+    
+29. **Documents cited but absent from the bundle become their own source records**
+    (`cr_004`, `urs_001`), and traces point at them.
+    
+30. **Interactive questions (A7, stretch) were not delivered.**
+
+31. **Shipped with a 245 s cold L1 extract**, above the 2-minute target (FR-11 item 20).
+
+32. **Phase 3 had no pull request of its own.** It reached `main` through PR #1 together with
+    phase 4. Commit `70492ad` is titled "Add comprehensive tests…" but contains the whole phase 3
+    implementation.

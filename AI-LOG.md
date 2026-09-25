@@ -42,3 +42,38 @@ Format: `A<n> | what the AI produced | what we did instead | why`
    - One test changed that dict, and two later tests failed for reasons that had nothing to do
      with `ir.py`.
    - Fix: the fixture returns a deep copy. Worth noting as a false failure the AI created itself.
+
+8. **Email separator pattern missed hyphenated labels.**
+   - `---- Follow-up ----` didn't match, so the NaCl thread gave 2 messages instead of 3.
+   - All tests had passed. Found by reading the actual output; a test was added, then the
+     pattern fixed.
+
+9. **The L1 design note was classified `review_decision`.**
+   - The title rule read the title and header as one string. The header line "Released after
+     design review DR-02" matched "design review" before "design note" could.
+   - Caught by the bundle acceptance test. Fix: check the title on its own first.
+
+10. **The IAQ email was given revision `C`.**
+   - The header parser read "OCC-SCH-04 Rev C" from a sentence in the email body.
+   - Caught by reviewing the classification table. Fix: header parsing on document formats only.
+   
+11. **Control bytes written into source files.**
+   - Shell heredoc edits collapsed backslash escapes and wrote real NULL and control characters
+     into `tests/test_cli.py` and `specalive/llm/client.py`.
+   - Caught when git flagged the file as binary and a test failed to import. Both fixed, and
+     every changed file scanned.
+
+12. **Minor, caught by unit tests:** inconsistent `src_` id prefix; the text `model Plant` in
+   Modelica code read as a document title.
+
+13. **The LLM invented quotes in the format of its own prompt.** 13 alias fragments quoted
+   `"TK-101 [tank] aka tank1, T1"`, the format of the glossary the extractor gives the model.
+   That text appears nowhere in the source. The verbatim quote check discarded every one.
+   *The strongest example: the model cited its prompt as evidence, and it was caught.*
+
+14. **The LLM stitched a quote across PDF table columns.** It joined a row label with a cell
+   from another column (`"Nominal demo flow coefficient equivalent\n0.0045 m^3/s"`), so 2 flow
+   values were discarded. The effective flows still came from the register.
+
+15. **The LLM gave duplicate transition priorities.** "Any state → SHUTDOWN" was given the same
+   priority as other transitions from each state (7 transitions); the validator rejected them.
