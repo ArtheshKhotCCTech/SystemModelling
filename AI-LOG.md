@@ -26,3 +26,19 @@ Format: `A<n> | what the AI produced | what we did instead | why`
    - Said "SpecAlive does not load .env" — outdated as soon as `.env` loading was added.
    - Included `PYTHONUTF8=1`, which has no effect from `.env` (Python reads it at start-up).
    - Caught while implementing `.env` loading; corrected.
+
+5. **The phase 2 plan said the golden IR would have 16 parts. The bundle has 13.**
+   - Caught when the golden was built and the count came out at 13.
+   - Nothing was generated wrong, but the plan we approved carried a number the AI had not
+     counted.
+
+6. **The AI mapped `command_button` to MSL `Modelica.Blocks.Sources.BooleanTable` in the plan.**
+   - That block flips its output at every listed time, so each momentary press would need a press
+     time and a release time.
+   - Instead: a SpecAlive `CommandButton` component that takes the list of press times.
+   - The AI changed it during implementation and reported the change afterwards, not before.
+
+7. **The AI's first IR test fixture shared one trace dict between every element.**
+   - One test changed that dict, and two later tests failed for reasons that had nothing to do
+     with `ir.py`.
+   - Fix: the fixture returns a deep copy. Worth noting as a false failure the AI created itself.
