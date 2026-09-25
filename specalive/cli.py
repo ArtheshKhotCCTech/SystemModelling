@@ -5,7 +5,9 @@
 # evidence.json and lists every file it could not fully read. `extract` (phase 4) turns
 # evidence.json, or plain text, into ir.json and extract_report.json. `generate --only sysml`
 # (phase 5) writes model.sysml and `compile --only sysml` writes sysml_validation.json with the
-# command that reproduces it; Modelica is phase 6. Top of the layer stack; nothing imports it.
+# command that reproduces it. Phase 6: `generate` also writes model.mo, and `compile` runs the
+# Modelica compile-and-repair loop (compile.log, repair_log.json, model.repaired.mo) and prints
+# the omc command that reproduces the compile. Top of the layer stack; nothing imports it.
 from __future__ import annotations
 
 import argparse
@@ -31,11 +33,12 @@ from specalive.extract.extract import (
     write_report,
 )
 from specalive.extract.text_input import text_bundle
-from specalive.generate import sysml
+from specalive.generate import modelica, sysml
 from specalive.ingest.evidence import EvidenceBundle
 from specalive.ingest.ingest import EVIDENCE_FILE, InputNotFound, ingest, write_evidence
 from specalive.llm.cache import ResponseCache
 from specalive.llm.client import LLMClient, LLMError
+from specalive.repair import compile_loop
 from specalive.toolchain import omc, sysml_validate
 
 # FR-09 exit codes: 0 all gates passed, 1 a gate failed, 2 input problem, 3 toolchain problem.
@@ -211,14 +214,7 @@ def cmd_stub(name: str) -> int:
     return EXIT_FAILED
 
 
-def _modelica_not_run(command: str) -> None:
-    print(f"specalive {command}: modelica: not implemented in this phase (phase 6)",
-          file=sys.stderr)
-
-
 def cmd_generate(ir: Path | None, out: Path | None, only: str | None) -> int:
-    if only == "modelica":
-        return cmd_stub("generate --only modelica")
     ir_path = ir or (out or Path("out") / "run") / IR_FILE
     out = out or ir_path.parent
     try:
@@ -231,22 +227,26 @@ def cmd_generate(ir: Path | None, out: Path | None, only: str | None) -> int:
     except CatalogueError as exc:
         print(f"specalive generate: infrastructure problem: {exc}", file=sys.stderr)
         return EXIT_TOOLCHAIN
-    try:
-        target = sysml.write_sysml(model, catalogue, out)
-    except sysml.SysmlGenerationError as exc:
-        print(f"specalive generate: input problem: {exc}", file=sys.stderr)
-        return EXIT_INPUT
-    print(f"wrote {target}")
-    if only is None:
-        _modelica_not_run("generate")
-        return EXIT_FAILED
+    if only in (None, "sysml"):
+        try:
+            target = sysml.write_sysml(model, catalogue, out)
+        except sysml.SysmlGenerationError as exc:
+            print(f"specalive generate: input problem: {exc}", file=sys.stderr)
+            return EXIT_INPUT
+        print(f"wrote {target}")
+    if only in (None, "modelica"):
+        try:
+            target, generated = modelica.write_modelica(model, catalogue, out)
+        except modelica.ModelicaGenerationError as exc:
+            print(f"specalive generate: input problem: {exc}", file=sys.stderr)
+            return EXIT_INPUT
+        for note in generated.notes:
+            print(f"  generator default / note: {note}")
+        print(f"wrote {target} (model {generated.model_name})")
     return EXIT_OK
 
 
-def cmd_compile(settings: Settings, out: Path | None, only: str | None) -> int:
-    if only == "modelica":
-        return cmd_stub("compile --only modelica")
-    out = out or Path("out") / "run"
+def _compile_sysml(settings: Settings, out: Path) -> int:
     model = out / sysml.MODEL_FILE
     if not model.is_file():
         print(f"specalive compile: input problem: {model} not found; run specalive generate "
@@ -261,12 +261,47 @@ def cmd_compile(settings: Settings, out: Path | None, only: str | None) -> int:
         print(f"command: {v.run.command_line}")
         print(f"  stdin: {sysml_validate.report(v, model)['stdin']}")
     print(f"wrote {target}")
-    code = (EXIT_OK if v.ok else
+    return (EXIT_OK if v.ok else
             EXIT_TOOLCHAIN if v.status == sysml_validate.NOT_RUN else EXIT_FAILED)
-    if only is None and code == EXIT_OK:
-        _modelica_not_run("compile")
-        return EXIT_FAILED
-    return code
+
+
+def _repair_summary(out: Path) -> str:
+    """The IR as the repair LLM sees it, when ir.json is beside the model; else empty."""
+    try:
+        return compile_loop.ir_summary(sysml.load_ir(out / IR_FILE), load_catalogue())
+    except (sysml.IRError, CatalogueError):
+        return ""
+
+
+def _compile_modelica(settings: Settings, out: Path) -> int:
+    model = out / modelica.MODEL_FILE
+    if not model.is_file():
+        print(f"specalive compile: input problem: {model} not found; run specalive generate "
+              "first", file=sys.stderr)
+        return EXIT_INPUT
+    result = compile_loop.run_compile_loop(model, out, settings=settings,
+                                           llm=LLMClient(settings),
+                                           ir_summary=_repair_summary(out))
+    print(f"Modelica compile: {result.status}: {result.detail}")
+    for error in result.errors:
+        print(f"  {error}")
+    if result.delivered is not None:
+        print(f"delivered: {result.delivered}")
+    if result.command:
+        print(f"command: {result.command}")
+    print(f"wrote {out / compile_loop.COMPILE_LOG} and {out / compile_loop.REPAIR_LOG}")
+    return {compile_loop.OK: EXIT_OK, compile_loop.REPAIRED: EXIT_OK,
+            compile_loop.NOT_RUN: EXIT_TOOLCHAIN}.get(result.status, EXIT_FAILED)
+
+
+def cmd_compile(settings: Settings, out: Path | None, only: str | None) -> int:
+    out = out or Path("out") / "run"
+    codes = []
+    if only in (None, "sysml"):
+        codes.append(_compile_sysml(settings, out))
+    if only in (None, "modelica"):
+        codes.append(_compile_modelica(settings, out))
+    return max(codes)
 
 
 def build_parser() -> argparse.ArgumentParser:

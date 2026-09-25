@@ -151,3 +151,76 @@ Format: `D<n> | what we decided | why the alternative lost`
 
 39. **`specalive generate` / `compile` without `--only` exit 1 until phase 6.** The SysML is
   written and validated, but Modelica is not, so "all gates passed" would be a false pass.
+
+40. **Interlocks are acceptance criteria with mode `always` and no time window.** Each becomes an
+    `assert` in the controller whose ports and states it reads. For L1 that is `ac_08`.
+    - Lost: waiting for an interlock record in the IR. That is a schema change and needs all
+      three owners.
+    - Consequence: an invariant that reads outside one controller is not asserted. The generator
+      reports it in its notes, and phase 7 checks it.
+
+41. **Modelica uses `verification_only` values as the test scenario**: TP-17's press times and the
+    900 s stop time. Effective values come first. Superseded and as-built-only values are never
+    used.
+    - Lost: effective values only, matching SysML (D36). The buttons would never be pressed and
+      the run could not be compared with the reference trace.
+    - The two models now differ on purpose: SysML shows the design, Modelica also carries the test.
+
+42. **The controller is a single `when` block.** Its trigger list holds each command edge plus
+    `pre(state) == S and guard` for every guarded transition. The body checks transitions from
+    `pre(state)` in IR priority order.
+    - Lost: one `when` per transition. Several branches assign `state`, and priority cannot be
+      expressed across independent `when`s.
+    - Lost: an `algorithm` outside `when`. The timer deadlines are `discrete Real`, and those can
+      only be assigned inside a `when`.
+    - Using `pre(state)` lets a guard that is already true when a state is entered still fire,
+      one event iteration later.
+
+43. **A timer is a deadline plus a remaining time.** `save_history` stores
+    `remaining = deadline - time`; a history return sets `deadline = time + remaining`.
+    - Lost: a timer that counts continuously with `der`. That adds a continuous state to a
+      discrete concept and still needs extra freeze logic.
+
+44. **Volume flow uses causal connectors** (`input`/`output Real`). The valve sets the flow on
+    both of its sides; the tank, source and sink follow it.
+    - Lost: a plain non-causal `Real` connector, which gives unbalanced components.
+    - Lost: `Modelica.Fluid`, for the reason already in the ADR (flow would depend on head).
+
+45. **Every usable IR value is one top-level parameter in `System`, named by its IR id.**
+    Instances and the controller bind to those parameters.
+    - Lost: writing numbers straight into modifiers. Each value would then appear in several
+      places, and its IR id and ASSUMPTION comment would have no single home.
+
+46. **Controller connectors are `SpecAlive.Interfaces` aliases of the MSL block interfaces.** The
+    Python generator therefore writes no MSL class name beyond what the catalogue supplies
+    (R-MO-3).
+
+47. **The catalogue stays unchanged. The button pulse width (1 s) is a default of the
+    `CommandButton` component.**
+    - Lost: adding `pulse_width` to the catalogue. The catalogue's parameter list is part of the
+      extraction prompt, so the change would invalidate every recorded LLM fixture.
+
+48. **The output interval defaults to StopTime / 500** (omc's default), and the model marks it as
+    `ASSUMPTION (generator default)`.
+    - Lost: 1 s to match the reference trace. That would be a case-specific value in the
+      generator.
+
+49. **The repair topology check reads instances and `connect()` pairs by IR id, not by instance
+    name.**
+    - Lost: comparing names in the text. The deterministic keyword-rename fix would then fail
+      its own check.
+
+50. **`model.repaired.mo` is compiled once more before it is delivered**, so the printed command
+    reproduces that exact file, not an attempt copy. Cost: one extra build of a few seconds.
+
+51. **The deterministic-fix acceptance test injects a missing `import SI`, not a misspelled
+    unit.** Under omc 1.27.1 a bad unit string (`"m^2"`) is only a Notification and the compile
+    passes, so FR-06's own example could not show the loop working. The unit fix is kept, but
+    only runs when other errors exist.
+
+52. **The Modelica controller generator refuses** parallel regions (L4 is not delivered, FR-12),
+    `==` / `!=` on Reals, and guards that read a port the controller does not own. Each refusal
+    is a generation error that names the element. None of them is guessed.
+
+53. **`generate` and `compile` without `--only` now run both models, and the worst exit code
+    wins.** This replaces D39.

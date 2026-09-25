@@ -3,6 +3,7 @@
 # SysML-validator output parsers are tested on recorded text; real-tool probes run only when
 # the tool is installed and are skipped with a stated reason otherwise, never silently passed.
 # Phase 5: a validation is ok, failed or NOT RUN, and its report names the command (R-SYS-6).
+# Phase 6: the compile script, omc message parsing, and compile verdicts ok / failed / NOT RUN.
 import json
 import sys
 from pathlib import Path
@@ -127,6 +128,80 @@ def test_omc_probe_reports_missing_tool_without_raising(tmp_path):
     s = load_settings({"SPECALIVE_OMC": str(tmp_path / "no-omc.exe")})
     result = omc.probe(s)
     assert not result.ok and "not found" in result.detail
+
+
+# --- omc compile (phase 6) -------------------------------------------------------------------
+
+def test_compile_script_loads_pinned_msl_checks_and_builds():
+    # FR-06 requirement 10: getErrorString() after every step.
+    script = omc.compile_script("../model.mo", "Pkg.System", "4.0.0")
+    lines = script.splitlines()
+    steps = ['loadModel(Modelica, {"4.0.0"})', 'loadFile("../model.mo")', "checkModel(Pkg.System)",
+             "buildModel(Pkg.System)"]
+    positions = [next(i for i, line in enumerate(lines) if step in line) for step in steps]
+    assert positions == sorted(positions)
+    for pos in positions:
+        assert "getErrorString()" in lines[pos + 1]
+
+
+def _compile_out(msl="true", loaded="true", check="Check of Pkg.System completed successfully.",
+                 exe="C:/w/Pkg.System", msl_err="", load_err="", check_err="", build_err=""):
+    return ("true\n"
+            f"SPECALIVE_MSL={msl}\nSPECALIVE_FILE={loaded}\nSPECALIVE_CHECK={check}\n"
+            f"SPECALIVE_EXE={exe}\nSPECALIVE_MSLERR={msl_err}\nSPECALIVE_LOADERR={load_err}\n"
+            f"SPECALIVE_CHECKERR={check_err}\nSPECALIVE_BUILDERR={build_err}\nSPECALIVE_END\n")
+
+
+OMC_ERROR = ("[C:/work dir/model.mo:138:5-138:57:writable] Error: Class SI.Area not found in "
+             "scope System.\n")
+
+
+def test_parse_messages_reads_location_severity_and_text():
+    text = OMC_ERROR + "Warning: The initial conditions are not fully specified.\nsecond line\n"
+    msgs = omc.parse_messages(text)
+    assert [(m.severity, m.line, m.column) for m in msgs] == [("Error", 138, 5),
+                                                              ("Warning", None, None)]
+    assert msgs[0].file == "C:/work dir/model.mo"
+    assert msgs[0].message == "Class SI.Area not found in scope System."
+    assert msgs[0].text == OMC_ERROR.strip()
+    assert msgs[1].message.endswith("second line")
+
+
+def test_interpret_clean_compile():
+    status, detail, msgs = omc.interpret_compile(_compile_out(build_err="Warning: minor\n"))
+    assert status == omc.OK and "completed successfully" in detail
+    assert [m.severity for m in msgs] == ["Warning"]
+
+
+@pytest.mark.parametrize("kwargs,needle", [
+    ({"check": "", "exe": "", "check_err": OMC_ERROR}, "SI.Area"),
+    ({"loaded": "false", "check": "", "exe": "", "load_err": OMC_ERROR}, "did not load"),
+    ({"exe": ""}, "no executable"),
+    ({"check": "Something else"}, "checkModel"),
+])
+def test_interpret_failed_compile(kwargs, needle):
+    status, detail, _ = omc.interpret_compile(_compile_out(**kwargs))
+    assert status == omc.FAILED and needle in detail
+
+
+def test_interpret_msl_missing_is_not_run():
+    status, detail, _ = omc.interpret_compile(_compile_out(msl="false", msl_err="Error: no MSL"))
+    assert status == omc.NOT_RUN and "MSL" in detail
+
+
+def test_interpret_garbled_output_is_failure():
+    status, detail, _ = omc.interpret_compile("Segmentation fault")
+    assert status == omc.FAILED and "unexpected" in detail
+
+
+def test_compile_model_without_omc_is_not_run(tmp_path):
+    mo = tmp_path / "model.mo"
+    mo.write_text("package P end P;\n", encoding="utf-8")
+    s = load_settings({"SPECALIVE_OMC": str(tmp_path / "no-omc.exe")})
+    result = omc.compile_model(s, mo, "P.System", tmp_path / "build")
+    assert result.status == omc.NOT_RUN and "not found" in result.detail
+    assert not result.ok and result.command is None
+    assert (tmp_path / "build" / omc.COMPILE_SCRIPT).is_file()
 
 
 # --- SysML validator output parsing ----------------------------------------------------------

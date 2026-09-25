@@ -4,6 +4,7 @@
 # one OK/FAIL line per check, exits non-zero on any FAIL and never prints the API key. `extract`
 # (phase 4) is covered by test_extract_stage.py. Phase 5: `generate --only sysml` writes
 # model.sysml and `compile --only sysml` writes sysml_validation.json, with FR-09 exit codes.
+# Phase 6: `generate` writes model.mo, and `compile` runs the Modelica compile-and-repair loop.
 import json
 import subprocess
 import sys
@@ -57,17 +58,32 @@ def test_generate_reads_ir_json_from_the_out_folder_by_default(tmp_path):
     assert (tmp_path / "model.sysml").is_file()
 
 
-def test_generate_modelica_is_not_implemented_in_this_phase(tmp_path, capsys):
+def test_generate_modelica_writes_model_mo(tmp_path, capsys):
     assert cli.main(["generate", "--ir", str(GOLDEN), "-o", str(tmp_path),
-                     "--only", "modelica"]) == cli.EXIT_FAILED
-    assert "not implemented in this phase" in capsys.readouterr().err
+                     "--only", "modelica"]) == cli.EXIT_OK
+    model = tmp_path / "model.mo"
+    assert model.is_file() and "model System" in model.read_text(encoding="utf-8")
     assert not (tmp_path / "model.sysml").exists()
+    out = capsys.readouterr().out
+    assert "wrote" in out and "generator default" in out  # the declared Interval default
 
 
-def test_generate_without_only_writes_sysml_and_says_modelica_did_not_run(tmp_path, capsys):
-    assert cli.main(["generate", "--ir", str(GOLDEN), "-o", str(tmp_path)]) == cli.EXIT_FAILED
-    assert (tmp_path / "model.sysml").is_file()
-    assert "modelica" in capsys.readouterr().err
+def test_generate_without_only_writes_both_models(tmp_path):
+    assert cli.main(["generate", "--ir", str(GOLDEN), "-o", str(tmp_path)]) == cli.EXIT_OK
+    assert (tmp_path / "model.sysml").is_file() and (tmp_path / "model.mo").is_file()
+
+
+def test_generate_modelica_error_is_an_input_problem(tmp_path, capsys):
+    ir = json.loads(GOLDEN.read_text(encoding="utf-8"))
+    ir["parameters"] = [p for p in ir["parameters"] if p["id"] != "tk_101_area"]
+    for r in ir["requirements"]:
+        r["satisfied_by"] = [e for e in r["satisfied_by"] if e != "tk_101_area"]
+    bad = tmp_path / "ir.json"
+    bad.write_text(json.dumps(ir), encoding="utf-8")
+    assert cli.main(["generate", "--ir", str(bad), "-o", str(tmp_path),
+                     "--only", "modelica"]) == cli.EXIT_INPUT
+    assert "area" in capsys.readouterr().err
+    assert not (tmp_path / "model.mo").exists()
 
 
 def test_generate_missing_or_broken_ir_is_an_input_problem(tmp_path, capsys):
@@ -113,9 +129,48 @@ def test_compile_without_model_is_an_input_problem(tmp_path, capsys):
     assert "model.sysml" in capsys.readouterr().err
 
 
-def test_compile_modelica_is_not_implemented_in_this_phase(tmp_path, capsys):
-    assert cli.main(["compile", "-o", str(tmp_path), "--only", "modelica"]) == cli.EXIT_FAILED
-    assert "not implemented in this phase" in capsys.readouterr().err
+def _fake_loop(status, calls=None):
+    def fake(mo_path, out_dir, *, settings, llm, ir_summary):
+        if calls is not None:
+            calls.append((mo_path, ir_summary))
+        delivered = mo_path if status in ("ok", "repaired") else None
+        return cli.compile_loop.LoopResult(
+            status=status, model_name="P.System", delivered=delivered,
+            command=None if status == "NOT RUN" else "cd out/build && omc compile.mos",
+            detail="scripted", errors=["Error: bad"] if status == "FAILED" else [])
+    return fake
+
+
+@pytest.mark.parametrize("status,code", [
+    ("ok", cli.EXIT_OK), ("repaired", cli.EXIT_OK), ("FAILED", cli.EXIT_FAILED),
+    ("NOT RUN", cli.EXIT_TOOLCHAIN)])
+def test_compile_modelica_runs_the_repair_loop(tmp_path, monkeypatch, capsys, status, code):
+    (tmp_path / "model.mo").write_text("package P end P;\n", encoding="utf-8")
+    (tmp_path / "ir.json").write_text(GOLDEN.read_text(encoding="utf-8"), encoding="utf-8")
+    calls = []
+    monkeypatch.setattr(cli.compile_loop, "run_compile_loop", _fake_loop(status, calls))
+    assert cli.main(["compile", "-o", str(tmp_path), "--only", "modelica"]) == code
+    out = capsys.readouterr().out
+    assert f"Modelica compile: {status}" in out
+    if status != "NOT RUN":
+        assert "omc compile.mos" in out
+    assert calls and "tk_101" in calls[0][1]  # the IR summary reaches the loop
+
+
+def test_compile_modelica_without_model_is_an_input_problem(tmp_path, capsys):
+    assert cli.main(["compile", "-o", str(tmp_path), "--only", "modelica"]) == cli.EXIT_INPUT
+    assert "model.mo" in capsys.readouterr().err
+
+
+def test_compile_without_only_runs_both(tmp_path, monkeypatch, capsys):
+    (tmp_path / "model.sysml").write_text("package P {}\n", encoding="utf-8")
+    (tmp_path / "model.mo").write_text("package P end P;\n", encoding="utf-8")
+    monkeypatch.setattr(cli.sysml_validate, "validate_file",
+                        _fake_validation(sysml_validate.OK, "1> Package P (0e0e3b6a-7c65)\n"))
+    monkeypatch.setattr(cli.compile_loop, "run_compile_loop", _fake_loop("FAILED"))
+    assert cli.main(["compile", "-o", str(tmp_path)]) == cli.EXIT_FAILED
+    out = capsys.readouterr().out
+    assert "SysML validation: ok" in out and "Modelica compile: FAILED" in out
 
 
 def test_ingest_writes_evidence_json(tmp_path, monkeypatch, capsys):

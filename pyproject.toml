@@ -1,5 +1,6 @@
 # Purpose: package metadata for SpecAlive — runtime and [dev] dependencies, and the `specalive`
-# console script that exposes the CLI in specalive/cli.py.
+# console script that exposes the CLI in specalive/cli.py. Phase 6 ships the Modelica templates
+# and the SpecAlive component package as package data.
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
@@ -33,7 +34,7 @@ specalive = "specalive.cli:main"
 include = ["specalive*"]
 
 [tool.setuptools.package-data]
-"specalive.generate" = ["templates/*/*.j2"]
+"specalive.generate" = ["templates/*/*.j2", "templates/modelica/components/*.mo"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

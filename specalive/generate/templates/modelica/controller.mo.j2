@@ -1,0 +1,40 @@
+{#- Purpose: one IR state machine as a Modelica controller class (FR-06 requirement 8): an
+    enumeration of the IR states, the state and history variables, a deadline and a remaining
+    time per timer, one when-clause whose body walks the source states and their transitions in
+    IR priority order, outputs as equations over the state, and invariants as asserts. Layout
+    only; every condition and statement arrives prepared by controller.py. #}
+  model {{ c.class_name }} {{ c.description }}
+{% for comment in c.comments %}
+    {{ comment }}
+{% endfor %}
+    type State = enumeration(
+{% for literal in c.literals %}
+      {{ literal }}{{ "," if not loop.last else ");" }}
+{% endfor %}
+{% for decl in c.declarations %}
+    {{ decl }}
+{% endfor %}
+{% if c.conditions %}
+  algorithm
+    when {
+{% for condition in c.conditions %}
+        {{ condition }}{{ "," if not loop.last else "} then" }}
+{% endfor %}
+{% for branch in c.branches %}
+      {{ "if" if loop.first else "elseif" }} pre(state) == State.{{ branch.state }} then
+{% for t in branch.transitions %}
+        {{ "if" if loop.first else "elseif" }} {{ t.condition }} then
+{% for statement in t.statements %}
+          {{ statement }}
+{% endfor %}
+{% endfor %}
+        end if;
+{% endfor %}
+      end if;
+    end when;
+{% endif %}
+  equation
+{% for equation in c.equations %}
+    {{ equation }}
+{% endfor %}
+  end {{ c.class_name }};

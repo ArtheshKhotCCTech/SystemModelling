@@ -109,3 +109,39 @@ Format: `A<n> | what the AI produced | what we did instead | why`
    The Purpose comment at the top of each partial used `-#}`, which also stripped the indentation
    of the partial's first line: `port def` and `part def` landed at column 0. The validator
    accepted it, because layout means nothing to it, so only a human read caught it. Changed to `#}`.
+
+22. **The missing-import fix put the import in the wrong class.**
+    - The regex for `not found in scope System.` captured the trailing full stop, so the scope
+      became `System.` and the last segment was empty. The import was inserted under the first
+      package header instead of `model System`.
+    - Caught by the unit test written before the code. Fix: the scope must end in a word
+      character.
+
+23. **The heredoc escaping failure again (see A11), this time in `toolchain/omc.py` and
+    `tests/test_cli.py`.**
+    - Python edits run through a shell heredoc turned `\n` into real line breaks inside string
+      literals, and turned the `\b` in a regex into a backspace byte.
+    - The AI's first attempt to patch this with a byte-level script replaced the wrong line: the
+      probe's regex instead of the new one.
+    - Fix: `omc.py` was restored from git and the compile section rewritten with direct edits;
+      the `test_cli.py` strings were fixed by hand. The whole suite passed afterwards.
+    - The same failure has now happened in two phases. A working rule to avoid multi-line
+      heredoc edits for Python may be worth adding.
+
+24. **The first test run used the wrong Python.** It ran under the system Python 3.13 instead of
+    the project's `.venv` 3.12, and the AI noticed only from the traceback paths.
+
+25. **A test the AI wrote first crashed on its own fixture.** The entry-action test used
+    `t["actions"]` on transitions that have no `actions` key (`KeyError`). Nothing was wrong in
+    the generator.
+
+26. **Files beyond the approved plan.** The plan named `modelica.py`, `controller.py`, the
+    templates, `omc.py` and `compile_loop.py`. The implementation also added
+    `generate/modelica_text.py` (shared naming rules), `repair/__init__.py` and
+    `tests/_modelica_support.py`. They were reported in the summary afterwards, not asked about
+    first (compare A6).
+
+27. **FR-06's own example fault was wrong for our toolchain** (see D51). Record this here only if
+    the spec text was AI-drafted; otherwise it belongs in `DECISIONS.md` alone.
+    - Caught by a spike before any code was written: omc 1.27.1 reports `Invalid unit expression`
+      as a Notification.
