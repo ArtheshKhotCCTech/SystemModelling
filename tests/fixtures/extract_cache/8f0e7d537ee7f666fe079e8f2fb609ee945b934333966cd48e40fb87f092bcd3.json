@@ -1,0 +1,139 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#101",
+    "date": "2026-04-10",
+    "file_name": "02_engineering_data_register.xlsx",
+    "quote": "Source ID: SRC-02 | Filename / Artifact: 02_engineering_data_register.xlsx | Type: Excel workbook | Revision / Date: Compiled / 2026-04-10",
+    "revision": null,
+    "role": "register",
+    "tag": "SRC-02",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#102",
+    "date": null,
+    "file_name": "03_reference_control_diagram.png",
+    "quote": "Source ID: SRC-03 | Filename / Artifact: 03_reference_control_diagram.png | Type: Engineering diagram | Revision / Date: Provided reference",
+    "revision": null,
+    "role": "other",
+    "tag": "SRC-03",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#103",
+    "date": "2026-02-20",
+    "file_name": "04_control_logic_design_notes.docx",
+    "quote": "Source ID: SRC-04 | Filename / Artifact: 04_control_logic_design_notes.docx | Type: Word document | Revision / Date: Rev B / 2026-02-20",
+    "revision": "Rev B",
+    "role": "design_note",
+    "tag": "SRC-04",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#104",
+    "date": null,
+    "file_name": "05_controls_email_thread.eml",
+    "quote": "Source ID: SRC-05 | Filename / Artifact: 05_controls_email_thread.eml | Type: Email thread | Revision / Date: 2026-02-16..03-12",
+    "revision": null,
+    "role": "correspondence",
+    "tag": "SRC-05",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#105",
+    "date": "2026-02-19",
+    "file_name": "06_design_review_minutes.md",
+    "quote": "Source ID: SRC-06 | Filename / Artifact: 06_design_review_minutes.md | Type: Meeting notes | Revision / Date: 2026-02-19",
+    "revision": null,
+    "role": "review_decision",
+    "tag": "SRC-06",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#106",
+    "date": "2026-02-02",
+    "file_name": "07_legacy_tank_demo.mo",
+    "quote": "Source ID: SRC-07 | Filename / Artifact: 07_legacy_tank_demo.mo | Type: Simulation model | Revision / Date: Rev 1.2 / 2026-02-02",
+    "revision": "Rev 1.2",
+    "role": "legacy_model",
+    "tag": "SRC-07",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#107",
+    "date": "2026-02-05",
+    "file_name": "08_valve_datasheet.pdf",
+    "quote": "Source ID: SRC-08 | Filename / Artifact: 08_valve_datasheet.pdf | Type: PDF datasheet | Revision / Date: Rev B / 2026-02-05",
+    "revision": "Rev B",
+    "role": "datasheet",
+    "tag": "SRC-08",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#108",
+    "date": "2026-04-03",
+    "file_name": "09_test_procedure_TP17.pdf",
+    "quote": "Source ID: SRC-09 | Filename / Artifact: 09_test_procedure_TP17.pdf | Type: PDF test procedure | Revision / Date: Rev C / 2026-04-03",
+    "revision": "Rev C",
+    "role": "verification_procedure",
+    "tag": "SRC-09",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#109",
+    "date": "2026-04-04",
+    "file_name": "10_demo_run_900s.csv",
+    "quote": "Source ID: SRC-10 | Filename / Artifact: 10_demo_run_900s.csv | Type: CSV test data | Revision / Date: Synthetic / 2026-04-04",
+    "revision": null,
+    "role": "other",
+    "tag": "SRC-10",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#110",
+    "date": "2026-01-28",
+    "file_name": "11_partial_legacy_architecture.puml",
+    "quote": "Source ID: SRC-11 | Filename / Artifact: 11_partial_legacy_architecture.puml | Type: Existing model | Revision / Date: Draft / 2026-01-28",
+    "revision": "Draft",
+    "role": "legacy_architecture",
+    "tag": "SRC-11",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#111",
+    "date": "2026-04-04",
+    "file_name": "12_operator_shift_notes.txt",
+    "quote": "Source ID: SRC-12 | Filename / Artifact: 12_operator_shift_notes.txt | Type: Engineer notes | Revision / Date: 2026-04-04",
+    "revision": null,
+    "role": "informal_note",
+    "tag": "SRC-12",
+    "title": null
+   }
+  ],
+  "parameters": [],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

@@ -1,0 +1,68 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_05_correspondence_05_controls_email_thread_eml#0"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_05_correspondence_05_controls_email_thread_eml#0",
+    "date": null,
+    "file_name": null,
+    "quote": "CR-004 is now approved",
+    "revision": null,
+    "role": "change_record",
+    "tag": "CR-004",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_05_correspondence_05_controls_email_thread_eml#0",
+    "cited_document": "CR-004",
+    "configuration": "nominal",
+    "name": "high_level_limit",
+    "owner_tag": "TK-101",
+    "provisional": false,
+    "quote": "0.80 m as the effective T1 high limit",
+    "stated_status": "effective",
+    "unit": "m",
+    "value": "0.80"
+   },
+   {
+    "chunk_id": "src_05_correspondence_05_controls_email_thread_eml#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "wait_after_tank_1_low",
+    "owner_tag": "PLC-101",
+    "provisional": false,
+    "quote": "12 s after T1 reaches low level before opening the drain valve",
+    "stated_status": null,
+    "unit": "s",
+    "value": "12"
+   },
+   {
+    "chunk_id": "src_05_correspondence_05_controls_email_thread_eml#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "wait_after_tank_2_low",
+    "owner_tag": "PLC-101",
+    "provisional": false,
+    "quote": "8 s after T2 reaches low before the next fill starts",
+    "stated_status": null,
+    "unit": "s",
+    "value": "8"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

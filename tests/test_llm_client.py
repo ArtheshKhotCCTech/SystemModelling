@@ -14,6 +14,7 @@ from specalive.llm.cache import ResponseCache
 from specalive.llm.client import (
     LLMClient,
     LLMError,
+    LLMIncomplete,
     OpenAITransport,
     RawResponse,
     strict_json_schema,
@@ -101,6 +102,28 @@ def test_changed_input_misses_the_cache(tmp_path):
     assert len(t.requests) == 2
 
 
+def test_image_is_sent_as_a_data_url_beside_the_text(tmp_path):
+    t = FakeTransport()
+    make_client(tmp_path, t).complete(prompt="read", input_text="diagram", schema=Part,
+                                      image=b"\x89PNG-bytes", image_media_type="image/png")
+    user = t.requests[0]["messages"][1]
+    assert user["role"] == "user"
+    text_part, image_part = user["content"]
+    assert text_part == {"type": "text", "text": "diagram"}
+    assert image_part["type"] == "image_url"
+    assert image_part["image_url"]["url"].startswith("data:image/png;base64,")
+
+
+def test_image_is_part_of_the_cache_key(tmp_path):
+    t = FakeTransport()
+    client = make_client(tmp_path, t)
+    client.complete(prompt="p", input_text="i", schema=Part, image=b"one")
+    client.complete(prompt="p", input_text="i", schema=Part, image=b"one")
+    client.complete(prompt="p", input_text="i", schema=Part, image=b"two")
+    client.complete(prompt="p", input_text="i", schema=Part)
+    assert len(t.requests) == 3
+
+
 def test_missing_key_on_cache_miss_raises_llm_error(tmp_path):
     t = FakeTransport()
     with pytest.raises(LLMError, match="OPENAI_API_KEY"):
@@ -132,6 +155,14 @@ def test_bad_reply_raises_instead_of_returning_partial_object(tmp_path, reply):
         client.complete(prompt="p", input_text="i", schema=Part)
     assert exc.value.request_id == reply.request_id
     assert not list((tmp_path / "cache").glob("*.json"))
+
+
+def test_reply_cut_off_at_the_length_limit_is_its_own_error(tmp_path):
+    reply = RawResponse('{"tag": "T1"', 5, 5, "req_t", "length")
+    with pytest.raises(LLMIncomplete) as exc:
+        make_client(tmp_path, FakeTransport(reply=reply)).complete(prompt="p", input_text="i",
+                                                                    schema=Part)
+    assert isinstance(exc.value, LLMError) and exc.value.request_id == "req_t"
 
 
 def test_logs_tokens_and_estimated_cost(tmp_path, caplog):

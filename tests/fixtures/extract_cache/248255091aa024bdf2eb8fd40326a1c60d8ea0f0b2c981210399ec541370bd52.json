@@ -1,0 +1,155 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "checks": [],
+  "events": [
+   {
+    "edge": "rising",
+    "id": "fill_pressed",
+    "port_id": "fill_cmd_out"
+   }
+  ],
+  "initial_state": "idle",
+  "states": [
+   {
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "entry_actions": [],
+    "id": "idle",
+    "legacy_names": [],
+    "name": "Idle",
+    "outputs": [
+     {
+      "port_id": "fill_cmd_out",
+      "value": false
+     },
+     {
+      "port_id": "xv_301_cmd_in",
+      "value": false
+     },
+     {
+      "port_id": "xv_302_cmd_in",
+      "value": false
+     }
+    ],
+    "quote": "opens XV-301 when the operator presses FILL"
+   },
+   {
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "entry_actions": [],
+    "id": "filling",
+    "legacy_names": [],
+    "name": "Filling",
+    "outputs": [
+     {
+      "port_id": "fill_cmd_out",
+      "value": true
+     },
+     {
+      "port_id": "xv_301_cmd_in",
+      "value": true
+     },
+     {
+      "port_id": "xv_302_cmd_in",
+      "value": false
+     }
+    ],
+    "quote": "opens XV-301 when the operator presses FILL"
+   },
+   {
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "entry_actions": [
+     "start_timer(discharge_delay_timer)"
+    ],
+    "id": "waiting_to_discharge",
+    "legacy_names": [],
+    "name": "Waiting to Discharge",
+    "outputs": [
+     {
+      "port_id": "fill_cmd_out",
+      "value": false
+     },
+     {
+      "port_id": "xv_301_cmd_in",
+      "value": false
+     },
+     {
+      "port_id": "xv_302_cmd_in",
+      "value": false
+     }
+    ],
+    "quote": "closes it when the level reaches 1.2 m"
+   },
+   {
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "entry_actions": [],
+    "id": "discharging",
+    "legacy_names": [],
+    "name": "Discharging",
+    "outputs": [
+     {
+      "port_id": "fill_cmd_out",
+      "value": false
+     },
+     {
+      "port_id": "xv_301_cmd_in",
+      "value": false
+     },
+     {
+      "port_id": "xv_302_cmd_in",
+      "value": true
+     }
+    ],
+    "quote": "opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m"
+   }
+  ],
+  "timers": [
+   {
+    "duration_parameter_id": "plc_3_delay_time",
+    "id": "discharge_delay_timer"
+   }
+  ],
+  "transitions": [
+   {
+    "actions": [],
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "from_state": "idle",
+    "guard": null,
+    "priority": 1,
+    "quote": "opens XV-301 when the operator presses FILL",
+    "to_state": "filling",
+    "trigger_event": "fill_pressed"
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "from_state": "filling",
+    "guard": "lt_301_level_out >= bt_1_high_level_setpoint",
+    "priority": 1,
+    "quote": "closes it when the level reaches 1.2 m",
+    "to_state": "waiting_to_discharge",
+    "trigger_event": null
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "from_state": "waiting_to_discharge",
+    "guard": "timer_expired(discharge_delay_timer)",
+    "priority": 1,
+    "quote": "opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m",
+    "to_state": "discharging",
+    "trigger_event": null
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "from_state": "discharging",
+    "guard": "lt_301_level_out <= bt_1_low_level_setpoint",
+    "priority": 1,
+    "quote": "opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m",
+    "to_state": "idle",
+    "trigger_event": null
+   }
+  ]
+ },
+ "schema": "BehaviourReply"
+}

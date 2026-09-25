@@ -1,0 +1,148 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "TK-101",
+     "tank1",
+     "T1"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "TK-102",
+     "tank2",
+     "T2"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "XV-101",
+     "valve1",
+     "V1"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "XV-102",
+     "valve2",
+     "V2"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "XV-103",
+     "valve3",
+     "V3"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "LT-101",
+     "level1"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "LT-102",
+     "level2"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "PB-START",
+     "start"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "PB-STOP",
+     "stop"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "PB-SHUT",
+     "shut"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "PLC-101",
+     "tankController"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "SRC-101",
+     "source"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "DRN-101",
+     "ambient1"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   }
+  ],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_04_design_notes_04_control_logic_design_notes_docx#35",
+   "src_04_design_notes_04_control_logic_design_notes_docx#36",
+   "src_04_design_notes_04_control_logic_design_notes_docx#37",
+   "src_04_design_notes_04_control_logic_design_notes_docx#38",
+   "src_04_design_notes_04_control_logic_design_notes_docx#39",
+   "src_04_design_notes_04_control_logic_design_notes_docx#40",
+   "src_04_design_notes_04_control_logic_design_notes_docx#41",
+   "src_04_design_notes_04_control_logic_design_notes_docx#42"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#35",
+    "date": "2026-02-20",
+    "file_name": null,
+    "quote": "CONTROL LOGIC DESIGN NOTE Two-Tank Fill/Transfer/Drain Controller revision=B date=2026-02-20 document=CDS-02 status=Released after design review DR-02",
+    "revision": "B",
+    "role": "design_note",
+    "tag": "CDS-02",
+    "title": "CONTROL LOGIC DESIGN NOTE Two-Tank Fill/Transfer/Drain Controller"
+   }
+  ],
+  "parameters": [],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

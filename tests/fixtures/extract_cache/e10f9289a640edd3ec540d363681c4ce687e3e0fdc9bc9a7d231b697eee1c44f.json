@@ -1,0 +1,169 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_02_engineering_data_02_engineering_data_register_xlsx#85",
+   "src_02_engineering_data_02_engineering_data_register_xlsx#86",
+   "src_02_engineering_data_02_engineering_data_register_xlsx#87",
+   "src_02_engineering_data_02_engineering_data_register_xlsx#88",
+   "src_02_engineering_data_02_engineering_data_register_xlsx#89",
+   "src_02_engineering_data_02_engineering_data_register_xlsx#90"
+  ],
+  "connections": [
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#85",
+    "from_role": "cmd_out",
+    "from_tag": "PB-START",
+    "medium_or_signal": "Command",
+    "quote": "Interface ID: IF-CTL-03 | From: PB-START | From Port / Signal: DI-101 | To: PLC-101 | To Port / Signal: start | Medium / Item: Command | Direction: Operator -> controller",
+    "signal_name": "start",
+    "tag": "IF-CTL-03",
+    "to_role": null,
+    "to_tag": "PLC-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#86",
+    "from_role": "cmd_out",
+    "from_tag": "PB-STOP",
+    "medium_or_signal": "Command",
+    "quote": "Interface ID: IF-CTL-04 | From: PB-STOP | From Port / Signal: DI-102 | To: PLC-101 | To Port / Signal: stop | Medium / Item: Command | Direction: Operator -> controller",
+    "signal_name": "stop",
+    "tag": "IF-CTL-04",
+    "to_role": null,
+    "to_tag": "PLC-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#87",
+    "from_role": "cmd_out",
+    "from_tag": "PB-SHUT",
+    "medium_or_signal": "Command",
+    "quote": "Interface ID: IF-CTL-05 | From: PB-SHUT | From Port / Signal: DI-103 | To: PLC-101 | To Port / Signal: shut | Medium / Item: Command | Direction: Operator -> controller",
+    "signal_name": "shut",
+    "tag": "IF-CTL-05",
+    "to_role": null,
+    "to_tag": "PLC-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#88",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "Open command",
+    "quote": "Interface ID: IF-CTL-06 | From: PLC-101 | From Port / Signal: valve1 | To: XV-101 | To Port / Signal: DO-101 | Medium / Item: Open command | Direction: Controller -> valve",
+    "signal_name": "valve1",
+    "tag": "IF-CTL-06",
+    "to_role": "cmd_in",
+    "to_tag": "XV-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#89",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "Open command",
+    "quote": "Interface ID: IF-CTL-07 | From: PLC-101 | From Port / Signal: valve2 | To: XV-102 | To Port / Signal: DO-102 | Medium / Item: Open command | Direction: Controller -> valve",
+    "signal_name": "valve2",
+    "tag": "IF-CTL-07",
+    "to_role": "cmd_in",
+    "to_tag": "XV-102"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#90",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "Open command",
+    "quote": "Interface ID: IF-CTL-08 | From: PLC-101 | From Port / Signal: valve3 | To: XV-103 | To Port / Signal: DO-103 | Medium / Item: Open command | Direction: Controller -> valve",
+    "signal_name": "valve3",
+    "tag": "IF-CTL-08",
+    "to_role": "cmd_in",
+    "to_tag": "XV-103"
+   }
+  ],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#92",
+    "date": "2026-01-15",
+    "file_name": null,
+    "quote": "Date: 2026-01-15 | Record: URS-001 | Revision: A | Status: Released | Affected Item(s): Sequence, setpoints | Change Summary: Initial customer requirements issued.",
+    "revision": "A",
+    "role": "change_record",
+    "tag": "URS-001",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#93",
+    "date": "2026-02-02",
+    "file_name": null,
+    "quote": "Date: 2026-02-02 | Record: MDS-01 | Revision: 1.2 | Status: Released | Affected Item(s): Tank/flow parameters | Change Summary: Simulation/mechanical assumptions issued.",
+    "revision": "1.2",
+    "role": "change_record",
+    "tag": "MDS-01",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#94",
+    "date": "2026-02-12",
+    "file_name": null,
+    "quote": "Date: 2026-02-12 | Record: ICD-01 | Revision: B | Status: Released | Affected Item(s): Signals and tags | Change Summary: PLC I/O tags and units frozen.",
+    "revision": "B",
+    "role": "change_record",
+    "tag": "ICD-01",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#95",
+    "date": "2026-02-19",
+    "file_name": null,
+    "quote": "Date: 2026-02-19 | Record: DR-02 | Revision: Final | Status: Approved | Affected Item(s): Command priority, timer resume, interlocks | Change Summary: Review clarified STOP/SHUT semantics and valve concurrency.",
+    "revision": "Final",
+    "role": "change_record",
+    "tag": "DR-02",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#96",
+    "date": "2026-03-11",
+    "file_name": null,
+    "quote": "Date: 2026-03-11 | Record: CR-004 | Revision: 1 | Status: Approved | Affected Item(s): T1 high setpoint, waits | Change Summary: T1 high 0.78 -> 0.80 m; post-transfer wait 10 -> 12 s; inter-cycle wait 10 -> 8 s.",
+    "revision": "1",
+    "role": "change_record",
+    "tag": "CR-004",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#97",
+    "date": "2026-04-03",
+    "file_name": null,
+    "quote": "Date: 2026-04-03 | Record: TP-17 | Revision: C | Status: Released | Affected Item(s): 900 s demo test | Change Summary: Validation procedure updated with event schedule.",
+    "revision": "C",
+    "role": "change_record",
+    "tag": "TP-17",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#98",
+    "date": "2026-04-08",
+    "file_name": null,
+    "quote": "Date: 2026-04-08 | Record: SIM-LEGACY | Revision: 1.2 | Status: Released | Affected Item(s): Modelica demo | Change Summary: Existing model archived. No CR-004 incorporation recorded.",
+    "revision": "1.2",
+    "role": "change_record",
+    "tag": "SIM-LEGACY",
+    "title": null
+   }
+  ],
+  "parameters": [],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

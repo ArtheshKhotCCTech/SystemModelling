@@ -1,0 +1,60 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_04_design_notes_06_design_review_minutes_md#3",
+   "src_04_design_notes_06_design_review_minutes_md#4",
+   "src_04_design_notes_06_design_review_minutes_md#6",
+   "src_04_design_notes_06_design_review_minutes_md#7",
+   "src_04_design_notes_06_design_review_minutes_md#8",
+   "src_04_design_notes_06_design_review_minutes_md#9",
+   "src_04_design_notes_06_design_review_minutes_md#10",
+   "src_04_design_notes_06_design_review_minutes_md#11",
+   "src_04_design_notes_06_design_review_minutes_md#12",
+   "src_04_design_notes_06_design_review_minutes_md#13",
+   "src_04_design_notes_06_design_review_minutes_md#14",
+   "src_04_design_notes_06_design_review_minutes_md#21"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_04_design_notes_06_design_review_minutes_md#0",
+    "date": "2026-02-19",
+    "file_name": null,
+    "quote": "# DR-02 Design Review Minutes - Two-Tank Controller",
+    "revision": null,
+    "role": "review_decision",
+    "tag": "DR-02",
+    "title": "DR-02 Design Review Minutes - Two-Tank Controller"
+   }
+  ],
+  "parameters": [],
+  "parts": [
+   {
+    "aliases": [
+     "shut"
+    ],
+    "attributes": [
+     {
+      "key": "clarification",
+      "value": "controlled process shutdown/drain, not an emergency-stop function"
+     }
+    ],
+    "chunk_id": "src_04_design_notes_06_design_review_minutes_md#4",
+    "description": null,
+    "kind": "command_button",
+    "name": null,
+    "quote": "The term `shut` was confirmed to mean a **controlled process shutdown/drain**, not an emergency-stop function.",
+    "tag": "PB-SHUT"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

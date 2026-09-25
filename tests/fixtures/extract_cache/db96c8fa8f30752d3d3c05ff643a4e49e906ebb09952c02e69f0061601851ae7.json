@@ -1,0 +1,135 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [],
+  "parameters": [],
+  "parts": [],
+  "requirements": [
+   {
+    "category": "Functional",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#1",
+    "quote": "Req ID: URS-FUN-001 | Source / Rev: URS-001 Rev A | Requirement Text: The controller shall start the automatic fill-transfer-drain sequence upon a valid START command when the process is idle or paused.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-FUN-001",
+    "text": "The controller shall start the automatic fill-transfer-drain sequence upon a valid START command when the process is idle or paused."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#2",
+    "quote": "Req ID: URS-FUN-002 | Source / Rev: URS-001 Rev A | Requirement Text: The automatic sequence shall open inlet valve V1 to fill Tank 1.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-FUN-002",
+    "text": "The automatic sequence shall open inlet valve V1 to fill Tank 1."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#3",
+    "quote": "Req ID: URS-FUN-003 | Source / Rev: URS-001 Rev A | Requirement Text: When Tank 1 reaches its high-level limit, V1 shall close.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-FUN-003",
+    "text": "When Tank 1 reaches its high-level limit, V1 shall close."
+   },
+   {
+    "category": "Timing",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#4",
+    "quote": "Req ID: URS-FUN-004 | Source / Rev: URS-001 Rev A | Requirement Text: After Tank 1 reaches the high-level limit, the controller shall wait 10 s before opening V2.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-FUN-004",
+    "text": "After Tank 1 reaches the high-level limit, the controller shall wait 10 s before opening V2."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#5",
+    "quote": "Req ID: URS-FUN-005 | Source / Rev: URS-001 Rev A | Requirement Text: V2 shall transfer liquid from Tank 1 to Tank 2 until Tank 1 reaches its low-level limit.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-FUN-005",
+    "text": "V2 shall transfer liquid from Tank 1 to Tank 2 until Tank 1 reaches its low-level limit."
+   },
+   {
+    "category": "Timing",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#6",
+    "quote": "Req ID: URS-FUN-006 | Source / Rev: URS-001 Rev A | Requirement Text: After Tank 1 reaches the low-level limit, the controller shall wait 10 s before opening V3.",
+    "status": "superseded",
+    "superseded_by": "CR-004",
+    "tag": "URS-FUN-006",
+    "text": "After Tank 1 reaches the low-level limit, the controller shall wait 10 s before opening V3."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#7",
+    "quote": "Req ID: URS-FUN-007 | Source / Rev: URS-001 Rev A | Requirement Text: V3 shall drain Tank 2 until Tank 2 reaches its low-level limit.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-FUN-007",
+    "text": "V3 shall drain Tank 2 until Tank 2 reaches its low-level limit."
+   },
+   {
+    "category": "Timing",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#8",
+    "quote": "Req ID: URS-FUN-008 | Source / Rev: URS-001 Rev A | Requirement Text: After Tank 2 reaches its low-level limit, the controller shall return to the Tank 1 filling operation after 10 s.",
+    "status": "superseded",
+    "superseded_by": "CR-004",
+    "tag": "URS-FUN-008",
+    "text": "After Tank 2 reaches its low-level limit, the controller shall return to the Tank 1 filling operation after 10 s."
+   },
+   {
+    "category": "Mode",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#9",
+    "quote": "Req ID: URS-MOD-001 | Source / Rev: URS-001 Rev A | Requirement Text: STOP shall close V1, V2 and V3 and place the controller in a paused condition.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-MOD-001",
+    "text": "STOP shall close V1, V2 and V3 and place the controller in a paused condition."
+   },
+   {
+    "category": "Mode",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#10",
+    "quote": "Req ID: URS-MOD-002 | Source / Rev: URS-001 Rev A | Requirement Text: A START command following STOP shall continue the sequence from the point at which STOP was accepted.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-MOD-002",
+    "text": "A START command following STOP shall continue the sequence from the point at which STOP was accepted."
+   },
+   {
+    "category": "Mode",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#11",
+    "quote": "Req ID: URS-MOD-003 | Source / Rev: URS-001 Rev A | Requirement Text: SHUT shall command V2 and V3 open to drain both tanks and shall inhibit V1.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-MOD-003",
+    "text": "SHUT shall command V2 and V3 open to drain both tanks and shall inhibit V1."
+   },
+   {
+    "category": "Mode",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#12",
+    "quote": "Req ID: URS-MOD-004 | Source / Rev: URS-001 Rev A | Requirement Text: After shutdown draining is complete, all three valves shall be closed and the controller shall be in the initial idle configuration.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-MOD-004",
+    "text": "After shutdown draining is complete, all three valves shall be closed and the controller shall be in the initial idle configuration."
+   },
+   {
+    "category": "Safety",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#13",
+    "quote": "Req ID: URS-SAF-001 | Source / Rev: URS-001 Rev A | Requirement Text: On loss of controller power, all process valves shall move to or remain in the closed position.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-SAF-001",
+    "text": "On loss of controller power, all process valves shall move to or remain in the closed position."
+   }
+  ],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

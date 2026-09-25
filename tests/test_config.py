@@ -18,6 +18,7 @@ def test_defaults_when_environment_is_empty():
     assert s.validator_timeout_s > 0
     assert s.llm_timeout_s > 0
     assert s.repair_attempts == 3
+    assert s.vision is False
     assert s.openai_api_key is None
     assert s.has_api_key is False
 
@@ -36,6 +37,7 @@ def test_environment_overrides_every_tunable(tmp_path):
         "SPECALIVE_REPAIR_ATTEMPTS": "2",
         "SPECALIVE_PRICE_IN": "1.5",
         "SPECALIVE_PRICE_OUT": "6",
+        "SPECALIVE_VISION": "true",
         "OPENAI_API_KEY": "sk-test",
     }
     s = load_settings(env)
@@ -48,13 +50,15 @@ def test_environment_overrides_every_tunable(tmp_path):
     assert (s.omc_timeout_s, s.validator_timeout_s, s.llm_timeout_s) == (11.0, 12.0, 13.0)
     assert s.repair_attempts == 2
     assert (s.price_in_per_mtok, s.price_out_per_mtok) == (1.5, 6.0)
+    assert s.vision is True
     assert s.has_api_key is True
 
 
 @pytest.mark.parametrize(
     "name,value",
     [("SPECALIVE_OMC_TIMEOUT", "soon"), ("SPECALIVE_OMC_TIMEOUT", "-1"),
-     ("SPECALIVE_REPAIR_ATTEMPTS", "2.5"), ("SPECALIVE_PRICE_IN", "x")],
+     ("SPECALIVE_REPAIR_ATTEMPTS", "2.5"), ("SPECALIVE_PRICE_IN", "x"),
+     ("SPECALIVE_VISION", "maybe")],
 )
 def test_bad_value_names_the_variable(name, value):
     with pytest.raises(ConfigError, match=name):
@@ -144,3 +148,9 @@ def test_explicit_environ_ignores_dotenv_in_working_directory(monkeypatch, tmp_p
     _write_env_file(tmp_path, "SPECALIVE_MODEL=dotenv-model\n")
     monkeypatch.chdir(tmp_path)
     assert load_settings({}).model == "gpt-4o"
+
+
+@pytest.mark.parametrize("value, expected", [("1", True), ("yes", True), ("ON", True),
+                                             ("0", False), ("false", False), ("off", False)])
+def test_vision_flag_spellings(value, expected):
+    assert load_settings({"SPECALIVE_VISION": value}).vision is expected
