@@ -2,6 +2,7 @@
 # offline. The key is a SHA-256 over the canonical JSON of model name, full prompt, response
 # schema and a hash of the input, so changing any of them — the model included (R-FND-5) — is a
 # miss, never a stale hit. One JSON file per entry, written atomically; unreadable files are misses.
+# WriteOnlyCache (phase 9) never serves a hit but records fresh answers, for --no-llm-cache.
 from __future__ import annotations
 
 import hashlib
@@ -60,3 +61,11 @@ class ResponseCache:
             entry.unlink()
             removed += 1
         return removed
+
+
+class WriteOnlyCache(ResponseCache):
+    """`run --no-llm-cache`: every request goes to the API, and its answer still replaces the
+    cached one, so the next cached run repeats the fresh result."""
+
+    def get(self, key: str) -> Any | None:
+        return None

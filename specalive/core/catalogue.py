@@ -3,6 +3,8 @@
 # kind maps to (FR-02 requirements 15–18). Validation runs at load, so an unmapped connector or
 # required attribute, or a default without its assumption text (R-CAT-2), fails before any
 # generation; check_model() reports IR parts whose kind or port role the catalogue does not know.
+# `measures` (phase 9) names the output of another kind that an instrument's input reads, so
+# extraction can wire a sensor to the part its evidence names.
 from __future__ import annotations
 
 from pathlib import Path
@@ -57,6 +59,8 @@ class CatalogueEntry(_Entry):
     description: str
     ports: dict[str, PortSpec] = {}
     dynamic_ports: bool = Field(False, description="ports come from the IR part, not from here")
+    measures: dict[str, str] = Field(
+        {}, description="input port role -> the output port role of the part it measures")
     sysml: SysmlSpec
     modelica: ModelicaSpec
     required: list[str] = []
@@ -83,6 +87,9 @@ class CatalogueEntry(_Entry):
                 problems.append(f"default {name!r} has no assumption text (R-CAT-2)")
             if default.unit not in SI_UNITS:
                 problems.append(f"default {name!r} unit {default.unit!r} is not SI")
+        for role in sorted(self.measures):
+            if role not in self.ports or self.ports[role].direction != "in":
+                problems.append(f"measures {role!r}, which is not an input port")
         for role, spec in self.ports.items():
             if spec.unit is not None and spec.unit not in SI_UNITS:
                 problems.append(f"port {role!r} unit {spec.unit!r} is not SI")
@@ -157,6 +164,13 @@ def load_catalogue(path: Path = DEFAULT_CATALOGUE_PATH) -> Catalogue:
             details = "; ".join(f"{'.'.join(map(str, e['loc'])) or 'entry'}: {e['msg']}"
                                 for e in exc.errors())
             problems.append(f"kind {kind!r}: {details}")
+    outputs = {role for e in entries.values() for role, spec in e.ports.items()
+               if spec.direction == "out"}
+    for kind, entry in sorted(entries.items()):
+        for role, measured in sorted(entry.measures.items()):
+            if measured not in outputs:
+                problems.append(f"kind {kind!r}: measures {role!r} reads {measured!r}, which "
+                                "is no kind's output port")
     if problems:
         raise CatalogueError(f"catalogue {path}:\n  " + "\n  ".join(problems))
     return Catalogue(entries)

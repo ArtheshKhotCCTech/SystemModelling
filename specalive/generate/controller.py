@@ -1,8 +1,10 @@
 # Purpose: renders one IR state machine as a Modelica controller class (FR-06 requirements 8-9),
 # deterministically and with no domain events built in (R-MO-7). One enumeration literal per IR
 # state; one `when` over every command edge and every `pre(state) == S and guard`, whose body
-# checks transitions in IR priority order; a deadline and a remaining time per timer, so
-# save_history freezes a timer and a history return restores it; outputs as equations over the
+# checks transitions in IR priority order; a deadline per timer, and a remaining time for each
+# timer a save_history can freeze, which a history return restores (phase 9: the history state
+# and remaining times only where something assigns them; omc refuses an unassigned discrete
+# variable); outputs as equations over the
 # state; window-free `always` acceptance criteria that read only this controller as asserts.
 from __future__ import annotations
 
@@ -129,6 +131,7 @@ class _Controller:
         self.used_params: set[str] = set()
         self.not_asserted: dict[str, str] = {}
         self.timers_of = self._timer_owners()
+        self.frozen = self._frozen_timers()
         self._check_names()
 
     # --- names ---
@@ -178,6 +181,21 @@ class _Controller:
                     owners[t.to].add(action.args[0])
         order = [t.id for t in self.sm.timers]
         return {s: sorted(ts, key=order.index) for s, ts in owners.items()}
+
+    def _uses_history(self) -> bool:
+        """Whether anything saves, clears or returns to history; without that the history
+        variable would be declared and never assigned."""
+        verbs = {"save_history", "clear_history"}
+        actions = [a for t in self.sm.transitions for a in t.actions]
+        actions += [a for s in self.sm.states for a in s.entry_actions]
+        return (any(t.to == HISTORY for t in self.sm.transitions)
+                or any(parse_action(a).verb in verbs for a in actions))
+
+    def _frozen_timers(self) -> set[str]:
+        """Timers a save_history can freeze: those running in a state that saves history."""
+        saving = {t.from_ for t in self.sm.transitions if "save_history" in t.actions}
+        saving |= {s.id for s in self.sm.states if "save_history" in s.entry_actions}
+        return {tid for s in saving for tid in self.timers_of.get(s, [])}
 
     # --- expressions ---
 
@@ -256,7 +274,7 @@ class _Controller:
         out = [f"{STATE_VAR} := {HISTORY_VAR};"]
         for s in self.sm.states:
             restore = [f"{self.deadline[tid]} := time + {self.remaining[tid]};"
-                       for tid in self.timers_of.get(s.id, [])]
+                       for tid in self.timers_of.get(s.id, []) if tid in self.frozen]
             restore += self._actions(s.entry_actions, s.id, skip_timers=True)
             if restore:
                 out.append(f"if {HISTORY_VAR} == State.{self.literal[s.id]} then "
@@ -377,13 +395,15 @@ class _Controller:
         initial = self.literal[self.sm.initial]
         decls.append(f"State {STATE_VAR}(start = State.{initial}, fixed = true) "
                      '"Active state";')
-        decls.append(f"State {HISTORY_VAR}(start = State.{initial}, fixed = true) "
-                     '"State a history return goes back to";')
+        if self._uses_history():
+            decls.append(f"State {HISTORY_VAR}(start = State.{initial}, fixed = true) "
+                         '"State a history return goes back to";')
         for t in self.sm.timers:
             decls.append(f"discrete Real {self.deadline[t.id]}(start = Modelica.Constants.inf, "
                          f"fixed = true) {string(f'Time the timer expires [IR {t.id}]')};")
-            decls.append(f"discrete Real {self.remaining[t.id]}(start = 0, fixed = true) "
-                         f"{string(f'Time left when frozen [IR {t.id}]')};")
+            if t.id in self.frozen:
+                decls.append(f"discrete Real {self.remaining[t.id]}(start = 0, fixed = true) "
+                             f"{string(f'Time left when frozen [IR {t.id}]')};")
         return decls
 
     def view(self) -> tuple[ControllerView, list[str]]:

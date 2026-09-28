@@ -310,3 +310,77 @@ def test_behaviour_pass_asks_once_more_with_the_problems_and_keeps_the_better_an
     sm = draft.state_machines[0]
     assert [t.id for t in sm.transitions] == ["tr_idle_1", "tr_fill_1"]
     assert any("attempt 1" in d.reason for d in report.discarded_fragments)
+
+
+# --- progress (FR-09 requirement 2) ------------------------------------------------------
+
+def test_structure_passes_report_source_n_of_m(catalogue):
+    b = _two_sources()
+    seen = []
+    llm = FakeLLM({"FragmentReply": [empty_reply()]})
+    run_structure_passes(b, llm, catalogue, {s.id: s.id for s in b.sources}, progress=seen.append)
+    assert [m.split(":")[0] for m in seen] == ["source 1 of 3", "source 2 of 3", "source 3 of 3"]
+    assert "src_c" in seen[0]  # register first, named by its path
+
+
+def test_behaviour_pass_reports_its_controller_and_attempt(catalogue):
+    from specalive.extract.extract import Passes, run_behaviour_passes
+    from specalive.extract.fragments import Draft, ExtractReport
+
+    ctx = _ctx()
+    draft = Draft(name="m", description="d", parts=[ctx.owner.model_copy(update={
+        "trace": [{"source_id": "note", "locator": "line 4", "quote": LOGIC}]})])
+    reply = _machine(transitions=[_tr("idle", "fill", 1, trigger="go_cmd")])
+    llm = FakeLLM({"BehaviourReply": [reply.model_dump()]})
+    seen = []
+    run_behaviour_passes(Passes(behaviour_refs=list(ctx.refs.values())), draft, llm, ctx.refs,
+                         ctx.source_map, ExtractReport(), progress=seen.append)
+    # one line per LLM call, before the call, naming the controller
+    assert seen == [f"behaviour of ctl: attempt {n}" for n in range(1, len(llm.calls) + 1)]
+
+
+# --- reads through the wiring (phase 9) --------------------------------------------------
+
+def test_guard_reading_a_wired_output_reads_the_controller_input_instead():
+    import dataclasses
+
+    ctx = dataclasses.replace(_ctx(), operands=_ctx().operands | {"lt_9_out"},
+                              via={"lt_9_out": "ctl_level"})
+    reply = _machine(transitions=[_tr("idle", "fill", 1, trigger="go_cmd"),
+                                  _tr("fill", "hold", 1, guard="lt_9_out >= high")])
+    sm = build_state_machine(reply, ctx).machine
+    assert next(t for t in sm.transitions if t.from_ == "fill").guard == "ctl_level >= high"
+
+
+def test_guard_rewrite_touches_whole_ids_only():
+    from specalive.extract.extract import through_wiring
+
+    via = {"lt_9_out": "ctl_level"}
+    assert through_wiring("lt_9_out >= high and lt_9_out_b < 1", via) == \
+        "ctl_level >= high and lt_9_out_b < 1"
+    assert through_wiring("in_state(lt_9_out)", {}) == "in_state(lt_9_out)"
+
+
+def test_wiring_map_holds_only_outputs_wired_to_exactly_one_controller_input():
+    from specalive.core.ir import Connection
+    from specalive.extract.extract import controller_inputs_by_source
+
+    owner = _ctx().owner
+    wire = [Connection(id="a", from_port="lt_9_out", to_port="ctl_level", medium_or_signal="s"),
+            Connection(id="b", from_port="pb_out", to_port="ctl_go", medium_or_signal="s"),
+            Connection(id="c", from_port="pb_out", to_port="ctl_level", medium_or_signal="s"),
+            Connection(id="d", from_port="ctl_valve", to_port="xv_cmd", medium_or_signal="s")]
+    assert controller_inputs_by_source(owner, wire) == {"lt_9_out": "ctl_level"}
+
+
+def test_a_history_return_that_clears_the_history_is_discarded():
+    # clear_history before going back to the saved state resumes nothing (phase 9, L1 finding)
+    reply = _machine(states=[_state("idle", {"ctl_valve": False}),
+                             _state("fill", {"ctl_valve": True}), _state("paused")],
+                     transitions=[_tr("idle", "fill", 1, trigger="go_cmd"),
+                                  _tr("fill", "paused", 1, actions=["save_history"]),
+                                  _tr("paused", "history", 1, trigger="go_cmd",
+                                      actions=["clear_history"])])
+    result = build_state_machine(reply, _ctx())
+    assert all(t.to != "history" for t in result.machine.transitions)
+    assert any("clear_history" in d.reason and d.kind == "transition" for d in result.discarded)

@@ -11,18 +11,26 @@
 # sim/result.csv and writes verification.json (variable map, reference comparison, acceptance
 # criteria, tolerances with their source) and coverage.json (only with --golden). Phase 8:
 # `report --run` writes report/summary.md, traceability.md, assumptions.md, correspondence.md and
-# report/plots/*.png from whatever artefacts the run folder holds. Top of the layer stack; nothing
-# imports it.
+# report/plots/*.png from whatever artefacts the run folder holds. Phase 9: `run` chains every
+# stage over a bundle, a text file or --text with one shared LLM client; each stage prints start,
+# result and duration, a failed stage makes its dependants NOT RUN while the reports are still
+# written, and run.json (the one place a timestamp is written) and run.log record the run. Top of
+# the layer stack; nothing imports it.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import dataclasses
 import io
 import json
+import logging
+import platform
 import re
 import sys
-from collections.abc import Sequence
+import time
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 
 from pydantic import BaseModel
@@ -43,7 +51,8 @@ from specalive.extract.text_input import text_bundle
 from specalive.generate import modelica, sysml
 from specalive.ingest.evidence import EvidenceBundle
 from specalive.ingest.ingest import EVIDENCE_FILE, InputNotFound, ingest, write_evidence
-from specalive.llm.cache import ResponseCache
+from specalive.ingest.readers._common import CompletionClient
+from specalive.llm.cache import ResponseCache, WriteOnlyCache
 from specalive.llm.client import LLMClient, LLMError
 from specalive.repair import compile_loop
 from specalive.report import artefacts, assumptions, correspondence, plots, summary, traceability
@@ -134,14 +143,15 @@ def cmd_cache_clear(settings: Settings) -> int:
     return EXIT_OK
 
 
-def cmd_ingest(settings: Settings, bundle: str | None, out: Path | None) -> int:
+def cmd_ingest(settings: Settings, bundle: str | None, out: Path | None,
+               llm: CompletionClient | None = None) -> int:
     if not bundle:
         print("specalive ingest: input problem: give a bundle folder or a file", file=sys.stderr)
         return EXIT_INPUT
     path = Path(bundle)
     out = out or Path("out") / (path.stem or "run")
     try:
-        evidence = ingest(path, settings, llm=LLMClient(settings))
+        evidence = ingest(path, settings, llm=llm or LLMClient(settings))
     except InputNotFound as exc:
         print(f"specalive ingest: input problem: {exc}", file=sys.stderr)
         return EXIT_INPUT
@@ -187,14 +197,16 @@ def _extract_input(evidence: Path | None, text: str | None, text_file: str | Non
 
 
 def cmd_extract(settings: Settings, evidence: Path | None, text: str | None,
-                text_file: str | None, out: Path | None) -> int:
+                text_file: str | None, out: Path | None, llm: CompletionClient | None = None,
+                progress: Callable[[str], None] | None = None) -> int:
     got = _extract_input(evidence, text, text_file, out)
     if isinstance(got, str):
         print(f"specalive extract: input problem: {got}", file=sys.stderr)
         return EXIT_INPUT
     bundle, out = got
     try:
-        result = run_extract(bundle, LLMClient(settings))
+        result = run_extract(bundle, llm or LLMClient(settings),
+                             progress=progress or (lambda message: None))
     except LLMError as exc:
         print(f"specalive extract: infrastructure problem: {_redact(str(exc), settings)}",
               file=sys.stderr)
@@ -216,11 +228,6 @@ def cmd_extract(settings: Settings, evidence: Path | None, text: str | None,
           f"{len(r.missing_information)} missing-information item(s)")
     print(f"wrote {target}")
     return EXIT_OK
-
-
-def cmd_stub(name: str) -> int:
-    print(f"specalive {name}: not implemented in this phase", file=sys.stderr)
-    return EXIT_FAILED
 
 
 def cmd_generate(ir: Path | None, out: Path | None, only: str | None) -> int:
@@ -282,14 +289,15 @@ def _repair_summary(out: Path) -> str:
         return ""
 
 
-def _compile_modelica(settings: Settings, out: Path) -> int:
+def _compile_modelica(settings: Settings, out: Path,
+                      llm: CompletionClient | None = None) -> int:
     model = out / modelica.MODEL_FILE
     if not model.is_file():
         print(f"specalive compile: input problem: {model} not found; run specalive generate "
               "first", file=sys.stderr)
         return EXIT_INPUT
     result = compile_loop.run_compile_loop(model, out, settings=settings,
-                                           llm=LLMClient(settings),
+                                           llm=llm or LLMClient(settings),
                                            ir_summary=_repair_summary(out))
     print(f"Modelica compile: {result.status}: {result.detail}")
     for error in result.errors:
@@ -498,6 +506,313 @@ def cmd_report(run: Path | None) -> int:
     return EXIT_OK
 
 
+# --- run (phase 9) ---------------------------------------------------------------------------
+
+RUN_STAGES = ("ingest", "extract", "generate", "compile", "verify", "report")
+RUN_FILE, RUN_LOG = "run.json", "run.log"
+NOT_RUN = "NOT RUN"
+STATUS = {EXIT_OK: "ok", EXIT_FAILED: "failed", EXIT_INPUT: "input problem",
+          EXIT_TOOLCHAIN: "infrastructure problem"}
+TEXT_SUFFIXES = (".txt",)
+INTERACTIVE_NOTE = ("not delivered: interactive clarifying questions (FR-04 stretch) are not "
+                    "built; open questions and their defaults are listed in report/summary.md")
+# What a run writes; removed first so a stale artefact is never reported as this run's result.
+_RUN_FILES = (EVIDENCE_FILE, IR_FILE, artefacts.EXTRACT_REPORT, sysml.MODEL_FILE,
+              modelica.MODEL_FILE, compile_loop.REPAIRED_FILE, sysml_validate.REPORT_FILE,
+              compile_loop.COMPILE_LOG, compile_loop.REPAIR_LOG, VERIFICATION_FILE,
+              COVERAGE_FILE, RUN_FILE, RUN_LOG)
+_RUN_DIRS = (compile_loop.ATTEMPTS_DIR, compile_loop.BUILD_DIR, simulate.SIM_DIR,
+             artefacts.REPORT_DIR)
+
+log = logging.getLogger("specalive.run")
+
+
+@dataclass
+class StageRecord:
+    name: str
+    status: str
+    exit_code: int | None  # None: NOT RUN
+    duration_s: float
+    detail: str
+
+
+def run_exit_code(codes: dict[str, int | None]) -> int:
+    """An input problem that left nothing to model, then infrastructure, then any other input
+    problem, then a failed gate; 0 only when every stage that ran passed (FR-09 requirement 4)."""
+    if EXIT_INPUT in (codes.get("ingest"), codes.get("extract")):
+        return EXIT_INPUT
+    present = {c for c in codes.values() if c is not None}
+    return next((c for c in (EXIT_TOOLCHAIN, EXIT_INPUT, EXIT_FAILED) if c in present), EXIT_OK)
+
+
+class _Tee(io.StringIO):
+    """Keeps what a stage writes to stderr for its one-line result while still showing it."""
+
+    def __init__(self, stream) -> None:
+        super().__init__()
+        self._stream = stream
+
+    def write(self, text: str) -> int:
+        self._stream.write(text)
+        return super().write(text)
+
+
+def _last_problem(text: str) -> str:
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    return re.sub(r"^specalive \w+: ", "", lines[-1]) if lines else ""
+
+
+def _read_json(path: Path) -> dict:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _clear_previous(out: Path) -> None:
+    for name in _RUN_FILES:
+        (out / name).unlink(missing_ok=True)
+    for name in _RUN_DIRS:
+        folder = out / name
+        if folder.is_dir():
+            for entry in sorted(folder.rglob("*"), key=lambda p: len(p.parts), reverse=True):
+                entry.rmdir() if entry.is_dir() else entry.unlink()
+            folder.rmdir()
+
+
+def _input_kind(source: str | None, text: str | None) -> str:
+    if text is not None:
+        return "text"
+    path = Path(source or "")
+    return "text_file" if path.is_file() and path.suffix.lower() in TEXT_SUFFIXES else "bundle"
+
+
+def _run_llm(settings: Settings, no_cache: bool):
+    if no_cache:
+        return LLMClient(settings, cache=WriteOnlyCache(settings.cache_dir))
+    return LLMClient(settings)
+
+
+def _ingest_text(text: str, name: str, out: Path) -> int:
+    if not text.strip():
+        print("specalive run: input problem: the text is empty", file=sys.stderr)
+        return EXIT_INPUT
+    target = write_evidence(text_bundle(text, name), out)
+    print(f"wrote {target}")
+    return EXIT_OK
+
+
+def _stage_ingest(settings: Settings, llm, source: str | None, text: str | None, kind: str,
+                  out: Path) -> int:
+    if kind == "text":
+        return _ingest_text(text or "", "text", out)
+    if kind == "text_file":
+        try:
+            content = Path(source or "").read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as exc:
+            print(f"specalive run: input problem: cannot read {source}: {exc}", file=sys.stderr)
+            return EXIT_INPUT
+        return _ingest_text(content, Path(source or "").name, out)
+    if not source:
+        print("specalive run: input problem: give a bundle folder, a spec file or --text",
+              file=sys.stderr)
+        return EXIT_INPUT
+    return cmd_ingest(settings, source, out, llm=llm)
+
+
+def _stage_compile(settings: Settings, llm, out: Path) -> int:
+    codes = []
+    if (out / sysml.MODEL_FILE).is_file():
+        codes.append(_compile_sysml(settings, out))
+    else:
+        print(f"SysML validation: {NOT_RUN}: no {sysml.MODEL_FILE}")
+    if (out / modelica.MODEL_FILE).is_file():
+        codes.append(_compile_modelica(settings, out, llm))
+    else:
+        print(f"Modelica compile: {NOT_RUN}: no {modelica.MODEL_FILE}")
+    return max(codes)
+
+
+def _summary_line(name: str, out: Path) -> str:
+    """The one-line result of a stage that succeeded, read from what it wrote."""
+    if name == "ingest":
+        ev = _read_json(out / EVIDENCE_FILE)
+        sources = ev.get("sources", [])
+        unread = sum(1 for s in sources if s.get("status") != "read")
+        return (f"{len(sources)} source(s), {len(ev.get('chunks', []))} chunk(s), "
+                f"{unread} not fully read")
+    if name == "extract":
+        ir = _read_json(out / IR_FILE)
+        n = {k: len(ir.get(k, [])) for k in ("parts", "connections", "state_machines",
+                                               "questions", "conflicts", "assumptions")}
+        return (f"{n['parts']} part(s), {n['connections']} connection(s), "
+                f"{n['state_machines']} state machine(s); {n['questions']} question(s), "
+                f"{n['conflicts']} conflict(s), {n['assumptions']} assumption(s)")
+    if name == "generate":
+        return ", ".join(f for f in (sysml.MODEL_FILE, modelica.MODEL_FILE) if (out / f).is_file())
+    if name == "compile":
+        v = _read_json(out / sysml_validate.REPORT_FILE).get("status", NOT_RUN)
+        loop = _read_json(out / compile_loop.REPAIR_LOG)
+        m = loop.get("status", NOT_RUN)
+        errors = loop.get("errors") or []
+        why = f": {errors[0].splitlines()[0]}" if m not in simulate.COMPILED and errors else ""
+        return f"SysML {v}; Modelica {m}{why}"
+    if name == "verify":
+        return f"verification {_read_json(out / VERIFICATION_FILE).get('status', NOT_RUN)}"
+    return "summary, traceability, assumptions, correspondence and plots in report/"
+
+
+def _not_run_reason(name: str, records: dict[str, StageRecord], out: Path) -> str | None:
+    """Why a stage cannot run because an earlier one did not deliver; None if it can run."""
+    needs = {"extract": "ingest", "generate": "extract"}
+    if name in needs and records[needs[name]].exit_code != EXIT_OK:
+        return f"{needs[name]} did not succeed"
+    if name == "compile" and not any((out / f).is_file()
+                                     for f in (sysml.MODEL_FILE, modelica.MODEL_FILE)):
+        return "generate produced no model"
+    if name == "verify":
+        status = _read_json(out / compile_loop.REPAIR_LOG).get("status")
+        if status not in simulate.COMPILED:
+            return f"no compiled Modelica model (compile: {status or NOT_RUN})"
+    return None
+
+
+def _run_stage(name: str, n: int, action: Callable[[], int], records: dict[str, StageRecord],
+               out: Path) -> None:
+    print(f"==> {name} ({n}/{len(RUN_STAGES)})", flush=True)
+    log.info("stage %s: start", name)
+    start = time.monotonic()
+    reason = _not_run_reason(name, records, out)
+    if reason is not None:
+        record = StageRecord(name, NOT_RUN, None, 0.0, reason)
+    else:
+        tee = _Tee(sys.stderr)
+        with contextlib.redirect_stderr(tee):
+            try:
+                code = action()
+            except Exception as exc:  # a crash degrades the run, it never aborts it (R-CLI-2)
+                log.exception("stage %s crashed", name)
+                print(f"specalive {name}: internal error: {type(exc).__name__}: {exc}",
+                      file=sys.stderr)
+                code = EXIT_FAILED
+        if name == "generate" and code == EXIT_INPUT:
+            code = EXIT_FAILED  # the input was usable; the extracted IR is what failed
+        # compile and verify print their verdicts to stdout; their artefacts say it best
+        detail = (_summary_line(name, out) if code == EXIT_OK or name in ("compile", "verify")
+                  else _last_problem(tee.getvalue()) or STATUS[code])
+        if name == "generate":
+            detail = detail.removeprefix(f"{STATUS[EXIT_INPUT]}: ")
+        record = StageRecord(name, STATUS[code], code, round(time.monotonic() - start, 3),
+                             detail)
+    records[name] = record
+    log.info("stage %s: %s: %s (%.1f s)", name, record.status, record.detail, record.duration_s)
+    print(f"<== {name}: {record.status} — {record.detail} ({record.duration_s:.1f} s)",
+          flush=True)
+
+
+def _llm_usage(settings: Settings, llm) -> dict:
+    usage = list(getattr(llm, "usage", []))
+    return {"model": settings.model, "calls": len(usage),
+            "cached": sum(1 for u in usage if u.cached),
+            "input_tokens": sum(u.input_tokens for u in usage),
+            "output_tokens": sum(u.output_tokens for u in usage),
+            "cost_usd": round(sum(u.cost_usd for u in usage), 6)}
+
+
+def _tools(settings: Settings) -> dict:
+    ver = omc.version(settings)
+    found = ver.stdout.strip().splitlines()[0] if ver.ok and ver.stdout.strip() else None
+    missing = (ver.stderr or ver.stdout).strip() or str(settings.omc_path)
+    return {"specalive": __version__, "python": platform.python_version(),
+            "omc": found or f"NOT FOUND: {missing}", "msl": settings.msl_version,
+            "sysml_validator": str(settings.sysml_validator_home), "java": settings.java_path}
+
+
+def _print_outcome(records: dict[str, StageRecord], code: int, command: str | None,
+                   out: Path) -> None:
+    print("\noutcome")
+    width = max(len(s) for s in (*STATUS.values(), NOT_RUN))
+    for r in records.values():
+        print(f"  {r.name:<9} {r.status:<{width}} {r.duration_s:7.1f} s  {r.detail}")
+    meaning = {EXIT_OK: "all gates passed", EXIT_FAILED: "a gate failed (see above)",
+               EXIT_INPUT: "input problem", EXIT_TOOLCHAIN: "toolchain or infrastructure problem"}
+    print(f"exit code {code}: {meaning[code]}")
+    if command:
+        print(f"compile command: {command}")
+    print(f"wrote {out / RUN_FILE}; reports in {out / artefacts.REPORT_DIR}")
+
+
+def cmd_run(settings: Settings, source: str | None, out: Path | None, text: str | None,
+            reference: Path | None, golden: Path | None, no_llm_cache: bool,
+            interactive: bool) -> int:
+    started, clock = datetime.now(timezone.utc), time.monotonic()
+    kind = _input_kind(source, text)
+    out = out or Path("out") / ((Path(source).stem if source else "") or kind)
+    out.mkdir(parents=True, exist_ok=True)
+    _clear_previous(out)
+    handler = logging.FileHandler(out / RUN_LOG, encoding="utf-8")
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
+    root = logging.getLogger()
+    previous_level = root.level
+    root.addHandler(handler)
+    root.setLevel(logging.INFO)
+    try:
+        log.info("run %s input=%s kind=%s out=%s", __version__, source, kind, out)
+        if interactive:
+            print(f"--interactive: {INTERACTIVE_NOTE}")
+        llm = _run_llm(settings, no_llm_cache)
+        records: dict[str, StageRecord] = {}
+        first_draft: list[float] = []
+
+        def extract() -> int:
+            code = cmd_extract(settings, out / EVIDENCE_FILE, None, None, out, llm=llm,
+                               progress=lambda m: print(f"    ... {m}", flush=True))
+            if (out / IR_FILE).is_file():
+                first_draft.append(round(time.monotonic() - clock, 3))
+                print(f"first structural draft ({IR_FILE}) at {first_draft[0]:.1f} s")
+            return code
+
+        actions: dict[str, Callable[[], int]] = {
+            "ingest": lambda: _stage_ingest(settings, llm, source, text, kind, out),
+            "extract": extract,
+            "generate": lambda: cmd_generate(out / IR_FILE, out, None),
+            "compile": lambda: _stage_compile(settings, llm, out),
+            "verify": lambda: cmd_verify(settings, out, reference, golden),
+            "report": lambda: cmd_report(out),
+        }
+        for n, name in enumerate(RUN_STAGES, start=1):
+            _run_stage(name, n, actions[name], records, out)
+
+        code = run_exit_code({r.name: r.exit_code for r in records.values()})
+        command = _read_json(out / compile_loop.REPAIR_LOG).get("command")
+        _write_json(out / RUN_FILE, {
+            "started": started.isoformat(timespec="seconds"),
+            "finished": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "duration_s": round(time.monotonic() - clock, 3),
+            "first_draft_s": first_draft[0] if first_draft else None,
+            "input": {"path": source, "kind": kind, "text": text, "out": str(out),
+                      "reference": str(reference) if reference else None,
+                      "golden": str(golden) if golden else None,
+                      "no_llm_cache": no_llm_cache,
+                      "interactive": INTERACTIVE_NOTE if interactive else "off"},
+            "tools": _tools(settings),
+            "llm": _llm_usage(settings, llm),
+            "stages": [dataclasses.asdict(r) for r in records.values()],
+            "compile_command": command,
+            "exit_code": code})
+        _print_outcome(records, code, command, out)
+        if code != EXIT_OK:
+            worst = next(r for r in records.values() if r.exit_code == code)
+            print(f"specalive run: {STATUS[code]}: {worst.name}: {worst.detail}", file=sys.stderr)
+        log.info("run finished: exit %d", code)
+        return code
+    finally:
+        root.removeHandler(handler)
+        root.setLevel(previous_level)
+        handler.close()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="specalive",
@@ -518,9 +833,15 @@ def build_parser() -> argparse.ArgumentParser:
                            help="evidence.json to read (default: <out>/evidence.json)")
             p.add_argument("--text", help="extract from this paragraph instead of evidence")
             p.add_argument("--text-file", help="extract from this text file instead of evidence")
+        if name == "run":
+            p.add_argument("--text", help="model this paragraph instead of an input path")
+            p.add_argument("--interactive", action="store_true",
+                           help="ask clarifying questions (not delivered; reported as such)")
+            p.add_argument("--no-llm-cache", action="store_true",
+                           help="call the API for every request; fresh answers replace cached ones")
         if name == "generate":
             p.add_argument("--ir", type=Path, help="ir.json to read (default: <out>/ir.json)")
-        if name == "verify":
+        if name in ("verify", "run"):
             p.add_argument("--reference", type=Path,
                            help="reference trace CSV (default: ingestion's reference_data CSV)")
             p.add_argument("--golden", type=Path,
@@ -567,7 +888,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return cmd_verify(settings, args.out, args.reference, args.golden)
     if args.command == "report":
         return cmd_report(args.out)
-    return cmd_stub(args.command)
+    return cmd_run(settings, args.input, args.out, args.text, args.reference, args.golden,
+                   args.no_llm_cache, args.interactive)
 
 
 if __name__ == "__main__":

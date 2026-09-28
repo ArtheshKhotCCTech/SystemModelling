@@ -4,6 +4,8 @@
 # alike (letter + number signature) with a declared Assumption and lower confidence. Each resolved
 # part gets a deterministic id, catalogue ports, every alias and the union of traces; connections
 # are resolved through the aliases, and a controller's ports are made from its connections.
+# Phase 9: an instrument's unconnected measured input is wired to the one part the evidence names
+# as what it measures (catalogue `measures`), traced to that evidence; never guessed.
 from __future__ import annotations
 
 import re
@@ -23,7 +25,7 @@ from specalive.extract.precedence import rank_of
 from specalive.ingest.evidence import EvidenceBundle
 
 __all__ = ["name_key", "ir_sources", "resolve_parts", "resolve_connections", "PartSet",
-           "ConnectionSet", "SIMILAR_CONFIDENCE"]
+           "ConnectionSet", "SIMILAR_CONFIDENCE", "measurement_links", "MeasurementLinks"]
 
 SIMILAR_CONFIDENCE = 0.7
 UNKNOWN = "unknown"
@@ -424,4 +426,67 @@ def resolve_connections(found: list[Found[ConnectionFragment]], parts: PartSet,
         by_ends[key] = Connection(id=cid, from_port=key[0], to_port=key[1],
                                   medium_or_signal=frag.medium_or_signal, trace=[f.trace])
     out.connections = sorted(by_ends.values(), key=lambda c: c.id)
+    return out
+
+
+# --- measurement links -----------------------------------------------------------------------
+
+@dataclass
+class MeasurementLinks:
+    connections: list[Connection] = field(default_factory=list)
+    questions: list[Question] = field(default_factory=list)
+    missing: list[str] = field(default_factory=list)
+
+
+def _names_any(text: str, names: list[str]) -> bool:
+    """Whether `text` mentions one of `names` as a whole token (AB-1 is not in AB-12)."""
+    return any(re.search(rf"(?<![A-Za-z0-9]){re.escape(n)}(?![A-Za-z0-9])", text, re.IGNORECASE)
+               for n in names if n.strip())
+
+
+def measurement_links(parts: PartSet, connections: list[Connection],
+                      catalogue: Catalogue) -> MeasurementLinks:
+    """Wire each unconnected measured input (catalogue `measures`) to the one part that offers
+    the measured output and that the evidence names: the instrument's own quotes naming the part,
+    or the part's quotes naming the instrument. The link is traced to those quotes. Several named
+    parts are a Question; none is reported as missing information. Nothing is guessed."""
+    out = MeasurementLinks()
+    connected = {c.to_port for c in connections}
+    taken = {c.id for c in connections}
+    for sensor in sorted(parts.parts, key=lambda p: p.id):
+        if sensor.kind not in catalogue:
+            continue
+        for role, measured in sorted(catalogue.entry(sensor.kind).measures.items()):
+            port = next((q for q in sensor.ports if q.role == role), None)
+            if port is None or port.id in connected:
+                continue
+            named: dict[str, tuple[Port, list[TraceLink]]] = {}
+            for other in sorted(parts.parts, key=lambda p: p.id):
+                source = next((q for q in other.ports if q.role == measured
+                               and q.direction == "out" and q.domain == port.domain), None)
+                if other.id == sensor.id or source is None:
+                    continue
+                links = ([t for t in sensor.trace if _names_any(t.quote, other.tags)]
+                         + [t for t in other.trace if _names_any(t.quote, sensor.tags)])
+                if links:
+                    named[other.id] = (source, _dedupe_traces(links))
+            if len(named) == 1:
+                source, trace = next(iter(named.values()))
+                cid = make_id("conn", f"{source.id} to {port.id}")
+                if cid in taken:
+                    cid = make_id("conn", f"conn measured {source.id} to {port.id}")
+                taken.add(cid)
+                out.connections.append(Connection(
+                    id=cid, from_port=source.id, to_port=port.id,
+                    medium_or_signal=measured.removesuffix("_out"), trace=trace))
+            elif named:
+                out.questions.append(Question(
+                    id=make_id("q", f"q measures {port.id}"),
+                    text=f"{sensor.tags[0] if sensor.tags else sensor.id} ({sensor.id}) has an "
+                         f"unconnected {role}; the sources name several parts it could measure "
+                         f"({', '.join(sorted(named))}). Which one does it measure?",
+                    options=sorted(named), affects=[sensor.id]))
+            else:
+                out.missing.append(f"{sensor.id}: input {role} is not connected and no source "
+                                   f"names the part whose {measured} it measures")
     return out

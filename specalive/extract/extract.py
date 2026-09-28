@@ -4,10 +4,14 @@
 # (R-EXT-4); a batch whose reply is cut off is halved and retried. A glossary of names already
 # seen goes to later passes so names align. After entity resolution and precedence, a behaviour
 # pass per controller returns a state machine over the now fixed ids, kept item by item only
-# where guards, actions and ids check out.
+# where guards, actions and ids check out. An optional progress callback is told which source (n
+# of m) and which controller is being worked on, so a long LLM stage is never silent (FR-09).
+# Phase 9: a guard that reads another part's output wired to exactly one controller input reads
+# that input instead, since a controller can read only its own ports.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import get_args
@@ -22,6 +26,7 @@ from specalive.core.ir import (
     SYSTEM_OWNER,
     AcceptanceCriterion,
     Check,
+    Connection,
     Event,
     ExpressionError,
     Part,
@@ -57,11 +62,17 @@ from specalive.extract.fragments import (
 from specalive.extract.gaps import (
     apply_catalogue,
     apply_conventions,
+    apply_run_names,
     hint_assumptions,
     honesty_gate,
     missing_documents,
 )
-from specalive.extract.merge import ir_sources, resolve_connections, resolve_parts
+from specalive.extract.merge import (
+    ir_sources,
+    measurement_links,
+    resolve_connections,
+    resolve_parts,
+)
 from specalive.extract.precedence import (
     build_registry,
     rank_of,
@@ -69,6 +80,7 @@ from specalive.extract.precedence import (
     resolve_requirements,
     usable_tag,
 )
+from specalive.extract.schedule import press_schedules
 from specalive.extract.text_input import text_bundle
 from specalive.ingest.evidence import EvidenceBundle, EvidenceChunk, Source
 from specalive.ingest.readers._common import CompletionClient
@@ -81,6 +93,12 @@ BEHAVIOUR_CHARS = 40_000
 # A behaviour reply that lost items is asked once more with the problems listed (re-asked, never
 # repaired); the attempt that keeps most is used.
 BEHAVIOUR_ATTEMPTS = 2
+
+Progress = Callable[[str], None]
+
+
+def _quiet(message: str) -> None:
+    pass
 # Registers first: they carry the tag / alias tables later passes lean on.
 ROLE_ORDER: tuple[str, ...] = (
     "register", "requirement_spec", "design_note", "review_decision", "change_record",
@@ -334,7 +352,7 @@ def _locate(frag: BaseModel, kind: str, allowed: dict[str, ChunkRef], source_map
 
 
 def run_structure_passes(bundle: EvidenceBundle, llm: CompletionClient, catalogue: Catalogue,
-                         source_map: dict[str, str]) -> Passes:
+                         source_map: dict[str, str], progress: Progress = _quiet) -> Passes:
     refs = index_chunks(bundle)
     by_source: dict[str, list[ChunkRef]] = {}
     for ref in refs.values():
@@ -342,8 +360,10 @@ def run_structure_passes(bundle: EvidenceBundle, llm: CompletionClient, catalogu
     prompt = structure_prompt(catalogue)
     glossary = _Glossary()
     out = Passes()
-    for src in pass_order(bundle):
+    order = pass_order(bundle)
+    for n, src in enumerate(order, start=1):
         pending = batches(by_source.get(src.id, []))
+        progress(f"source {n} of {len(order)}: {src.path or src.id} ({len(pending)} batch(es))")
         while pending:
             batch = pending.pop(0)
             try:
@@ -400,6 +420,25 @@ class BehaviourContext:
     refs: dict[str, ChunkRef]
     source_map: dict[str, str]
     taken_ids: set[str]
+    via: dict[str, str] = field(default_factory=dict)  # other part's output -> owner input
+
+
+def controller_inputs_by_source(owner: Part, connections: list[Connection]) -> dict[str, str]:
+    """Each other part's output port wired to exactly one input of `owner` -> that input."""
+    inputs = {p.id for p in owner.ports if p.direction == "in"}
+    targets: dict[str, set[str]] = {}
+    for c in connections:
+        if c.to_port in inputs:
+            targets.setdefault(c.from_port, set()).add(c.to_port)
+    return {src: next(iter(t)) for src, t in sorted(targets.items()) if len(t) == 1}
+
+
+_IDENTIFIER = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+def through_wiring(expression: str, via: dict[str, str]) -> str:
+    """`expression` with each whole id in `via` replaced by the controller input it is wired to."""
+    return _IDENTIFIER.sub(lambda m: via.get(m.group(0), m.group(0)), expression)
 
 
 @dataclass
@@ -536,8 +575,14 @@ def build_state_machine(reply: BehaviourReply, ctx: BehaviourContext) -> Behavio
         if t.trigger_event is not None and t.trigger_event not in {e.id for e in events}:
             reject(f"trigger {t.trigger_event!r} is not a kept event")
             continue
-        problem = (_expression_problem(t.guard, ctx.operands, timer_ids, state_ids)
-                   if t.guard else None)
+        if t.to_state == HISTORY and any(parse_action(a).verb == "clear_history"
+                                         for a in t.actions if _action_problem(a, set()) is None):
+            reject("a return to history that also does clear_history resumes nothing; the "
+                   "saved state must be kept on the way back")
+            continue
+        guard = through_wiring(t.guard, ctx.via) if t.guard else t.guard
+        problem = (_expression_problem(guard, ctx.operands, timer_ids, state_ids)
+                   if guard else None)
         problem = problem or next((p for p in (_action_problem(a, timer_ids) for a in t.actions)
                                    if p), None)
         if problem:
@@ -550,7 +595,7 @@ def build_state_machine(reply: BehaviourReply, ctx: BehaviourContext) -> Behavio
         priorities.add((t.from_state, t.priority))
         taken.add(tid)
         kept.append((Transition(id=tid, from_=t.from_state, to=t.to_state,
-                                trigger=t.trigger_event, guard=t.guard, actions=list(t.actions),
+                                trigger=t.trigger_event, guard=guard, actions=list(t.actions),
                                 priority=t.priority), trace, t.chunk_id))
 
     saves = any("save_history" in tr.actions for tr, _, _ in kept) or any(
@@ -624,7 +669,7 @@ def _behaviour_input(owner: Part, draft: Draft, refs: list[ChunkRef], criteria) 
 
 def run_behaviour_passes(passes: Passes, draft: Draft, llm: CompletionClient,
                          refs: dict[str, ChunkRef], source_map: dict[str, str],
-                         report: ExtractReport) -> dict[str, Check]:
+                         report: ExtractReport, progress: Progress = _quiet) -> dict[str, Check]:
     checks: dict[str, Check] = {}
     controllers = [p for p in draft.parts if p.kind == "sequence_controller"]
     behaviour = sorted(passes.behaviour_refs, key=lambda r: (rank_of(r.role), r.chunk_id))
@@ -636,11 +681,13 @@ def run_behaviour_passes(passes: Passes, draft: Draft, llm: CompletionClient,
         effective = {p.id for p in draft.parameters if p.status == "effective"}
         ctx = BehaviourContext(owner=owner, parameters=effective,
                                operands={q.id for p in draft.parts for q in p.ports} | effective,
-                               refs=refs, source_map=source_map, taken_ids=draft.ids())
+                               refs=refs, source_map=source_map, taken_ids=draft.ids(),
+                               via=controller_inputs_by_source(owner, draft.connections))
         base = _behaviour_input(owner, draft, behaviour, draft.acceptance_criteria)
         attempts: list[BehaviourResult] = []
         text = base
-        for _ in range(BEHAVIOUR_ATTEMPTS):
+        for n in range(1, BEHAVIOUR_ATTEMPTS + 1):
+            progress(f"behaviour of {owner.id}: attempt {n}")
             reply = llm.complete(prompt=BEHAVIOUR_PROMPT, input_text=text, schema=BehaviourReply)
             attempts.append(build_state_machine(reply, ctx))
             if not attempts[-1].discarded:
@@ -687,18 +734,22 @@ def _criteria(found: list[Found[CriterionFragment]]) -> list[AcceptanceCriterion
 
 
 def run_extract(bundle: EvidenceBundle, llm: CompletionClient,
-                catalogue: Catalogue | None = None) -> ExtractResult:
+                catalogue: Catalogue | None = None, progress: Progress = _quiet) -> ExtractResult:
     """Evidence to a validated SystemModel and the report of what was discarded or is missing."""
     catalogue = catalogue or load_catalogue()
     report = ExtractReport()
     sources, source_map = ir_sources(bundle)
-    passes = run_structure_passes(bundle, llm, catalogue, source_map)
+    passes = run_structure_passes(bundle, llm, catalogue, source_map, progress)
     report.discarded_fragments.extend(passes.discarded)
 
     docs, cited = build_registry(sources, passes.documents)
     partset = resolve_parts(passes.parts, passes.aliases, catalogue)
     connections = resolve_connections(passes.connections, partset, catalogue)
     report.unresolved.extend(connections.problems)
+    measured = measurement_links(partset, connections.connections, catalogue)
+    connections.connections = sorted(connections.connections + measured.connections,
+                                     key=lambda c: c.id)
+    report.missing_information.extend(measured.missing)
 
     candidates = []
     for f in passes.parameters:
@@ -721,9 +772,15 @@ def run_extract(bundle: EvidenceBundle, llm: CompletionClient,
         parameters=params.parameters, requirements=resolve_requirements(passes.requirements),
         acceptance_criteria=_criteria(passes.criteria),
         assumptions=partset.assumptions + hint_assumptions(passes.hints, partset.lookup),
-        questions=partset.questions + params.questions, conflicts=params.conflicts)
+        questions=partset.questions + params.questions + measured.questions,
+        conflicts=params.conflicts)
 
-    checks = run_behaviour_passes(passes, draft, llm, index_chunks(bundle), source_map, report)
+    checks = run_behaviour_passes(passes, draft, llm, index_chunks(bundle), source_map, report,
+                                  progress)
+    # after the behaviour pass, whose input lists every id: new ids would change what it is asked
+    schedules = press_schedules(bundle, draft.parts, draft.parameters, source_map)
+    draft.parameters.extend(schedules.parameters)
+    draft.questions.extend(schedules.questions)
     for ac in draft.acceptance_criteria:
         check = next((c for tag, c in checks.items()
                       if name_key(tag) in {name_key(t) for t in ac.tags}), None)
@@ -731,6 +788,7 @@ def run_extract(bundle: EvidenceBundle, llm: CompletionClient,
             ac.check, ac.reason = check, None
 
     apply_conventions(draft)
+    report.missing_information.extend(apply_run_names(draft))
     report.missing_information.extend(apply_catalogue(draft, catalogue))
     report.missing_information.extend(missing_documents(draft.sources,
                                                         params.unresolved_citations))

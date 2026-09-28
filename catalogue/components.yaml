@@ -55,6 +55,8 @@ kinds:
     ports:
       level_in: {direction: in, domain: signal_real, unit: m}
       level_out: {direction: out, domain: signal_real, unit: m}
+    # level_in reads the level_out of the part the sensor's evidence names (phase 9).
+    measures: {level_in: level_out}
     sysml:
       part_def: LevelSensor
       ports: {level_in: RealSignal, level_out: RealSignal}

@@ -55,3 +55,14 @@ def test_clear_removes_entries_and_reports_count(tmp_path):
 
 def test_clear_on_missing_directory_is_zero(tmp_path):
     assert ResponseCache(tmp_path / "never-created").clear() == 0
+
+
+def test_write_only_cache_never_reads_but_still_records(tmp_path):
+    from specalive.llm.cache import WriteOnlyCache
+
+    k = ResponseCache.key(**BASE)
+    ResponseCache(tmp_path).put(k, {"x": 1})
+    fresh = WriteOnlyCache(tmp_path)
+    assert fresh.get(k) is None  # --no-llm-cache: a hit is never served
+    fresh.put(k, {"x": 2})
+    assert ResponseCache(tmp_path).get(k) == {"x": 2}  # the fresh answer refreshes the cache

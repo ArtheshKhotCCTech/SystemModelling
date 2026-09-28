@@ -3,6 +3,7 @@
 # priority order under one when-clause, event edges, timer start/freeze/restore, history resume,
 # state-driven outputs and window-free invariants as asserts. Small IRs cover falling edges,
 # entry actions, completion transitions and every refusal; omc simulates the pause/resume timer.
+# Phase 9: a machine without history declares no history state and no remaining times.
 import re
 from pathlib import Path
 
@@ -288,3 +289,30 @@ def test_pause_freezes_and_resume_restores_the_timer():
     assert got[("ctl.state", 84.5)] == holding
     assert got[("ctl.state", 86.0)] == draining
     assert got[("ctl.state", 110.0)] == idle
+
+
+# --- timers that nothing freezes (phase 9) ----------------------------------------------------
+
+def no_history_ir() -> dict:
+    """The plant with no pause-with-history: halt just stops, and the hold timer is started by
+    HOLDING's entry action, as a plain-text spec's controller often is."""
+    ir = plant_ir()
+    sm = ir["state_machines"][0]
+    sm["states"][2]["entry_actions"] = ["start_timer(hold_timer)"]
+    sm["transitions"] = [t for t in sm["transitions"] if t["to"] != "history"]
+    for t in sm["transitions"]:
+        t["actions"] = [a for a in t.get("actions", [])
+                        if a not in ("save_history", "clear_history")
+                        and not a.startswith("start_timer")]
+    return ir
+
+
+def test_a_timer_nothing_freezes_has_no_remaining_time():
+    out = render_plant(no_history_ir())
+    assert "hold_timer_deadline := time + ctl_hold;" in branch(out, "filling")
+    assert "hold_timer_remaining" not in out  # never assigned, so never declared
+    assert "history_state" not in out  # nothing saves, clears or returns to history
+
+
+def test_a_frozen_timer_still_has_its_remaining_time(text):
+    assert "discrete Real wait_after_fill_timer_remaining(start = 0, fixed = true)" in text

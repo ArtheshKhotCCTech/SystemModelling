@@ -231,3 +231,64 @@ def test_controller_port_takes_the_alias_alone_when_one_signal_port_faces_it(cat
                         pf("PLC-1", "PLC-1", "sequence_controller")], [], catalogue)
     resolve_connections([cf("LT-1 to PLC-1", "LT-1", "PLC-1", signal="AI-1")], ps, catalogue)
     assert [q.id for q in ps.part("plc_1").ports] == ["plc_1_level1"]
+
+
+# --- measurement links (phase 9) ----------------------------------------------------------
+
+TANK_ROW = "Tag: TK-1 | Type: Tank | Signal / Sensor: LT-1"
+SENSOR_ROW = "Tag: LT-1 | Type: Level transmitter | Service: TK-1 level"
+
+
+def _sensed_plant(catalogue, *extra):
+    ps = resolve_parts([pf(TANK_ROW, "TK-1", "tank", source_id="src_r"),
+                        pf(SENSOR_ROW, "LT-1", "level_sensor", source_id="src_r"),
+                        *extra], [], catalogue)
+    return ps
+
+
+def test_sensor_named_in_evidence_is_wired_to_what_it_measures(catalogue):
+    from specalive.extract.merge import measurement_links
+
+    ps = _sensed_plant(catalogue)
+    links = measurement_links(ps, [], catalogue)
+    assert [(c.from_port, c.to_port) for c in links.connections] == [
+        ("tk_1_level_out", "lt_1_level_in")]
+    c = links.connections[0]
+    assert {t.quote for t in c.trace} == {TANK_ROW, SENSOR_ROW}  # traced, not assumed
+    assert c.assumption_ids == [] and c.medium_or_signal == "level"
+    assert links.questions == [] and links.missing == []
+
+
+def test_a_connected_measured_input_is_left_alone(catalogue):
+    from specalive.core.ir import Connection
+    from specalive.extract.merge import measurement_links
+
+    ps = _sensed_plant(catalogue)
+    existing = Connection(id="c1", from_port="tk_1_level_out", to_port="lt_1_level_in",
+                          medium_or_signal="level", trace=ps.parts[0].trace[:1])
+    assert measurement_links(ps, [existing], catalogue).connections == []
+
+
+def test_two_named_candidates_become_a_question_and_no_link(catalogue):
+    from specalive.extract.merge import measurement_links
+
+    ps = resolve_parts([pf("Tag: TK-1 | Type: Tank", "TK-1", "tank", source_id="src_r"),
+                        pf("Tag: TK-2 | Type: Tank", "TK-2", "tank", source_id="src_s"),
+                        pf("LT-1 reads TK-1 or TK-2", "LT-1", "level_sensor", source_id="src_t")],
+                       [], catalogue)
+    links = measurement_links(ps, [], catalogue)
+    assert links.connections == []
+    [q] = links.questions
+    assert q.affects == ["lt_1"] and set(q.options) == {"tk_1", "tk_2"}
+    assert q.default_if_unanswered is None
+
+
+def test_nothing_named_is_reported_missing_not_guessed(catalogue):
+    from specalive.extract.merge import measurement_links
+
+    ps = resolve_parts([pf("Tag: TK-1 | Type: Tank", "TK-1", "tank", source_id="src_r"),
+                        pf("LT-1 is a level transmitter", "LT-1", "level_sensor",
+                           source_id="src_t")], [], catalogue)
+    links = measurement_links(ps, [], catalogue)
+    assert links.connections == [] and links.questions == []
+    assert any("lt_1" in m and "level_in" in m for m in links.missing)

@@ -264,6 +264,12 @@ def test_experiment_defaults_without_a_stop_time(catalogue):
     assert len(result.notes) == 2
 
 
+def test_experiment_reads_exactly_the_run_parameters_extraction_is_told():
+    from specalive.core.ir import RUN_PARAMETERS
+
+    assert list(modelica.EXPERIMENT) == list(RUN_PARAMETERS)
+
+
 def test_output_interval_parameter_sets_the_interval(catalogue):
     ir = plant_ir()
     ir["parameters"].append({**ir["parameters"][-1], "id": "system_output_interval",
@@ -299,6 +305,20 @@ def test_golden_model_compiles_with_zero_errors(generated, tmp_path):
     result = omc.compile_model(load_settings(), mo, generated.model_name, tmp_path / "build")
     assert result.ok, [m.text for m in result.messages]
     assert result.errors == []
+
+
+@requires_omc
+@pytest.mark.slow
+def test_a_plant_without_history_compiles(catalogue, tmp_path):
+    # a timer started by an entry action and never frozen (phase 9: omc refused its unassigned
+    # remaining-time variable)
+    from tests.test_generate_controller import no_history_ir
+
+    generated = modelica.render_modelica(plant_model(no_history_ir()), catalogue)
+    mo = tmp_path / modelica.MODEL_FILE
+    mo.write_text(generated.text, encoding="utf-8", newline="\n")
+    result = omc.compile_model(load_settings(), mo, generated.model_name, tmp_path / "build")
+    assert result.ok, [m.text for m in result.messages]
 
 
 @requires_omc

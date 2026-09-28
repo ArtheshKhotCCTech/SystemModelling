@@ -33,7 +33,7 @@ TEMPLATES = Path(__file__).resolve().parent / "templates" / "modelica"
 COMPONENTS = TEMPLATES / "components"
 COMPONENT_PREFIX = "SpecAlive.Components."
 USABLE = ("effective", "verification_only")  # preference order; never superseded or as-built
-# System parameter name -> experiment annotation field.
+# System parameter name (core RUN_PARAMETERS, the names extraction maps to) -> experiment field.
 EXPERIMENT = {"start_time": "StartTime", "stop_time": "StopTime",
               "output_interval": "Interval"}
 DEFAULT_STOP_TIME = 1.0  # the Modelica default

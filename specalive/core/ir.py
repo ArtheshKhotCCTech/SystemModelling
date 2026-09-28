@@ -24,6 +24,11 @@ MAX_QUOTE = 300
 # history). Returning to it also restores the remaining time of that state's timers.
 HISTORY = "history"
 SYSTEM_OWNER = "system"
+# System parameters that set the simulated run, in experiment-annotation order: the generator
+# reads exactly these names, and extraction maps a system value named for one of them to it.
+RUN_PARAMETERS = {"start_time": "the start of the simulated run",
+                  "stop_time": "the simulated run length or end time",
+                  "output_interval": "the logging or output interval"}
 
 Domain = Literal["fluid", "signal_real", "signal_bool", "event", "thermal", "electric", "magnetic"]
 Direction = Literal["in", "out", "inout"]

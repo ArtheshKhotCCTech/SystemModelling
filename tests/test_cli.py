@@ -1,13 +1,13 @@
-# Purpose: pins the CLI contract — `--help` lists every subcommand (FR-01 acceptance 1), stages
-# not yet delivered are honest stubs that exit non-zero, `ingest` writes evidence.json and exits
-# 2 on a missing input (phase 3), `cache clear` empties the response cache, and `doctor` prints
-# one OK/FAIL line per check, exits non-zero on any FAIL and never prints the API key. `extract`
+# Purpose: pins the CLI contract — `--help` lists every subcommand (FR-01 acceptance 1),
+# `ingest` writes evidence.json and exits 2 on a missing input (phase 3), `cache clear` empties
+# the response cache, and `doctor` prints one OK/FAIL line per check, exits non-zero on any FAIL and never prints the API key. `extract`
 # (phase 4) is covered by test_extract_stage.py. Phase 5: `generate --only sysml` writes
 # model.sysml and `compile --only sysml` writes sysml_validation.json, with FR-09 exit codes.
 # Phase 6: `generate` writes model.mo, and `compile` runs the Modelica compile-and-repair loop.
 # Phase 7: `verify` writes sim/result.csv, verification.json and coverage.json, with its exit codes.
 # Phase 8: `report --run` writes the four reports and the plots; a missing artefact makes its
 # section NOT RUN (FR-08 acceptance 1, 3, 4, with the real toolchain for acceptance 1).
+# Phase 9: `run` is covered by test_cli_run.py.
 import json
 import subprocess
 import sys
@@ -22,7 +22,6 @@ from specalive.toolchain.process import ToolResult
 
 SUBCOMMANDS = ["ingest", "extract", "generate", "compile", "verify", "report", "run", "cache",
                "doctor"]
-STUBS = ["run"]
 GOLDEN = Path(__file__).parent / "goldens" / "L1_tank.ir.json"
 
 
@@ -39,13 +38,6 @@ def test_console_entry_point_runs_as_module():
     r = subprocess.run([sys.executable, "-m", "specalive.cli", "--help"],
                        capture_output=True, text=True, encoding="utf-8", timeout=60)
     assert r.returncode == 0 and "doctor" in r.stdout
-
-
-@pytest.mark.parametrize("name", STUBS)
-def test_stubs_say_not_implemented_and_exit_nonzero(name, capsys):
-    code = cli.main([name])
-    assert code != 0
-    assert "not implemented in this phase" in capsys.readouterr().err
 
 
 def test_generate_sysml_writes_model_file(tmp_path, capsys):

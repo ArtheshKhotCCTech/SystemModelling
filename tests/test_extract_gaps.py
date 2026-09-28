@@ -167,3 +167,48 @@ def test_honesty_gate_keeps_assumption_backed_elements():
     d = draft(parts=[p], assumptions=[Assumption(id="as1", text="t", basis="inferred",
                                                  confidence=0.5)])
     assert honesty_gate(d) == [] and [x.id for x in d.parts] == ["tk"]
+
+
+# --- run parameter names (phase 9) -------------------------------------------------------
+
+def _run(name, value, status="verification_only", owner="system"):
+    return prm(owner, name, value, "s").model_copy(update={"status": status})
+
+
+def test_a_system_value_named_for_a_run_parameter_is_given_that_name_with_an_assumption():
+    from specalive.extract.gaps import apply_run_names
+
+    d = draft(parameters=[_run("simulation_stop_time", 900.0)])
+    assert apply_run_names(d) == []
+    stop = next(p for p in d.parameters if p.name == "stop_time")
+    assert stop.owner == "system" and stop.value == 900.0 and stop.status == "verification_only"
+    assert stop.trace == d.parameters[0].trace
+    a = next(a for a in d.assumptions if a.id in stop.assumption_ids)
+    assert a.basis == "engineering_convention" and "simulation_stop_time" in a.text
+    assert any(p.name == "simulation_stop_time" for p in d.parameters)  # the original is kept
+
+
+def test_an_existing_run_parameter_is_not_duplicated():
+    from specalive.extract.gaps import apply_run_names
+
+    d = draft(parameters=[_run("stop_time", 900.0), _run("simulation_stop_time", 600.0)])
+    apply_run_names(d)
+    assert [p.name for p in d.parameters].count("stop_time") == 1 and d.assumptions == []
+
+
+def test_two_candidates_are_reported_not_chosen_between():
+    from specalive.extract.gaps import apply_run_names
+
+    d = draft(parameters=[_run("simulation_stop_time", 900.0), _run("test_stop_time", 600.0)])
+    missing = apply_run_names(d)
+    assert all(p.name != "stop_time" for p in d.parameters)
+    assert any("stop_time" in m and "simulation_stop_time" in m for m in missing)
+
+
+def test_part_owned_and_superseded_values_are_not_run_parameters():
+    from specalive.extract.gaps import apply_run_names
+
+    d = draft(parts=[tank()], parameters=[_run("fill_stop_time", 50.0, owner="tk"),
+                                          _run("old_stop_time", 600.0, status="superseded")])
+    apply_run_names(d)
+    assert all(p.name != "stop_time" for p in d.parameters)

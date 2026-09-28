@@ -172,3 +172,45 @@ def test_check_model_reports_unknown_kind_and_port_role():
     problems = load_catalogue().check_model(SystemModel.model_validate(data))
     assert any("flux_capacitor" in p for p in problems)
     assert any("side_door" in p for p in problems)
+
+
+# --- measured inputs (phase 9) ------------------------------------------------------------
+
+SENSOR = {
+    "description": "Passes a measured level on.",
+    "ports": {"level_in": {"direction": "in", "domain": "signal_real", "unit": "m"},
+              "level_out": {"direction": "out", "domain": "signal_real", "unit": "m"}},
+    "measures": {"level_in": "level_out"},
+    "sysml": {"part_def": "LevelSensor", "ports": {"level_in": "RealSignal",
+                                                   "level_out": "RealSignal"}},
+    "modelica": {"source": "msl", "class": "Modelica.Blocks.Routing.RealPassThrough",
+                 "connectors": {"level_in": "u", "level_out": "y"}},
+}
+
+
+def test_shipped_level_sensor_measures_a_level_output():
+    cat = load_catalogue()
+    assert cat.entry("level_sensor").measures == {"level_in": "level_out"}
+    assert any(cat.entry(k).ports.get("level_out") and cat.entry(k).ports["level_out"].direction
+               == "out" for k in cat.kinds if k != "level_sensor")
+
+
+def test_measures_loads_when_some_kind_offers_the_output(tmp_path):
+    cat = load_catalogue(_write(tmp_path, {"level_sensor": SENSOR}))
+    assert cat.entry("level_sensor").measures == {"level_in": "level_out"}
+
+
+def test_measures_key_must_be_an_input_port(tmp_path):
+    entry = copy.deepcopy(SENSOR)
+    entry["measures"] = {"level_out": "level_out"}
+    with pytest.raises(CatalogueError) as exc:
+        load_catalogue(_write(tmp_path, {"level_sensor": entry}))
+    assert "level_sensor" in str(exc.value) and "level_out" in str(exc.value)
+
+
+def test_measures_value_must_be_some_kinds_output(tmp_path):
+    entry = copy.deepcopy(SENSOR)
+    entry["measures"] = {"level_in": "temperature_out"}
+    with pytest.raises(CatalogueError) as exc:
+        load_catalogue(_write(tmp_path, {"level_sensor": entry}))
+    assert "temperature_out" in str(exc.value)

@@ -21,3 +21,8 @@ __pycache__/
 .pytest_cache/
 /.vs
 /.github
+
+# omc build output of the committed example; only its compile script is tracked
+examples/*/build/*
+!examples/*/build/compile.mos
+/tests/fixtures/extract_cache

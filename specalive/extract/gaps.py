@@ -3,6 +3,8 @@
 # a required value with neither becomes a Question and a missing-information entry. Simplifications
 # a source states become traced Assumptions. The honesty gate then removes every element with no
 # trace and no assumption — cascading to whatever referred to it — and never adds a trace.
+# Phase 9: a system value whose name ends in a run parameter name (core RUN_PARAMETERS, what the
+# generator's experiment reads) is also given that name, with a declared Assumption.
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -11,6 +13,7 @@ from dataclasses import dataclass
 from specalive.core.catalogue import Catalogue
 from specalive.core.ids import make_id
 from specalive.core.ir import (
+    RUN_PARAMETERS,
     SYSTEM_OWNER,
     Assumption,
     ExpressionError,
@@ -80,6 +83,39 @@ def apply_conventions(draft: Draft, rules: tuple[Rule, ...] = CONVENTIONS) -> No
             draft.parameters.append(src.model_copy(update={
                 "id": pid, "name": rule.target, "trace": list(src.trace),
                 "assumption_ids": [aid]}))
+
+
+_RUN_STATUSES = ("effective", "verification_only")
+
+
+def apply_run_names(draft: Draft) -> list[str]:
+    """Give a system value named `<qualifier>_<run parameter>` (simulation_stop_time) the run
+    parameter's own name, so the generated experiment uses it; the original stays. Several
+    candidates are reported, never chosen between. Returns the missing-information entries."""
+    missing: list[str] = []
+    for run_name, meaning in RUN_PARAMETERS.items():
+        system = [p for p in draft.parameters
+                  if p.owner == SYSTEM_OWNER and p.status in _RUN_STATUSES]
+        if any(p.name == run_name for p in system):
+            continue
+        found = sorted((p for p in system if p.name.endswith(f"_{run_name}")), key=lambda p: p.id)
+        if len(found) > 1:
+            missing.append(f"{run_name} ({meaning}): several system values could be it "
+                           f"({', '.join(p.name for p in found)}); none is used")
+            continue
+        if not found:
+            continue
+        src = found[0]
+        pid = _free_id(draft, f"{SYSTEM_OWNER}_{run_name}")
+        aid = make_id("as", f"as run name {run_name}")
+        draft.assumptions.append(Assumption(
+            id=aid, basis="engineering_convention", affects=[pid],
+            confidence=CONVENTION_CONFIDENCE, trace=list(src.trace),
+            text=f"'{src.name}' ({src.original.value} {src.original.unit}) is taken as the run's "
+                 f"{run_name}, {meaning}."))
+        draft.parameters.append(src.model_copy(update={
+            "id": pid, "name": run_name, "trace": list(src.trace), "assumption_ids": [aid]}))
+    return missing
 
 
 def _ensure_catalogue_source(draft: Draft) -> None:
