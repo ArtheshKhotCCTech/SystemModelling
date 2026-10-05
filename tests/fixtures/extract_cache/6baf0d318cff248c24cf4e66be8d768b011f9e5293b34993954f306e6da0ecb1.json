@@ -1,0 +1,186 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#0",
+    "date": "2026-03-04",
+    "file_name": null,
+    "quote": "file: 11_reference_run_24h.csv",
+    "revision": "Synthetic",
+    "role": "reference_data",
+    "tag": "09_datasets/11_reference_run_24h.csv",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "time_span",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "time_s from 0 to 86400",
+    "stated_status": null,
+    "unit": "s",
+    "value": "0 to 86400"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#3",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "maximum_occupancy",
+    "owner_tag": "SCH-OCC-201",
+    "provisional": false,
+    "quote": "column occupants_person: numeric, min 0, max 15, first 0, last 0",
+    "stated_status": null,
+    "unit": "person",
+    "value": "15"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#4",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "outdoor_co2",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column outdoor_co2_ppm: numeric, min 300, max 300, first 300, last 300",
+    "stated_status": null,
+    "unit": "ppm",
+    "value": "300"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#5",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "outdoor_co2_mass_fraction",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column outdoor_co2_mass_fraction_kgkg: numeric, min 0.00045569999999999996, max 0.00045569999999999996, first 0.00045569999999999996, last 0.00045569999999999996",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "0.00045569999999999996"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#6",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "room_co2_ppm",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column room_co2_ppm: numeric, min 300, max 996.5235766363471, first 300, last 361.9184470295561",
+    "stated_status": null,
+    "unit": "ppm",
+    "value": "300 to 996.5235766363471"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#7",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "room_co2_mass_fraction",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column room_co2_mass_fraction_kgkg: numeric, min 0.00045569999999999996, max 0.0015137193129106112, first 0.00045569999999999996, last 0.0005497541210378957",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "0.00045569999999999996 to 0.0015137193129106112"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#8",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "normalized_co2_feedback",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column normalized_co2_feedback: numeric, min 0.3, max 0.9965235766363472, first 0.3, last 0.3619184470295561",
+    "stated_status": null,
+    "unit": "1",
+    "value": "0.3 to 0.9965235766363472"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#9",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "normalized_setpoint",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column normalized_setpoint: numeric, min 1, max 1, first 1, last 1",
+    "stated_status": null,
+    "unit": "1",
+    "value": "1"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#10",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "ach_command",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column ach_command_1_per_h: numeric, min 0.2, max 3.4791415294352497, first 0.2, last 0.2",
+    "stated_status": null,
+    "unit": "1/h",
+    "value": "0.2 to 3.4791415294352497"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#11",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "source_m_flow_command",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column source_m_flow_command_kg_s: numeric, min -0.11597138431450833, max -0.006666666666666667, first -0.006666666666666667, last -0.006666666666666667",
+    "stated_status": null,
+    "unit": "kg/s",
+    "value": "-0.11597138431450833 to -0.006666666666666667"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#12",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "physical_supply_m_flow",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column physical_supply_m_flow_kg_s: numeric, min 0.006666666666666667, max 0.11597138431450833, first 0.006666666666666667, last 0.006666666666666667",
+    "stated_status": null,
+    "unit": "kg/s",
+    "value": "0.006666666666666667 to 0.11597138431450833"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#13",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "people_source_carrier_m_flow",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column people_source_carrier_m_flow_kg_s: numeric, min 0, max 1.227e-06, first 0, last 0",
+    "stated_status": null,
+    "unit": "kg/s",
+    "value": "0 to 1.227e-06"
+   },
+   {
+    "chunk_id": "src_09_datasets_11_reference_run_24h_csv#14",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "actual_co2_generation",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "column actual_co2_generation_kg_s: numeric, min 0, max 0.0001227, first 0, last 0",
+    "stated_status": null,
+    "unit": "kg/s",
+    "value": "0 to 0.0001227"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

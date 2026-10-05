@@ -1,0 +1,6 @@
+// Compiles the model in this folder: loads MSL 4.0.0 and model.mo, then checks and builds
+// room_co2_ventilation.System. Run from this folder:  omc compile.mos
+loadModel(Modelica, {"4.0.0"}); getErrorString();
+loadFile("model.mo"); getErrorString();
+checkModel(room_co2_ventilation.System); getErrorString();
+buildModel(room_co2_ventilation.System); getErrorString();

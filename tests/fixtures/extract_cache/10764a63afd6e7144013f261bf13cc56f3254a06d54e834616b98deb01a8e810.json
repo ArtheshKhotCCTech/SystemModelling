@@ -1,0 +1,51 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [
+   {
+    "affects_tags": [
+     "SEN-CO2-201"
+    ],
+    "chunk_id": "src_07_datasheets_08_co2_sensor_datasheet_pdf#0",
+    "quote": "the baseline simulation uses an ideal concentration sensor",
+    "text": "The baseline simulation uses an ideal concentration sensor."
+   }
+  ],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_07_datasheets_08_co2_sensor_datasheet_pdf#0",
+    "date": null,
+    "file_name": null,
+    "quote": "Supplier model CO2-TX-2K - Revision D",
+    "revision": "Supplier Rev D",
+    "role": "datasheet",
+    "tag": "07_datasheets/08_co2_sensor_datasheet.pdf",
+    "title": "07_datasheets/08_co2_sensor_datasheet.pdf"
+   }
+  ],
+  "parameters": [],
+  "parts": [
+   {
+    "aliases": [
+     "traceVolume"
+    ],
+    "attributes": [],
+    "chunk_id": "src_07_datasheets_08_co2_sensor_datasheet_pdf#0",
+    "description": null,
+    "kind": "concentration_sensor",
+    "name": null,
+    "quote": "Synthetic wall-mount nondispersive-infrared CO2 transmitter for building ventilation applications.",
+    "tag": "SEN-CO2-201"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

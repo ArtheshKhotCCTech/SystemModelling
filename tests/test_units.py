@@ -65,3 +65,32 @@ def test_density_and_mass_units_for_air_volumes(written, expected):
     # phase 10: air density converts ACH to mass flow; an ACH-to-mass-flow gain is in kg in SI
     value, unit = to_si(1.2, written)
     assert (round(value, 9), unit) == expected
+
+
+# --- compound units (phase 10 follow-up: the L2 register's gains) ----------------------------
+
+@pytest.mark.parametrize("value, unit, si_value, si_unit", [
+    (-0.0333333333, "kg/s per ACH", -0.0333333333 * 3600, "kg"),  # ACH is 1/h
+    (658.327847, "1/(kg/kg)", 658.327847, "1"),
+    (8.18e-8, "kg/(s.person)", 8.18e-8, "kg/s"),
+    (8.18e-6, "kg/s/person", 8.18e-6, "kg/s"),
+    (6, "ACH/normalized", 6 / 3600, "1/s"),
+    (3.5, "ACH", 3.5 / 3600, "1/s"),
+    (15, "person", 15, "1"),
+    (1, "normalized", 1, "1"),
+    (36, "m3/h", 0.01, "m3/s"),
+    (2, "kg*m/s", 2, None),  # a dimension with no SI unit in the table
+])
+def test_compound_units_reduce_to_an_si_unit(value, unit, si_value, si_unit):
+    if si_unit is None:
+        with pytest.raises(UnknownUnit):
+            to_si(value, unit)
+        return
+    got, got_unit = to_si(value, unit)
+    assert got == pytest.approx(si_value) and got_unit == si_unit and got_unit in SI_UNITS
+
+
+@pytest.mark.parametrize("unit", ["kg/furlong", "degC/s", "kg/(s", "per s", "kg//s"])
+def test_a_compound_with_an_unknown_or_offset_part_is_unknown(unit):
+    with pytest.raises(UnknownUnit):
+        to_si(1.0, unit)

@@ -1,0 +1,137 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [
+   {
+    "affects_tags": [
+     "SRC-CO2-201"
+    ],
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#1",
+    "quote": "C=100 kg/kg is not a physical room concentration; it is only there so the carrier mass flow is 1/100 of the actual CO2 emission.",
+    "text": "C=100 kg/kg is not a physical room concentration; it is only there so the carrier mass flow is 1/100 of the actual CO2 emission."
+   }
+  ],
+  "behaviour_chunk_ids": [
+   "src_05_correspondence_05_bms_controls_email_thread_eml#0",
+   "src_05_correspondence_05_bms_controls_email_thread_eml#2"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#0",
+    "date": null,
+    "file_name": null,
+    "quote": "CR-IAQ-007 approved Kp=6.0, bias=3.5 ACH, min=0.2, max=6.0",
+    "revision": null,
+    "role": "change_record",
+    "tag": "CR-IAQ-007",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#1",
+    "date": "2026-02-14",
+    "file_name": null,
+    "quote": "DR-IAQ-05 closed this today",
+    "revision": null,
+    "role": "review_decision",
+    "tag": "DR-IAQ-05",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#0",
+    "cited_document": "CR-IAQ-007",
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "Kp=6.0, bias=3.5 ACH, min=0.2, max=6.0",
+    "stated_status": null,
+    "unit": "1",
+    "value": "6.0"
+   },
+   {
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#0",
+    "cited_document": "CR-IAQ-007",
+    "configuration": "nominal",
+    "name": "bias",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "Kp=6.0, bias=3.5 ACH, min=0.2, max=6.0",
+    "stated_status": null,
+    "unit": "ACH",
+    "value": "3.5"
+   },
+   {
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#0",
+    "cited_document": "CR-IAQ-007",
+    "configuration": "nominal",
+    "name": "output_min",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "Kp=6.0, bias=3.5 ACH, min=0.2, max=6.0",
+    "stated_status": null,
+    "unit": "1",
+    "value": "0.2"
+   },
+   {
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#0",
+    "cited_document": "CR-IAQ-007",
+    "configuration": "nominal",
+    "name": "output_max",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "Kp=6.0, bias=3.5 ACH, min=0.2, max=6.0",
+    "stated_status": null,
+    "unit": "1",
+    "value": "6.0"
+   },
+   {
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#1",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "outdoor_co2",
+    "owner_tag": "system",
+    "provisional": false,
+    "quote": "Outdoor model remains 300 ppm.",
+    "stated_status": null,
+    "unit": "ppm",
+    "value": "300"
+   },
+   {
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#2",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "value",
+    "owner_tag": "SET-CO2-201",
+    "provisional": false,
+    "quote": "CO2Set=1",
+    "stated_status": null,
+    "unit": "1",
+    "value": "1"
+   },
+   {
+    "chunk_id": "src_05_correspondence_05_bms_controls_email_thread_eml#2",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "GAIN-NORM-201",
+    "provisional": false,
+    "quote": "gainSensor=1/1.519E-3",
+    "stated_status": null,
+    "unit": "1",
+    "value": "1/1.519E-3"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

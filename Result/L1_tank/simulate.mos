@@ -1,0 +1,5 @@
+// Simulates the model in this folder over its experiment (start/stop/interval in model.mo)
+// and writes system_model.System_res.csv. Run from this folder:  omc simulate.mos
+loadModel(Modelica, {"4.0.0"}); getErrorString();
+loadFile("model.mo"); getErrorString();
+simulate(system_model.System, outputFormat="csv"); getErrorString();

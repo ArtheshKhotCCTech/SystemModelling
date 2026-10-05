@@ -1,0 +1,101 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [
+   {
+    "affects_tags": [
+     "ZON-201"
+    ],
+    "chunk_id": "src_04_design_notes_14_engineer_field_notes_txt#1",
+    "quote": "Room is treated perfectly mixed; no local sensor stratification modeled.",
+    "text": "Room is treated as perfectly mixed, with no local sensor stratification modeled."
+   }
+  ],
+  "behaviour_chunk_ids": [
+   "src_04_design_notes_14_engineer_field_notes_txt#1"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_04_design_notes_14_engineer_field_notes_txt#0",
+    "date": "2026-03-04",
+    "file_name": null,
+    "quote": "RM-201 synthetic trend check - 2026-03-04",
+    "revision": null,
+    "role": "informal_note",
+    "tag": "RM-201",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_04_design_notes_14_engineer_field_notes_txt#1",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "outdoor_co2",
+    "owner_tag": "system",
+    "provisional": false,
+    "quote": "Outside trace = 0.0004557 kg/kg = 300 ppm under project rounding.",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "0.0004557"
+   },
+   {
+    "chunk_id": "src_04_design_notes_14_engineer_field_notes_txt#1",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "maximum_occupancy",
+    "owner_tag": "SCH-OCC-201",
+    "provisional": false,
+    "quote": "New schedule peaks at 15 people after lunch.",
+    "stated_status": null,
+    "unit": "1",
+    "value": "15"
+   },
+   {
+    "chunk_id": "src_04_design_notes_14_engineer_field_notes_txt#1",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "New tuning Kp 6, bias 3.5 ACH.",
+    "stated_status": null,
+    "unit": "1",
+    "value": "6"
+   },
+   {
+    "chunk_id": "src_04_design_notes_14_engineer_field_notes_txt#1",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "controller_bias",
+    "owner_tag": "system",
+    "provisional": false,
+    "quote": "New tuning Kp 6, bias 3.5 ACH.",
+    "stated_status": null,
+    "unit": "ACH",
+    "value": "3.5"
+   },
+   {
+    "chunk_id": "src_04_design_notes_14_engineer_field_notes_txt#1",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "minimum_ach_command",
+    "owner_tag": "system",
+    "provisional": false,
+    "quote": "Controller bottoms at 0.2 ACH for long unoccupied periods.",
+    "stated_status": null,
+    "unit": "ACH",
+    "value": "0.2"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

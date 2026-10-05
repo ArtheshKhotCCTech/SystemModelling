@@ -357,3 +357,27 @@ def test_a_sensor_named_beside_another_sensor_still_measures_the_tank(catalogue)
     assert ("tk_1_level_out", "lt_1_level_in") in {(c.from_port, c.to_port)
                                                      for c in links.connections}
     assert all("lt_1" not in q.affects for q in links.questions)
+
+
+# --- the system's own name is not a part (phase 10 follow-up, L2 finding) -------------------
+
+def test_a_part_named_only_by_the_systems_name_is_dropped_when_its_kind_is_taken(catalogue):
+    # L2: "System: RM-201 room CO2 controlled ventilation" became a second room beside ZON-201
+    from specalive.extract.merge import drop_system_names
+
+    ps = resolve_parts([pf("System: RM-9 room ventilation", "RM-9", "room_volume", source_id="src_m"),
+                        pf("Tag: ZN-9 | Type: Well-mixed room volume", "ZN-9", "room_volume",
+                           source_id="src_r")], [], catalogue)
+    reasons = drop_system_names(ps, "RM-9 room ventilation demonstration")
+    assert [p.id for p in ps.parts] == ["zn_9"]
+    assert ps.lookup("RM-9") is None and ps.lookup("ZN-9") == "zn_9"
+    assert reasons and "rm_9" in reasons[0]
+
+
+def test_the_only_part_of_its_kind_stays_even_if_the_system_is_named_after_it(catalogue):
+    from specalive.extract.merge import drop_system_names
+
+    ps = resolve_parts([pf("Tag: TK-9 | Type: Tank", "TK-9", "tank", source_id="src_r")], [],
+                       catalogue)
+    assert drop_system_names(ps, "TK-9 tank filling system") == []
+    assert [p.id for p in ps.parts] == ["tk_9"]

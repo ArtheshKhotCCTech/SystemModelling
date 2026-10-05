@@ -1,0 +1,156 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [
+   {
+    "affects_tags": [],
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#5",
+    "quote": "Treat each schedule interval as piecewise constant.",
+    "text": "Each schedule interval is treated as piecewise constant."
+   }
+  ],
+  "behaviour_chunk_ids": [
+   "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#1",
+   "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#3",
+   "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#4",
+   "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#5",
+   "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#6",
+   "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#7",
+   "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#8",
+   "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#9",
+   "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#10"
+  ],
+  "connections": [],
+  "criteria": [
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#11",
+    "quote": "Maximum room CO2 <= 1000 ppm.",
+    "tag": "AC-01",
+    "text": "Maximum room CO2 <= 1000 ppm."
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#11",
+    "quote": "Outdoor concentration remains 300 ppm in baseline run.",
+    "tag": "AC-02",
+    "text": "Outdoor concentration remains 300 ppm in baseline run."
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#11",
+    "quote": "ACH command remains within 0.2..6.0 ACH.",
+    "tag": "AC-03",
+    "text": "ACH command remains within 0.2..6.0 ACH."
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#11",
+    "quote": "physical_supply_m_flow_kg_s = -source_m_flow_command_kg_s.",
+    "tag": "AC-04",
+    "text": "physical_supply_m_flow_kg_s = -source_m_flow_command_kg_s."
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#11",
+    "quote": "CO2 source injection equals occupants*8.18E-6 kg/s.",
+    "tag": "AC-05",
+    "text": "CO2 source injection equals occupants*8.18E-6 kg/s."
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#11",
+    "quote": "Trend contains 1441 rows including 00:00 and 24:00 endpoints.",
+    "tag": "AC-06",
+    "text": "Trend contains 1441 rows including 00:00 and 24:00 endpoints."
+   }
+  ],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#0",
+    "date": "2026-03-03",
+    "file_name": null,
+    "quote": "Commissioning / Model Verification Procedure CP-23\nRevision C - 2026-03-03",
+    "revision": "C",
+    "role": "verification_procedure",
+    "tag": "08_commissioning/09_commissioning_test_procedure_CP23.pdf",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#2",
+    "cited_document": null,
+    "configuration": "verification",
+    "name": "volume",
+    "owner_tag": "ZON-201",
+    "provisional": false,
+    "quote": "Room volume = 100 m3.",
+    "stated_status": null,
+    "unit": "m3",
+    "value": "100"
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#2",
+    "cited_document": null,
+    "configuration": "verification",
+    "name": "nominal_air_density",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "Nominal air density = 1.2 kg/m3.",
+    "stated_status": null,
+    "unit": "kg/m3",
+    "value": "1.2"
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#2",
+    "cited_document": null,
+    "configuration": "verification",
+    "name": "outdoor_co2",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "Outdoor CO2 = 300 ppm = 0.3*1.519E-3 kg/kg.",
+    "stated_status": null,
+    "unit": "ppm",
+    "value": "300"
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#2",
+    "cited_document": null,
+    "configuration": "verification",
+    "name": "co2_emission_per_person",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "Occupant CO2 generation = 8.18E-6 kg/s/person.",
+    "stated_status": null,
+    "unit": "kg/s/person",
+    "value": "8.18E-6"
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#2",
+    "cited_document": null,
+    "configuration": "verification",
+    "name": "gain",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "Controller: Kp=6.0 ACH/normalized, bias=3.5 ACH, integral disabled, limits 0.2..6.0 ACH.",
+    "stated_status": null,
+    "unit": "ACH/normalized",
+    "value": "6.0"
+   },
+   {
+    "chunk_id": "src_08_commissioning_09_commissioning_test_procedure_cp23_pdf#2",
+    "cited_document": null,
+    "configuration": "verification",
+    "name": "bias",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "Controller: Kp=6.0 ACH/normalized, bias=3.5 ACH, integral disabled, limits 0.2..6.0 ACH.",
+    "stated_status": null,
+    "unit": "ACH",
+    "value": "3.5"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

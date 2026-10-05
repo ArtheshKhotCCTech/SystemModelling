@@ -8,6 +8,8 @@
 # as what it measures (catalogue `measures`), traced to that evidence; never guessed.
 # An input wired from several ports keeps the best-evidenced driver, naming the others in a
 # Conflict; a tie is a Question.
+# Phase 10: a part named only by the system's own identifier, whose kind another part has, is
+# dropped (the system named itself, not a component).
 from __future__ import annotations
 
 import re
@@ -313,6 +315,26 @@ def resolve_parts(parts: list[Found[PartFragment]], aliases: list[Found[AliasFra
             out.names[name_key(n)] = pid
     out.parts.sort(key=lambda p: p.id)
     return out
+
+
+def drop_system_names(parts: PartSet, system_name: str | None) -> list[str]:
+    """A part named only by the system's own identifier ("System: RM-9 room ventilation") names
+    the system, not a component, when another part has its kind; it is dropped, and fragments
+    naming it are then reported as naming no known part. Returns the reasons."""
+    if not system_name:
+        return []
+    reasons = []
+    for part in sorted(parts.parts, key=lambda p: p.id):
+        same_kind = [q for q in parts.parts if q.kind == part.kind and q.id != part.id]
+        if not part.tags or not same_kind or not all(_names_any(system_name, [t]) for t in part.tags):
+            continue
+        parts.parts.remove(part)
+        parts.names = {k: v for k, v in parts.names.items() if v != part.id}
+        parts.questions = [q for q in parts.questions if part.id not in q.affects]
+        parts.assumptions = [a for a in parts.assumptions if part.id not in a.affects]
+        reasons.append(f"{part.id} ({', '.join(part.tags)}): its only name is the system's own "
+                       f"({system_name!r}) and {same_kind[0].id} is the {part.kind}; not a part")
+    return reasons
 
 
 # --- connections ---------------------------------------------------------------------------

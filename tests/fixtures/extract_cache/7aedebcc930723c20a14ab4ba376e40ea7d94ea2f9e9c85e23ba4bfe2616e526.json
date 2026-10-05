@@ -1,0 +1,117 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [],
+  "parameters": [],
+  "parts": [],
+  "requirements": [
+   {
+    "category": "Functional",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#1",
+    "quote": "Req ID: IAQ-FUN-001 | Source / Rev: URS-IAQ-001 Rev A | Requirement Text: The system shall provide outdoor air to the room through the supply-air path and discharge room air through the exhaust path.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-FUN-001",
+    "text": "The system shall provide outdoor air to the room through the supply-air path and discharge room air through the exhaust path."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#2",
+    "quote": "Req ID: IAQ-FUN-002 | Source / Rev: URS-IAQ-001 Rev A | Requirement Text: The ventilation controller shall modulate fresh-air mass flow using measured room CO2 concentration as feedback.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-FUN-002",
+    "text": "The ventilation controller shall modulate fresh-air mass flow using measured room CO2 concentration as feedback."
+   },
+   {
+    "category": "Performance",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#3",
+    "quote": "Req ID: IAQ-FUN-003 | Source / Rev: URS-IAQ-001 Rev A | Requirement Text: The occupied-room CO2 concentration shall not exceed 1000 ppm under the design occupancy schedule.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-FUN-003",
+    "text": "The occupied-room CO2 concentration shall not exceed 1000 ppm under the design occupancy schedule."
+   },
+   {
+    "category": "Performance",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#4",
+    "quote": "Req ID: IAQ-FUN-004 | Source / Rev: URS-IAQ-001 Rev A | Requirement Text: The outdoor-air CO2 concentration used by the demonstration model shall be 300 ppm.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-FUN-004",
+    "text": "The outdoor-air CO2 concentration used by the demonstration model shall be 300 ppm."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#5",
+    "quote": "Req ID: IAQ-FUN-005 | Source / Rev: URS-IAQ-001 Rev A | Requirement Text: CO2 generation shall be proportional to the number of occupants scheduled in the room.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-FUN-005",
+    "text": "CO2 generation shall be proportional to the number of occupants scheduled in the room."
+   },
+   {
+    "category": "Performance",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#6",
+    "quote": "Req ID: IAQ-PER-001 | Source / Rev: URS-IAQ-001 Rev A | Requirement Text: The controlled room air volume shall be 100 m^3.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-PER-001",
+    "text": "The controlled room air volume shall be 100 m^3."
+   },
+   {
+    "category": "Performance",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#7",
+    "quote": "Req ID: IAQ-PER-002 | Source / Rev: URS-IAQ-001 Rev A | Requirement Text: The nominal air density for ventilation mass-flow conversion shall be 1.2 kg/m^3.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-PER-002",
+    "text": "The nominal air density for ventilation mass-flow conversion shall be 1.2 kg/m^3."
+   },
+   {
+    "category": "Performance",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#8",
+    "quote": "Req ID: IAQ-PER-003 | Source / Rev: URS-IAQ-001 Rev A | Requirement Text: Each occupant shall contribute 8.18E-6 kg/s of CO2 at the design activity level.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-PER-003",
+    "text": "Each occupant shall contribute 8.18E-6 kg/s of CO2 at the design activity level."
+   },
+   {
+    "category": "Modeling",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#9",
+    "quote": "Req ID: IAQ-PER-004 | Source / Rev: MOD-NT-03 | Requirement Text: The peopleSource implementation shall use a trace-substance concentration parameter of 100 kg/kg and a carrier mass-flow command equal to occupant CO2 generation divided by 100.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-PER-004",
+    "text": "The peopleSource implementation shall use a trace-substance concentration parameter of 100 kg/kg and a carrier mass-flow command equal to occupant CO2 generation divided by 100."
+   },
+   {
+    "category": "Modeling",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#10",
+    "quote": "Req ID: IAQ-PER-005 | Source / Rev: MOD-NT-03 | Requirement Text: The nominal trace-substance concentration used for equation scaling shall be 1.519E-3 kg/kg.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-PER-005",
+    "text": "The nominal trace-substance concentration used for equation scaling shall be 1.519E-3 kg/kg."
+   },
+   {
+    "category": "Modeling",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#11",
+    "quote": "Req ID: IAQ-PER-006 | Source / Rev: URS-IAQ-001 Rev A | Requirement Text: The fresh-air concentration of 300 ppm shall be represented as 0.3 times the nominal 1000 ppm mass fraction.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-PER-006",
+    "text": "The fresh-air concentration of 300 ppm shall be represented as 0.3 times the nominal 1000 ppm mass fraction."
+   }
+  ],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

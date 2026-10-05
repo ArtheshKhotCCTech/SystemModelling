@@ -282,3 +282,71 @@ def test_unique_ids_leaves_a_clean_draft_alone():
 
     d = draft(parts=[tank()], parameters=[prm("tk", "area", 2.0, "m2")])
     assert unique_ids(d) == [] and [s.id for s in d.sources] == ["spec"]
+
+
+# --- a one-parameter kind's only stated value (phase 10 follow-up, L2 finding) ---------------
+
+def _constant(pid="ca"):
+    return Part(id=pid, kind="constant", name="Constant", trace=T, ports=[
+        Port(id=f"{pid}_y", role="y", direction="out", domain="signal_real")])
+
+
+def test_a_one_parameter_kinds_only_value_is_its_parameter_with_an_assumption(catalogue):
+    # L2: the outdoor-air constant's 0.0004557 kg/kg came back named "concentration"
+    d = draft(parts=[_constant()], parameters=[prm("ca", "concentration", 0.0004557, "kg/kg")])
+    missing = apply_catalogue(d, catalogue)
+    value = next(p for p in d.parameters if p.name == "value")
+    assert value.value == 0.0004557 and value.unit == "kg/kg" and value.trace == T
+    [a] = [a for a in d.assumptions if a.id in value.assumption_ids]
+    assert "concentration" in a.text and a.basis == "inferred"
+    assert missing == [] and d.questions == []
+
+
+def test_two_unnamed_values_are_still_a_question(catalogue):
+    d = draft(parts=[_constant()], parameters=[prm("ca", "low", 1.0, "1"), prm("ca", "high", 2.0, "1")])
+    apply_catalogue(d, catalogue)
+    assert all(p.name != "value" for p in d.parameters)
+    assert len(d.questions) == 1 and "value" in d.questions[0].text
+
+
+# --- the run spans the reference trace when no source states its length ---------------------
+
+SUMMARY = ("file: ref.csv\ncolumns: time_s, level_m\nrows: 1441\n"
+           "time span: time_s from 0 to 86400")
+
+
+def _with_reference(*summaries):
+    from _extract_support import bundle, chunk, source as ev_source
+
+    srcs = [ev_source(f"ref{i}", "reference_data", path=f"ref{i}.csv", fmt="csv")
+            for i in range(len(summaries))]
+    return bundle(srcs, [chunk(f"ref{i}", "file summary", text, kind="data_summary")
+                         for i, text in enumerate(summaries)])
+
+
+def test_the_run_spans_the_one_reference_trace_with_an_assumption():
+    from specalive.extract.gaps import run_span_from_reference
+
+    d = draft()
+    missing = run_span_from_reference(d, _with_reference(SUMMARY), {"ref0": "ref0"})
+    params = {p.name: p for p in d.parameters}
+    assert params["stop_time"].value == 86400.0 and params["stop_time"].unit == "s"
+    assert params["output_interval"].value == 60.0
+    assert all(p.status == "verification_only" for p in params.values())
+    assert params["stop_time"].trace[0].quote == "time span: time_s from 0 to 86400"
+    [a] = d.assumptions
+    assert set(a.affects) == {params["stop_time"].id, params["output_interval"].id}
+    assert missing == []
+
+
+def test_a_stated_stop_time_wins_and_two_traces_that_differ_are_not_chosen_between():
+    from specalive.extract.gaps import run_span_from_reference
+
+    stated = draft(parameters=[_run("stop_time", 900.0)])
+    assert run_span_from_reference(stated, _with_reference(SUMMARY), {"ref0": "ref0"}) == []
+    assert [p.value for p in stated.parameters if p.name == "stop_time"] == [900.0]
+    other = SUMMARY.replace("86400", "3600")
+    d = draft()
+    missing = run_span_from_reference(d, _with_reference(SUMMARY, other),
+                                      {"ref0": "ref0", "ref1": "ref1"})
+    assert d.parameters == [] and missing and "stop_time" in missing[0]

@@ -80,6 +80,7 @@ from specalive.extract.gaps import (
     apply_run_names,
     hint_assumptions,
     honesty_gate,
+    run_span_from_reference,
     missing_documents,
     unconnected_inputs,
     unique_ids,
@@ -88,6 +89,7 @@ from specalive.extract.merge import (
     _FORMAL,
     _names_any,
     ir_sources,
+    drop_system_names,
     measurement_links,
     single_drivers,
     resolve_connections,
@@ -101,7 +103,7 @@ from specalive.extract.precedence import (
     resolve_requirements,
     usable_tag,
 )
-from specalive.extract.schedule import press_schedules
+from specalive.extract.schedule import press_schedules, schedule_tables
 from specalive.extract.text_input import text_bundle
 from specalive.ingest.evidence import EvidenceBundle, EvidenceChunk, Source
 from specalive.ingest.readers._common import CompletionClient
@@ -1099,6 +1101,7 @@ def run_extract(bundle: EvidenceBundle, llm: CompletionClient,
 
     docs, cited = build_registry(sources, passes.documents)
     partset = resolve_parts(passes.parts, passes.aliases, catalogue)
+    report.unresolved.extend(drop_system_names(partset, passes.system_name))
     connections = resolve_connections(passes.connections, partset, catalogue)
     report.unresolved.extend(connections.problems)
     measured = measurement_links(partset, connections.connections, catalogue)
@@ -1146,6 +1149,11 @@ def run_extract(bundle: EvidenceBundle, llm: CompletionClient,
         for p in schedules.replaced)
     draft.parameters.extend(schedules.parameters)
     draft.questions.extend(schedules.questions)
+    tables = schedule_tables(bundle, draft.parts, draft.parameters, source_map)
+    draft.parameters.extend(tables.parameters)
+    draft.questions.extend(tables.questions)
+    draft.assumptions.extend(tables.assumptions)
+    report.missing_information.extend(tables.missing)
     for ac in draft.acceptance_criteria:
         check = next((c for tag, c in checks.items()
                       if name_key(tag) in {name_key(t) for t in ac.tags}), None)
@@ -1154,6 +1162,7 @@ def run_extract(bundle: EvidenceBundle, llm: CompletionClient,
 
     apply_conventions(draft)
     report.missing_information.extend(apply_run_names(draft))
+    report.missing_information.extend(run_span_from_reference(draft, bundle, source_map))
     report.missing_information.extend(apply_catalogue(draft, catalogue))
     report.missing_information.extend(missing_documents(draft.sources,
                                                         params.unresolved_citations))

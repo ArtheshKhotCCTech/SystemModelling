@@ -1,0 +1,76 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#42",
+    "date": null,
+    "file_name": null,
+    "quote": "This Rev B note incorporates DR-IAQ-05, OCC-SCH-04 Rev C, and CR-IAQ-007.",
+    "revision": null,
+    "role": "other",
+    "tag": "DR-IAQ-05",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#42",
+    "date": null,
+    "file_name": null,
+    "quote": "This Rev B note incorporates DR-IAQ-05, OCC-SCH-04 Rev C, and CR-IAQ-007.",
+    "revision": null,
+    "role": "other",
+    "tag": "OCC-SCH-04 Rev C",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#42",
+    "date": null,
+    "file_name": null,
+    "quote": "This Rev B note incorporates DR-IAQ-05, OCC-SCH-04 Rev C, and CR-IAQ-007.",
+    "revision": null,
+    "role": "other",
+    "tag": "CR-IAQ-007",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#39",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "minimum_ach_command",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "0.2 <= ACH <= 6.0.",
+    "stated_status": null,
+    "unit": "1",
+    "value": "0.2"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#39",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "maximum_ach_command",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "0.2 <= ACH <= 6.0.",
+    "stated_status": null,
+    "unit": "1",
+    "value": "6.0"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

@@ -7,8 +7,11 @@
 # generator's experiment reads) is also given that name, with a declared Assumption. An input port
 # connected to nothing becomes a Question, so a model that cannot compile says why before omc.
 # Phase 10: a source whose id another element has is renamed doc_<id>, references following.
+# A one-parameter kind's single stated value under another name is that parameter (Assumption).
+# A run whose length no source states spans the one reference trace (Assumption).
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -25,6 +28,7 @@ from specalive.core.ir import (
     Parameter,
     Question,
     Source,
+    TraceLink,
     expression_calls,
     expression_names,
     parse_expression,
@@ -124,6 +128,55 @@ def apply_run_names(draft: Draft) -> list[str]:
     return missing
 
 
+_SPAN = re.compile(r"^time span: (\S+) from (\S+) to (\S+)$", re.MULTILINE)
+_ROWS = re.compile(r"^rows: (\d+)$", re.MULTILINE)
+_SECONDS_COLUMN = re.compile(r"(?:_s|\(s\)|\[s\])$")
+
+
+def run_span_from_reference(draft: Draft, bundle, source_map: dict[str, str]) -> list[str]:
+    """When no source states the run length, the run spans the one reference trace whose time
+    column is in seconds: stop_time its end, output_interval its sample spacing, both
+    verification-only with an Assumption traced to the trace's summary. Traces that disagree
+    are reported, never chosen between. Returns the missing-information entries."""
+    stated = {p.name for p in draft.parameters
+              if p.owner == SYSTEM_OWNER and p.status in _RUN_STATUSES}
+    if "stop_time" in stated:
+        return []
+    spans = []
+    for c in bundle.chunks:
+        if c.kind != "data_summary" or c.source_id not in source_map:
+            continue
+        span, rows = _SPAN.search(c.text), _ROWS.search(c.text)
+        if span and _SECONDS_COLUMN.search(span.group(1)):
+            spans.append((c, float(span.group(2)), float(span.group(3)),
+                          int(rows.group(1)) if rows else None, span.group(0)))
+    if not spans:
+        return []
+    if len({(start, end) for _, start, end, _, _ in spans}) > 1:
+        return ["stop_time (the simulated run length): no source states it and the reference "
+                "traces span different times; none is used"]
+    chunk, start, end, rows, quote = spans[0]
+    trace = [TraceLink(source_id=source_map[chunk.source_id], locator=chunk.locator, quote=quote)]
+    aid = make_id("as", "as run spans reference")
+    values = [("stop_time", end, f"{end:g}")]
+    if rows and rows > 1 and "output_interval" not in stated:
+        step = (end - start) / (rows - 1)
+        values.append(("output_interval", step, f"{step:g}"))
+    pids = []
+    for name, value, written in values:
+        pid = _free_id(draft, f"{SYSTEM_OWNER}_{name}")
+        pids.append(pid)
+        draft.parameters.append(Parameter(
+            id=pid, owner=SYSTEM_OWNER, name=name, value=value, unit="s",
+            original=OriginalValue(value=written, unit="s"), status="verification_only",
+            authority=source_map[chunk.source_id], trace=trace, assumption_ids=[aid]))
+    draft.assumptions.append(Assumption(
+        id=aid, basis="inferred", affects=pids, confidence=CONVENTION_CONFIDENCE, trace=trace,
+        text=f"No source states the run length; the run is taken to span the reference trace "
+             f"({start:g} to {end:g} s" + (f", {rows} rows" if rows else "") + ")."))
+    return []
+
+
 def _ensure_catalogue_source(draft: Draft) -> None:
     if all(s.id != CATALOGUE_SOURCE_ID for s in draft.sources):
         draft.sources.append(Source(id=CATALOGUE_SOURCE_ID, path=None, role="other",
@@ -155,6 +208,8 @@ def apply_catalogue(draft: Draft, catalogue: Catalogue) -> list[str]:
         for name in entry.required:
             if (part.id, name) in effective or name in entry.defaults:
                 continue
+            if _adopt_only_value(draft, part, name, entry.modelica.parameters):
+                continue
             draft.questions.append(Question(
                 id=make_id("q", f"q missing {part.id} {name}"),
                 text=f"No source gives {name} for {part.name} ({part.id}), which a {part.kind} "
@@ -163,6 +218,29 @@ def apply_catalogue(draft: Draft, catalogue: Catalogue) -> list[str]:
             missing.append(f"{part.id}.{name}: required by kind {part.kind}; no source gives it "
                            "and the catalogue has no default")
     return missing
+
+
+def _adopt_only_value(draft: Draft, part, name: str, mapped: dict[str, str]) -> bool:
+    """For a kind that maps a single parameter: the part's one effective value under a name the
+    kind does not know is that parameter, declared as an Assumption. Two or more such values, or
+    a kind with several parameters, are left to the Question."""
+    if list(mapped) != [name]:
+        return False
+    others = [p for p in draft.parameters if p.owner == part.id and p.status == "effective"
+              and p.name not in mapped]
+    if len({p.name for p in others}) != 1 or len(others) != 1:
+        return False
+    src = others[0]
+    aid = make_id("as", f"as only value {part.id} {name}")
+    draft.assumptions.append(Assumption(
+        id=aid, basis="inferred", affects=[src.id], confidence=CONVENTION_CONFIDENCE,
+        trace=list(src.trace),
+        text=f"{part.id} is a {part.kind}, whose only parameter is {name}; its one stated value, "
+             f"'{src.name}' ({src.original.value} {src.original.unit}), is taken as it."))
+    draft.parameters.append(src.model_copy(update={
+        "id": _free_id(draft, f"{part.id}_{name}"), "name": name, "trace": list(src.trace),
+        "assumption_ids": [*src.assumption_ids, aid]}))
+    return True
 
 
 def hint_assumptions(hints: list[Found[AssumptionHint]],

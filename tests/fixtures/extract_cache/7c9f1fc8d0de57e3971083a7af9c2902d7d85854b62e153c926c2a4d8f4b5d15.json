@@ -1,0 +1,248 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#0",
+    "date": "2026-01-08",
+    "file_name": null,
+    "quote": "Document URS-IAQ-001 - Revision A - 2026-01-08",
+    "revision": "A",
+    "role": "requirement_spec",
+    "tag": "URS-IAQ-001",
+    "title": "01_requirements/01_owner_iaq_requirements.pdf"
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#3",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "volume",
+    "owner_tag": "ZON-201",
+    "provisional": false,
+    "quote": "URS-IAQ-001 - The room shall be represented as a single well-mixed air volume of 100 m3.",
+    "stated_status": null,
+    "unit": "m3",
+    "value": "100"
+   },
+   {
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#7",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "outdoor_co2",
+    "owner_tag": "SRC-OA-201",
+    "provisional": false,
+    "quote": "URS-IAQ-005 - The reference outdoor-air CO2 concentration shall be 300 ppm.",
+    "stated_status": null,
+    "unit": "ppm",
+    "value": "300"
+   },
+   {
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#9",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "concentration",
+    "owner_tag": "SRC-CO2-201",
+    "provisional": false,
+    "quote": "URS-IAQ-007 - The design occupant CO2 generation rate shall be 8.18E-6 kg/s per person.",
+    "stated_status": null,
+    "unit": "kg/s per person",
+    "value": "8.18E-6"
+   }
+  ],
+  "parts": [
+   {
+    "aliases": [
+     "volume"
+    ],
+    "attributes": [],
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#1",
+    "description": null,
+    "kind": "room_volume",
+    "name": null,
+    "quote": "The system shall represent a room, an outdoor-air source, an exhaust boundary, occupant CO2 generation, a room CO2 measurement, and a feedback controller that adjusts ventilation.",
+    "tag": "ZON-201"
+   },
+   {
+    "aliases": [
+     "freshAir"
+    ],
+    "attributes": [],
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#1",
+    "description": null,
+    "kind": "mass_flow_source",
+    "name": null,
+    "quote": "The system shall represent a room, an outdoor-air source, an exhaust boundary, occupant CO2 generation, a room CO2 measurement, and a feedback controller that adjusts ventilation.",
+    "tag": "SRC-OA-201"
+   },
+   {
+    "aliases": [
+     "boundary4"
+    ],
+    "attributes": [],
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#1",
+    "description": null,
+    "kind": "pressure_boundary",
+    "name": null,
+    "quote": "The system shall represent a room, an outdoor-air source, an exhaust boundary, occupant CO2 generation, a room CO2 measurement, and a feedback controller that adjusts ventilation.",
+    "tag": "BND-201"
+   },
+   {
+    "aliases": [
+     "peopleSource"
+    ],
+    "attributes": [],
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#1",
+    "description": null,
+    "kind": "trace_substance_source",
+    "name": null,
+    "quote": "The system shall represent a room, an outdoor-air source, an exhaust boundary, occupant CO2 generation, a room CO2 measurement, and a feedback controller that adjusts ventilation.",
+    "tag": "SRC-CO2-201"
+   },
+   {
+    "aliases": [
+     "traceVolume"
+    ],
+    "attributes": [],
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#1",
+    "description": null,
+    "kind": "concentration_sensor",
+    "name": null,
+    "quote": "The system shall represent a room, an outdoor-air source, an exhaust boundary, occupant CO2 generation, a room CO2 measurement, and a feedback controller that adjusts ventilation.",
+    "tag": "SEN-CO2-201"
+   },
+   {
+    "aliases": [
+     "PID"
+    ],
+    "attributes": [],
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#1",
+    "description": null,
+    "kind": "p_controller",
+    "name": null,
+    "quote": "The system shall represent a room, an outdoor-air source, an exhaust boundary, occupant CO2 generation, a room CO2 measurement, and a feedback controller that adjusts ventilation.",
+    "tag": "CTL-CO2-201"
+   }
+  ],
+  "requirements": [
+   {
+    "category": "Functional",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#3",
+    "quote": "URS-IAQ-001 - The room shall be represented as a single well-mixed air volume of 100 m3.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-001",
+    "text": "The room shall be represented as a single well-mixed air volume of 100 m3."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#4",
+    "quote": "URS-IAQ-002 - Outdoor air shall be supplied through a controlled airflow path and room air shall leave through an exhaust path.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-002",
+    "text": "Outdoor air shall be supplied through a controlled airflow path and room air shall leave through an exhaust path."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#5",
+    "quote": "URS-IAQ-003 - The ventilation controller shall modulate fresh-air flow using measured room CO2 as feedback.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-003",
+    "text": "The ventilation controller shall modulate fresh-air flow using measured room CO2 as feedback."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#6",
+    "quote": "URS-IAQ-004 - During the approved occupied schedule, room CO2 shall not exceed 1000 ppm.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-004",
+    "text": "During the approved occupied schedule, room CO2 shall not exceed 1000 ppm."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#7",
+    "quote": "URS-IAQ-005 - The reference outdoor-air CO2 concentration shall be 300 ppm.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-005",
+    "text": "The reference outdoor-air CO2 concentration shall be 300 ppm."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#8",
+    "quote": "URS-IAQ-006 - CO2 generation shall be proportional to the scheduled number of occupants.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-006",
+    "text": "CO2 generation shall be proportional to the scheduled number of occupants."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#9",
+    "quote": "URS-IAQ-007 - The design occupant CO2 generation rate shall be 8.18E-6 kg/s per person.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-007",
+    "text": "The design occupant CO2 generation rate shall be 8.18E-6 kg/s per person."
+   },
+   {
+    "category": "Functional",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#10",
+    "quote": "URS-IAQ-008 - The released demonstration shall support a peak occupancy of at least 12 persons.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-008",
+    "text": "The released demonstration shall support a peak occupancy of at least 12 persons."
+   },
+   {
+    "category": "Control and verification",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#12",
+    "quote": "URS-IAQ-009 - A numerical simulation shall demonstrate the CO2 feedback behavior over a representative daily occupancy schedule.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-009",
+    "text": "A numerical simulation shall demonstrate the CO2 feedback behavior over a representative daily occupancy schedule."
+   },
+   {
+    "category": "Control and verification",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#13",
+    "quote": "URS-IAQ-010 - Concentration and airflow quantities shall be represented with explicit engineering units or unambiguous normalization definitions.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-010",
+    "text": "Concentration and airflow quantities shall be represented with explicit engineering units or unambiguous normalization definitions."
+   },
+   {
+    "category": "Control and verification",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#14",
+    "quote": "URS-IAQ-011 - The model shall distinguish physical outdoor-air flow direction from any implementation-specific source sign convention.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-011",
+    "text": "The model shall distinguish physical outdoor-air flow direction from any implementation-specific source sign convention."
+   },
+   {
+    "category": "Control and verification",
+    "chunk_id": "src_01_requirements_01_owner_iaq_requirements_pdf#15",
+    "quote": "URS-IAQ-012 - Verification evidence shall record occupant count, room CO2, outdoor CO2, commanded ventilation, and physical ventilation flow.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-IAQ-012",
+    "text": "Verification evidence shall record occupant count, room CO2, outdoor CO2, commanded ventilation, and physical ventilation flow."
+   }
+  ],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

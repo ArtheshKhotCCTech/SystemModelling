@@ -1,0 +1,142 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#110",
+    "quote": "Acceptance Criterion: Error within 1E-6 normalized",
+    "tag": null,
+    "text": "Error within 1E-6 normalized"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#111",
+    "quote": "Acceptance Criterion: Limits and conversion correct",
+    "tag": null,
+    "text": "Limits and conversion correct"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#112",
+    "quote": "Acceptance Criterion: Exact values at interval interiors and correct transitions",
+    "tag": null,
+    "text": "Exact values at interval interiors and correct transitions"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#113",
+    "quote": "Acceptance Criterion: Fallback active by t_fault+60 s",
+    "tag": null,
+    "text": "Fallback active by t_fault+60 s"
+   }
+  ],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#115",
+    "date": "2026-01-08",
+    "file_name": "01_owner_iaq_requirements.pdf",
+    "quote": "Source ID: SRC-01 | Filename / Artifact: 01_owner_iaq_requirements.pdf | Type: PDF specification | Revision / Date: Rev A / 2026-01-08",
+    "revision": "Rev A",
+    "role": "requirement_spec",
+    "tag": "SRC-01",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#116",
+    "date": "2026-03-06",
+    "file_name": "02_iaq_engineering_register.xlsx",
+    "quote": "Source ID: SRC-02 | Filename / Artifact: 02_iaq_engineering_register.xlsx | Type: Excel workbook | Revision / Date: Compiled / 2026-03-06",
+    "revision": "Compiled",
+    "role": "register",
+    "tag": "SRC-02",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#117",
+    "date": null,
+    "file_name": "03_reference_control_diagram.png",
+    "quote": "Source ID: SRC-03 | Filename / Artifact: 03_reference_control_diagram.png | Type: Engineering diagram | Revision / Date: Reference",
+    "revision": "Reference",
+    "role": "legacy_model",
+    "tag": "SRC-03",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#118",
+    "date": "2026-03-01",
+    "file_name": "04_control_sequence_and_modeling_notes.docx",
+    "quote": "Source ID: SRC-04 | Filename / Artifact: 04_control_sequence_and_modeling_notes.docx | Type: Word document | Revision / Date: Rev B / 2026-03-01",
+    "revision": "Rev B",
+    "role": "design_note",
+    "tag": "SRC-04",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#119",
+    "date": "2026-02-10..2026-03-01",
+    "file_name": "05_bms_controls_email_thread.eml",
+    "quote": "Source ID: SRC-05 | Filename / Artifact: 05_bms_controls_email_thread.eml | Type: Email thread | Revision / Date: 2026-02-10..2026-03-01",
+    "revision": null,
+    "role": "correspondence",
+    "tag": "SRC-05",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#120",
+    "date": "2026-02-14",
+    "file_name": "06_iaq_design_review_minutes.md",
+    "quote": "Source ID: SRC-06 | Filename / Artifact: 06_iaq_design_review_minutes.md | Type: Meeting notes | Revision / Date: 2026-02-14",
+    "revision": null,
+    "role": "review_decision",
+    "tag": "SRC-06",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#121",
+    "date": "2026-03-05",
+    "file_name": "07_legacy_co2_control.mo",
+    "quote": "Source ID: SRC-07 | Filename / Artifact: 07_legacy_co2_control.mo | Type: Existing simulation model | Revision / Date: Archived 0.9 / 2026-03-05",
+    "revision": "Archived 0.9",
+    "role": "legacy_model",
+    "tag": "SRC-07",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#122",
+    "date": null,
+    "file_name": "08_co2_sensor_datasheet.pdf",
+    "quote": "Source ID: SRC-08 | Filename / Artifact: 08_co2_sensor_datasheet.pdf | Type: PDF datasheet | Revision / Date: Supplier Rev D",
+    "revision": "Supplier Rev D",
+    "role": "datasheet",
+    "tag": "SRC-08",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#123",
+    "date": "2026-03-03",
+    "file_name": "09_commissioning_test_procedure_CP23.pdf",
+    "quote": "Source ID: SRC-09 | Filename / Artifact: 09_commissioning_test_procedure_CP23.pdf | Type: PDF test procedure | Revision / Date: Rev C / 2026-03-03",
+    "revision": "Rev C",
+    "role": "verification_procedure",
+    "tag": "SRC-09",
+    "title": null
+   }
+  ],
+  "parameters": [],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

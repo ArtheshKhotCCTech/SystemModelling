@@ -1,0 +1,399 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "names": [
+     "ZON-201",
+     "volume"
+    ],
+    "quote": "The room is represented as one perfectly mixed 100 m3 air volume."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "names": [
+     "SRC-OA-201",
+     "freshAir"
+    ],
+    "quote": "Outdoor air enters through a controlled mass-flow source"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "names": [
+     "BND-201",
+     "boundary4"
+    ],
+    "quote": "Room air leaves through an exhaust duct to an ideal pressure boundary."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "names": [
+     "SRC-CO2-201",
+     "peopleSource"
+    ],
+    "quote": "Occupants are represented as a separate trace-substance mass source."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#15",
+    "names": [
+     "SEN-CO2-201",
+     "traceVolume"
+    ],
+    "quote": "Measure room CO2 mass fraction at traceVolume."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#16",
+    "names": [
+     "GAIN-NORM-201",
+     "gainSensor"
+    ],
+    "quote": "Normalize the measurement using gainSensor = 1/1.519E-3."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#17",
+    "names": [
+     "SET-CO2-201",
+     "CO2Set"
+    ],
+    "quote": "Compare normalized feedback with CO2Set = 1.0."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#18",
+    "names": [
+     "CTL-CO2-201",
+     "PID"
+    ],
+    "quote": "Effective reference-run tuning after CR-IAQ-007 is Kp=6.0, bias=3.5 ACH, integral disabled, output limited to 0.2..6.0 ACH."
+   }
+  ],
+  "assumptions": [
+   {
+    "affects_tags": [
+     "ZON-201"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "quote": "The room is represented as one perfectly mixed 100 m3 air volume.",
+    "text": "The room is treated as a perfectly mixed air volume."
+   },
+   {
+    "affects_tags": [
+     "SRC-CO2-201"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#13",
+    "quote": "The 100 kg/kg value is a numerical device only and must not be interpreted as a physical room concentration.",
+    "text": "The 100 kg/kg value for peopleSource concentration is a numerical device only."
+   }
+  ],
+  "behaviour_chunk_ids": [
+   "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#21",
+   "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#22",
+   "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#23",
+   "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#24",
+   "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#25"
+  ],
+  "connections": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "from_role": "outlet",
+    "from_tag": "SRC-OA-201",
+    "medium_or_signal": "fluid",
+    "quote": "Outdoor air enters through a controlled mass-flow source and supply duct. Room air leaves through an exhaust duct to an ideal pressure boundary.",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "supply_in",
+    "to_tag": "ZON-201"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "from_role": "exhaust_out",
+    "from_tag": "ZON-201",
+    "medium_or_signal": "fluid",
+    "quote": "Room air leaves through an exhaust duct to an ideal pressure boundary.",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "inlet",
+    "to_tag": "BND-201"
+   }
+  ],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#0",
+    "date": "2026-03-01",
+    "file_name": "CDS-IAQ-02",
+    "quote": "RM-201 CO2 Ventilation Control Control Sequence and Modeling Notes",
+    "revision": "B",
+    "role": "design_note",
+    "tag": "CDS-IAQ-02",
+    "title": "RM-201 CO2 Ventilation Control Control Sequence and Modeling Notes"
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "volume",
+    "owner_tag": "ZON-201",
+    "provisional": false,
+    "quote": "The room is represented as one perfectly mixed 100 m3 air volume.",
+    "stated_status": null,
+    "unit": "m3",
+    "value": "100"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#6",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "system.co2_compliance_limit",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "The owner compliance limit is 1000 ppm absolute room CO2.",
+    "stated_status": null,
+    "unit": "ppm",
+    "value": "1000"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#6",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "system.C_nominal",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "C_nominal = 1.519E-3 kg/kg.",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "1.519E-3"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#7",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "system.C_out",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "Outdoor air is 300 ppm and is implemented as C_out = 0.3*C_nominal = 4.557E-4 kg/kg.",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "4.557E-4"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#8",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "GAIN-NORM-201",
+    "provisional": false,
+    "quote": "gainSensor multiplies it by 1/C_nominal",
+    "stated_status": null,
+    "unit": "1",
+    "value": "1/1.519E-3"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#9",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "value",
+    "owner_tag": "SET-CO2-201",
+    "provisional": false,
+    "quote": "CO2Set therefore has value 1.0.",
+    "stated_status": null,
+    "unit": "1",
+    "value": "1.0"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#11",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "system.co2_emission_per_person",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "one person emits approximately 8.18E-6 kg/s of CO2.",
+    "stated_status": null,
+    "unit": "kg/s",
+    "value": "8.18E-6"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#13",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "concentration",
+    "owner_tag": "SRC-CO2-201",
+    "provisional": false,
+    "quote": "peopleSource.C = 100 kg/kg.",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "100"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#18",
+    "cited_document": "CR-IAQ-007",
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "Kp=6.0, bias=3.5 ACH, integral disabled, output limited to 0.2..6.0 ACH.",
+    "stated_status": null,
+    "unit": "1",
+    "value": "6.0"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#18",
+    "cited_document": "CR-IAQ-007",
+    "configuration": "nominal",
+    "name": "bias",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "Kp=6.0, bias=3.5 ACH, integral disabled, output limited to 0.2..6.0 ACH.",
+    "stated_status": null,
+    "unit": "ACH",
+    "value": "3.5"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#18",
+    "cited_document": "CR-IAQ-007",
+    "configuration": "nominal",
+    "name": "output_min",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "output limited to 0.2..6.0 ACH.",
+    "stated_status": null,
+    "unit": "ACH",
+    "value": "0.2"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#18",
+    "cited_document": "CR-IAQ-007",
+    "configuration": "nominal",
+    "name": "output_max",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "output limited to 0.2..6.0 ACH.",
+    "stated_status": null,
+    "unit": "ACH",
+    "value": "6.0"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#19",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "system.nominal_air_density",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "V*rho/3600 = 100*1.2/3600 = 0.033333 kg/s per ACH.",
+    "stated_status": null,
+    "unit": "kg/m3",
+    "value": "1.2"
+   }
+  ],
+  "parts": [
+   {
+    "aliases": [
+     "volume"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "description": null,
+    "kind": "room_volume",
+    "name": null,
+    "quote": "The room is represented as one perfectly mixed 100 m3 air volume.",
+    "tag": "ZON-201"
+   },
+   {
+    "aliases": [
+     "freshAir"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "description": null,
+    "kind": "mass_flow_source",
+    "name": null,
+    "quote": "Outdoor air enters through a controlled mass-flow source",
+    "tag": "SRC-OA-201"
+   },
+   {
+    "aliases": [
+     "boundary4"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "description": null,
+    "kind": "pressure_boundary",
+    "name": null,
+    "quote": "Room air leaves through an exhaust duct to an ideal pressure boundary.",
+    "tag": "BND-201"
+   },
+   {
+    "aliases": [
+     "peopleSource"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#3",
+    "description": null,
+    "kind": "trace_substance_source",
+    "name": null,
+    "quote": "Occupants are represented as a separate trace-substance mass source.",
+    "tag": "SRC-CO2-201"
+   },
+   {
+    "aliases": [
+     "traceVolume"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#15",
+    "description": null,
+    "kind": "concentration_sensor",
+    "name": null,
+    "quote": "Measure room CO2 mass fraction at traceVolume.",
+    "tag": "SEN-CO2-201"
+   },
+   {
+    "aliases": [
+     "gainSensor"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#16",
+    "description": null,
+    "kind": "gain",
+    "name": null,
+    "quote": "Normalize the measurement using gainSensor = 1/1.519E-3.",
+    "tag": "GAIN-NORM-201"
+   },
+   {
+    "aliases": [
+     "CO2Set"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#17",
+    "description": null,
+    "kind": "constant",
+    "name": null,
+    "quote": "Compare normalized feedback with CO2Set = 1.0.",
+    "tag": "SET-CO2-201"
+   },
+   {
+    "aliases": [
+     "PID"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "ventilation control"
+     }
+    ],
+    "chunk_id": "src_04_design_notes_04_control_sequence_and_modeling_notes_docx#18",
+    "description": null,
+    "kind": "p_controller",
+    "name": null,
+    "quote": "Effective reference-run tuning after CR-IAQ-007 is Kp=6.0, bias=3.5 ACH, integral disabled, output limited to 0.2..6.0 ACH.",
+    "tag": "CTL-CO2-201"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

@@ -184,3 +184,26 @@ def test_an_attribute_whose_unit_differs_per_part_is_untyped_on_its_def(model, c
     assert "attribute value;" in block
     assert "attribute :>> value = 0.0004557 [kg/kg]" in text
     assert "attribute :>> value = 1" in text
+
+
+# --- the run from the L2 inputs (phase 10 follow-up), offline from its recorded responses --------
+
+@requires_omc
+@pytest.mark.slow
+def test_the_l2_bundle_runs_end_to_end_to_a_compiling_model(tmp_path, monkeypatch):
+    from specalive import cli
+
+    monkeypatch.setenv("SPECALIVE_CACHE_DIR", str(ROOT / "tests" / "fixtures" / "extract_cache"))
+    monkeypatch.setenv("OPENAI_API_KEY", "")  # recorded responses only
+    out = tmp_path / "l2"
+    code = cli.main(["run", str(BUNDLE), "-o", str(out), "--golden", str(GOLDEN)])
+    stages = {s["name"]: s for s in json.loads((out / "run.json").read_text("utf-8"))["stages"]}
+    assert stages["compile"]["status"] == "ok" and code == cli.EXIT_OK, stages
+    cov = json.loads((out / "coverage.json").read_text(encoding="utf-8"))
+    assert all(cov[c]["percent"] >= 80.0 for c in ("parts", "ports", "connections"))
+    rows = list(csv.DictReader((out / "sim" / "result.csv").open(encoding="utf-8")))
+    peak = max(float(r["zon_201.C"]) for r in rows) / NOMINAL * 1000.0
+    reference = max(float(r["room_co2_ppm"]) for r in csv.DictReader(REFERENCE.open(encoding="utf-8")))
+    assert peak <= 1000.0 and abs(peak - reference) <= 0.01 * reference, (peak, reference)
+    assert min(float(r["src_oa_201.outlet.m_flow"]) for r in rows) > 0.0
+    assert max(float(r["src_oa_201.m_flow_in"]) for r in rows) < 0.0
