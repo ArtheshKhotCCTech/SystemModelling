@@ -1,0 +1,2281 @@
+{
+  "name": "room_co2_ventilation",
+  "description": "Single-zone room CO2 demand-controlled ventilation (FR-10 golden, written by hand from the L2 bundle).",
+  "sources": [
+    {
+      "id": "urs_iaq_001",
+      "title": "RM-201 Indoor Air Quality Control - Owner Requirements",
+      "path": "01_requirements/01_owner_iaq_requirements.pdf",
+      "role": "requirement_spec",
+      "revision": "A",
+      "date": "2026-01-08",
+      "reliability": "high",
+      "tags": [
+        "URS-IAQ-001",
+        "SRC-01"
+      ]
+    },
+    {
+      "id": "iaq_register",
+      "title": "IAQ Engineering Register",
+      "path": "02_engineering_data/02_iaq_engineering_register.xlsx",
+      "role": "register",
+      "revision": "Compiled",
+      "date": "2026-03-06",
+      "reliability": "high",
+      "tags": [
+        "SRC-02"
+      ]
+    },
+    {
+      "id": "partial_architecture",
+      "title": "Partial existing architecture",
+      "path": "03_architecture_diagrams/13_partial_existing_architecture.puml",
+      "role": "legacy_architecture",
+      "revision": "Draft",
+      "date": "2026-01-18",
+      "reliability": "low",
+      "tags": [
+        "SRC-13"
+      ]
+    },
+    {
+      "id": "cds_iaq_02",
+      "title": "RM-201 CO2 Ventilation Control - Control Sequence and Modeling Notes",
+      "path": "04_design_notes/04_control_sequence_and_modeling_notes.docx",
+      "role": "design_note",
+      "revision": "B",
+      "date": "2026-03-01",
+      "reliability": "high",
+      "tags": [
+        "CDS-IAQ-02",
+        "MOD-NT-03",
+        "SRC-04"
+      ]
+    },
+    {
+      "id": "dr_iaq_05",
+      "title": "DR-IAQ-05 - Indoor Air Quality Control Design Review",
+      "path": "04_design_notes/06_iaq_design_review_minutes.md",
+      "role": "review_decision",
+      "revision": "Final",
+      "date": "2026-02-14",
+      "reliability": "high",
+      "tags": [
+        "DR-IAQ-05",
+        "SRC-06"
+      ]
+    },
+    {
+      "id": "field_notes",
+      "title": "RM-201 synthetic trend check",
+      "path": "04_design_notes/14_engineer_field_notes.txt",
+      "role": "informal_note",
+      "revision": null,
+      "date": "2026-03-04",
+      "reliability": "low",
+      "tags": [
+        "SRC-14"
+      ]
+    },
+    {
+      "id": "bms_email",
+      "title": "RM-201 CO2 loop - BMS and controls email thread",
+      "path": "05_correspondence/05_bms_controls_email_thread.eml",
+      "role": "correspondence",
+      "revision": null,
+      "date": "2026-03-01",
+      "reliability": "medium",
+      "tags": [
+        "SRC-05"
+      ]
+    },
+    {
+      "id": "sim_legacy",
+      "title": "Archived room CO2 control model",
+      "path": "06_legacy_code/07_legacy_co2_control.mo",
+      "role": "legacy_model",
+      "revision": "0.9",
+      "date": "2026-03-05",
+      "reliability": "medium",
+      "tags": [
+        "SIM-LEGACY",
+        "SRC-07"
+      ]
+    },
+    {
+      "id": "co2_datasheet",
+      "title": "Synthetic CO2 Room Transmitter - Technical Datasheet",
+      "path": "07_datasheets/08_co2_sensor_datasheet.pdf",
+      "role": "datasheet",
+      "revision": "D",
+      "date": null,
+      "reliability": "high",
+      "tags": [
+        "CO2-TX-2K",
+        "SRC-08"
+      ]
+    },
+    {
+      "id": "cp_23",
+      "title": "Commissioning / Model Verification Procedure CP-23",
+      "path": "08_commissioning/09_commissioning_test_procedure_CP23.pdf",
+      "role": "verification_procedure",
+      "revision": "C",
+      "date": "2026-03-03",
+      "reliability": "high",
+      "tags": [
+        "CP-23",
+        "SRC-09"
+      ]
+    },
+    {
+      "id": "occ_sch_04",
+      "title": "Approved weekday occupancy schedule",
+      "path": "09_datasets/10_occupancy_schedule.csv",
+      "role": "reference_data",
+      "revision": "C",
+      "date": "2026-02-21",
+      "reliability": "high",
+      "tags": [
+        "OCC-SCH-04",
+        "SRC-10"
+      ]
+    },
+    {
+      "id": "ref_run_24h",
+      "title": "24 h reference run",
+      "path": "09_datasets/11_reference_run_24h.csv",
+      "role": "reference_data",
+      "revision": "Synthetic",
+      "date": "2026-03-04",
+      "reliability": "medium",
+      "tags": [
+        "SRC-11"
+      ]
+    },
+    {
+      "id": "cr_iaq_007",
+      "title": "CR-IAQ-007 controller tuning change",
+      "path": null,
+      "role": "change_record",
+      "revision": "1",
+      "date": "2026-02-28",
+      "reliability": null,
+      "tags": [
+        "CR-IAQ-007"
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "id": "zon_201",
+      "kind": "room_volume",
+      "name": "Room air volume",
+      "tags": [
+        "ZON-201",
+        "volume",
+        "RoomVolume"
+      ],
+      "attributes": {
+        "mixing": "single perfectly mixed zone; no local stratification"
+      },
+      "ports": [
+        {
+          "id": "zon_201_supply_in",
+          "role": "supply_in",
+          "direction": "in",
+          "domain": "fluid",
+          "unit": "kg/s"
+        },
+        {
+          "id": "zon_201_source_in",
+          "role": "source_in",
+          "direction": "in",
+          "domain": "fluid",
+          "unit": "kg/s"
+        },
+        {
+          "id": "zon_201_exhaust_out",
+          "role": "exhaust_out",
+          "direction": "out",
+          "domain": "fluid",
+          "unit": "kg/s"
+        },
+        {
+          "id": "zon_201_concentration_out",
+          "role": "concentration_out",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "kg/kg"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 4",
+          "quote": "Tag: ZON-201 | Alias / Legacy Name: volume | Type: Well-mixed room volume"
+        },
+        {
+          "source_id": "urs_iaq_001",
+          "locator": "page 1, line 11",
+          "quote": "URS-IAQ-001 - The room shall be represented as a single well-mixed air volume of 100 m3."
+        },
+        {
+          "source_id": "partial_architecture",
+          "locator": "lines 1-9",
+          "quote": "component \"RoomVolume\\nV=100 m3\" as Room"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "src_oa_201",
+      "kind": "mass_flow_source",
+      "name": "Outdoor air supply",
+      "tags": [
+        "SRC-OA-201",
+        "freshAir",
+        "FreshAirSource"
+      ],
+      "attributes": {
+        "sign_convention": "modelling device: the command is the mass flow at the source port, negative for air entering the room; the physical supply flow is positive"
+      },
+      "ports": [
+        {
+          "id": "src_oa_201_m_flow_in",
+          "role": "m_flow_in",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "kg/s"
+        },
+        {
+          "id": "src_oa_201_c_in",
+          "role": "c_in",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "kg/kg"
+        },
+        {
+          "id": "src_oa_201_outlet",
+          "role": "outlet",
+          "direction": "out",
+          "domain": "fluid",
+          "unit": "kg/s"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 5",
+          "quote": "Tag: SRC-OA-201 | Alias / Legacy Name: freshAir | Type: Controlled mass-flow source"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 20",
+          "quote": "The simulation source component shall use negative mass-flow sign for air entering the room because of the source-port sign convention."
+        },
+        {
+          "source_id": "dr_iaq_05",
+          "locator": "section 'Decisions', line 15",
+          "quote": "In the Modelica source component, inflow is represented with a **negative mass-flow command**."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "bnd_201",
+      "kind": "pressure_boundary",
+      "name": "Exhaust boundary",
+      "tags": [
+        "BND-201",
+        "boundary4",
+        "ExhaustBoundary"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "bnd_201_inlet",
+          "role": "inlet",
+          "direction": "in",
+          "domain": "fluid",
+          "unit": "kg/s"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 6",
+          "quote": "Tag: BND-201 | Alias / Legacy Name: boundary4 | Type: Pressure boundary"
+        },
+        {
+          "source_id": "cds_iaq_02",
+          "locator": "paragraph 4 (section '1. Purpose and model boundary')",
+          "quote": "Room air leaves through an exhaust duct to an ideal pressure boundary."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "src_co2_201",
+      "kind": "trace_substance_source",
+      "name": "Occupant CO2 source",
+      "tags": [
+        "SRC-CO2-201",
+        "peopleSource",
+        "People CO2"
+      ],
+      "attributes": {
+        "carrier_concentration": "modelling device: C = 100 kg/kg with the carrier flow scaled by 1/100, so the CO2 injected is 8.18E-6 kg/s per person; not a physical composition"
+      },
+      "ports": [
+        {
+          "id": "src_co2_201_m_flow_in",
+          "role": "m_flow_in",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "kg/s"
+        },
+        {
+          "id": "src_co2_201_outlet",
+          "role": "outlet",
+          "direction": "out",
+          "domain": "fluid",
+          "unit": "kg/s"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 7",
+          "quote": "Tag: SRC-CO2-201 | Alias / Legacy Name: peopleSource | Type: Trace-substance mass source"
+        },
+        {
+          "source_id": "cds_iaq_02",
+          "locator": "paragraph 14 (section '3. Occupant source implementation')",
+          "quote": "The 100 kg/kg value is a numerical device only and must not be interpreted as a physical room concentration."
+        },
+        {
+          "source_id": "dr_iaq_05",
+          "locator": "section 'Decisions', line 17",
+          "quote": "`C_source=100 kg/kg` is a numerical implementation parameter and shall not be shown as a realistic room or outdoor gas composition."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "sch_occ_201",
+      "kind": "schedule_table",
+      "name": "Occupancy schedule",
+      "tags": [
+        "SCH-OCC-201",
+        "NumberOfPeople",
+        "OCC-SCH-04"
+      ],
+      "attributes": {
+        "interpretation": "piecewise constant between change times"
+      },
+      "ports": [
+        {
+          "id": "sch_occ_201_y",
+          "role": "y",
+          "direction": "out",
+          "domain": "signal_real"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 8",
+          "quote": "Tag: SCH-OCC-201 | Alias / Legacy Name: NumberOfPeople | Type: Occupancy schedule"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 26",
+          "quote": "The number-of-people signal shall be piecewise constant between defined schedule change times."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "sen_co2_201",
+      "kind": "concentration_sensor",
+      "name": "Room CO2 sensor",
+      "tags": [
+        "SEN-CO2-201",
+        "traceVolume",
+        "CO2 Sensor"
+      ],
+      "attributes": {
+        "signal": "trace-substance mass fraction in kg/kg; the physical device reports ppm"
+      },
+      "ports": [
+        {
+          "id": "sen_co2_201_c_in",
+          "role": "c_in",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "kg/kg"
+        },
+        {
+          "id": "sen_co2_201_c_out",
+          "role": "c_out",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "kg/kg"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 9",
+          "quote": "Tag: SEN-CO2-201 | Alias / Legacy Name: traceVolume | Type: CO2 trace sensor"
+        },
+        {
+          "source_id": "cds_iaq_02",
+          "locator": "paragraph 9 (section '2. Concentration conventions')",
+          "quote": "The room sensor output is a trace-substance mass fraction in kg/kg."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "gain_norm_201",
+      "kind": "gain",
+      "name": "CO2 normalisation gain",
+      "tags": [
+        "GAIN-NORM-201",
+        "gainSensor"
+      ],
+      "attributes": {
+        "normalisation": "output is dimensionless: 1.0 is C_nominal = 1.519E-3 kg/kg, the project's 1000 ppm"
+      },
+      "ports": [
+        {
+          "id": "gain_norm_201_u",
+          "role": "u",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "kg/kg"
+        },
+        {
+          "id": "gain_norm_201_y",
+          "role": "y",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "1"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 10",
+          "quote": "Tag: GAIN-NORM-201 | Alias / Legacy Name: gainSensor | Type: Gain"
+        },
+        {
+          "source_id": "cds_iaq_02",
+          "locator": "paragraph 9 (section '2. Concentration conventions')",
+          "quote": "gainSensor multiplies it by 1/C_nominal so that 1000 ppm becomes the normalized value 1.0."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "set_co2_201",
+      "kind": "constant",
+      "name": "Normalised CO2 setpoint",
+      "tags": [
+        "SET-CO2-201",
+        "CO2Set"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "set_co2_201_y",
+          "role": "y",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "1"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 12",
+          "quote": "Tag: SET-CO2-201 | Alias / Legacy Name: CO2Set | Type: Constant setpoint"
+        },
+        {
+          "source_id": "cds_iaq_02",
+          "locator": "paragraph 10 (section '2. Concentration conventions')",
+          "quote": "This is a normalized controller signal, not 1 ppm and not 1 kg/kg."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "ctl_co2_201",
+      "kind": "p_controller",
+      "name": "Ventilation controller",
+      "tags": [
+        "CTL-CO2-201",
+        "PID"
+      ],
+      "attributes": {
+        "integral": "disabled in the released reference run",
+        "sensor_fault_fallback": "4 ACH after the sensor is invalid for 60 s; outside the baseline run, not modelled"
+      },
+      "ports": [
+        {
+          "id": "ctl_co2_201_setpoint_in",
+          "role": "setpoint_in",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "1"
+        },
+        {
+          "id": "ctl_co2_201_measurement_in",
+          "role": "measurement_in",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "1"
+        },
+        {
+          "id": "ctl_co2_201_command_out",
+          "role": "command_out",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "1/s"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 11",
+          "quote": "Tag: CTL-CO2-201 | Alias / Legacy Name: PID | Type: PID/P controller"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 24",
+          "quote": "Integral action shall be disabled in the released hackathon reference run to avoid negative windup during long unoccupied periods."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "gain_air_201",
+      "kind": "gain",
+      "name": "ACH to source mass-flow gain",
+      "tags": [
+        "GAIN-AIR-201",
+        "gain1"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "gain_air_201_u",
+          "role": "u",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "1/s"
+        },
+        {
+          "id": "gain_air_201_y",
+          "role": "y",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "kg/s"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 13",
+          "quote": "Tag: GAIN-AIR-201 | Alias / Legacy Name: gain1 | Type: Gain"
+        },
+        {
+          "source_id": "cds_iaq_02",
+          "locator": "paragraph 21 (section '4. Ventilation control path')",
+          "quote": "Apply a negative sign to the Modelica source command because negative source m_flow denotes flow from the source into the connected duct."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "gain_peo_201",
+      "kind": "gain",
+      "name": "People to carrier mass-flow gain",
+      "tags": [
+        "GAIN-PEO-201",
+        "gain"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "gain_peo_201_u",
+          "role": "u",
+          "direction": "in",
+          "domain": "signal_real",
+          "unit": "1"
+        },
+        {
+          "id": "gain_peo_201_y",
+          "role": "y",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "kg/s"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 14",
+          "quote": "Tag: GAIN-PEO-201 | Alias / Legacy Name: gain | Type: Gain"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "set_oa_201",
+      "kind": "constant",
+      "name": "Outdoor CO2 mass fraction",
+      "tags": [
+        "SET-OA-201",
+        "CAtm"
+      ],
+      "attributes": {},
+      "ports": [
+        {
+          "id": "set_oa_201_y",
+          "role": "y",
+          "direction": "out",
+          "domain": "signal_real",
+          "unit": "kg/kg"
+        }
+      ],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 15",
+          "quote": "Tag: SET-OA-201 | Alias / Legacy Name: CAtm | Type: Constant"
+        }
+      ],
+      "assumption_ids": []
+    }
+  ],
+  "connections": [
+    {
+      "id": "if_air_01",
+      "from_port": "src_oa_201_outlet",
+      "to_port": "zon_201_supply_in",
+      "medium_or_signal": "air",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 4",
+          "quote": "Interface ID: IF-AIR-01 | From: SRC-OA-201 | From Port / Signal: airPort | To: DUCT-IN-201 | To Port / Signal: port_a | Item / Quantity: Moist air + CO2 | Direction: Supply -> duct"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 5",
+          "quote": "Interface ID: IF-AIR-02 | From: DUCT-IN-201 | From Port / Signal: port_b | To: ZON-201 | To Port / Signal: supplyPort | Item / Quantity: Moist air + CO2 | Direction: Duct -> room"
+        }
+      ],
+      "assumption_ids": [
+        "as_ducts_direct"
+      ]
+    },
+    {
+      "id": "if_air_03",
+      "from_port": "zon_201_exhaust_out",
+      "to_port": "bnd_201_inlet",
+      "medium_or_signal": "air",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 6",
+          "quote": "Interface ID: IF-AIR-03 | From: ZON-201 | From Port / Signal: exhaustPort | To: DUCT-OUT-201 | To Port / Signal: port_a | Item / Quantity: Room air + CO2 | Direction: Room -> duct"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 7",
+          "quote": "Interface ID: IF-AIR-04 | From: DUCT-OUT-201 | From Port / Signal: port_b | To: BND-201 | To Port / Signal: airPort | Item / Quantity: Room air + CO2 | Direction: Duct -> boundary"
+        }
+      ],
+      "assumption_ids": [
+        "as_ducts_direct"
+      ]
+    },
+    {
+      "id": "if_trc_01",
+      "from_port": "src_co2_201_outlet",
+      "to_port": "zon_201_source_in",
+      "medium_or_signal": "trace substance",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 8",
+          "quote": "Interface ID: IF-TRC-01 | From: SRC-CO2-201 | From Port / Signal: tracePort | To: ZON-201 | To Port / Signal: traceInjection"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_sig_01",
+      "from_port": "sch_occ_201_y",
+      "to_port": "gain_peo_201_u",
+      "medium_or_signal": "people count",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 9",
+          "quote": "Interface ID: IF-SIG-01 | From: SCH-OCC-201 | From Port / Signal: nPeo | To: GAIN-PEO-201 | To Port / Signal: u"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_sig_02",
+      "from_port": "gain_peo_201_y",
+      "to_port": "src_co2_201_m_flow_in",
+      "medium_or_signal": "carrier mass flow",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 10",
+          "quote": "Interface ID: IF-SIG-02 | From: GAIN-PEO-201 | From Port / Signal: y | To: SRC-CO2-201 | To Port / Signal: m_flow"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_sig_03",
+      "from_port": "set_oa_201_y",
+      "to_port": "src_oa_201_c_in",
+      "medium_or_signal": "outdoor mass fraction",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 11",
+          "quote": "Interface ID: IF-SIG-03 | From: SET-OA-201 | From Port / Signal: C_out | To: SRC-OA-201 | To Port / Signal: C"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_sig_04",
+      "from_port": "zon_201_concentration_out",
+      "to_port": "sen_co2_201_c_in",
+      "medium_or_signal": "room mass fraction",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 12",
+          "quote": "Interface ID: IF-SIG-04 | From: ZON-201 | From Port / Signal: C_room | To: SEN-CO2-201 | To Port / Signal: medium"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_sig_05",
+      "from_port": "sen_co2_201_c_out",
+      "to_port": "gain_norm_201_u",
+      "medium_or_signal": "measured mass fraction",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 13",
+          "quote": "Interface ID: IF-SIG-05 | From: SEN-CO2-201 | From Port / Signal: C | To: GAIN-NORM-201 | To Port / Signal: u"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_sig_06",
+      "from_port": "gain_norm_201_y",
+      "to_port": "ctl_co2_201_measurement_in",
+      "medium_or_signal": "normalised CO2",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 14",
+          "quote": "Interface ID: IF-SIG-06 | From: GAIN-NORM-201 | From Port / Signal: y | To: CTL-CO2-201 | To Port / Signal: measurement"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_sig_07",
+      "from_port": "set_co2_201_y",
+      "to_port": "ctl_co2_201_setpoint_in",
+      "medium_or_signal": "normalised setpoint",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 15",
+          "quote": "Interface ID: IF-SIG-07 | From: SET-CO2-201 | From Port / Signal: setpoint | To: CTL-CO2-201 | To Port / Signal: setpoint"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_sig_08",
+      "from_port": "ctl_co2_201_command_out",
+      "to_port": "gain_air_201_u",
+      "medium_or_signal": "ACH command",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 16",
+          "quote": "Interface ID: IF-SIG-08 | From: CTL-CO2-201 | From Port / Signal: ACH_cmd | To: GAIN-AIR-201 | To Port / Signal: u"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "if_sig_09",
+      "from_port": "gain_air_201_y",
+      "to_port": "src_oa_201_m_flow_in",
+      "medium_or_signal": "source mass-flow command",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Interface_Matrix, row 17",
+          "quote": "Interface ID: IF-SIG-09 | From: GAIN-AIR-201 | From Port / Signal: m_flow_cmd | To: SRC-OA-201 | To Port / Signal: m_flow"
+        }
+      ],
+      "assumption_ids": []
+    }
+  ],
+  "parameters": [
+    {
+      "id": "zon_201_volume",
+      "owner": "zon_201",
+      "name": "volume",
+      "value": 100.0,
+      "unit": "m3",
+      "original": {
+        "value": "100",
+        "unit": "m^3"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Parameter_Calculations, row 8",
+          "quote": "Parameter: Room volume | Symbol: V | Input Value: 100 | Units: m^3 | Formula / Basis: Input"
+        },
+        {
+          "source_id": "urs_iaq_001",
+          "locator": "page 1, line 11",
+          "quote": "a single well-mixed air volume of 100 m3"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "zon_201_density",
+      "owner": "zon_201",
+      "name": "density",
+      "value": 1.2,
+      "unit": "kg/m3",
+      "original": {
+        "value": "1.2",
+        "unit": "kg/m^3"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Parameter_Calculations, row 9",
+          "quote": "Parameter: Nominal air density | Symbol: rho | Input Value: 1.2 | Units: kg/m^3 | Formula / Basis: Input"
+        },
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 8-14",
+          "quote": "Nominal air density = 1.2 kg/m3."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "zon_201_initial_concentration",
+      "owner": "zon_201",
+      "name": "initial_concentration",
+      "value": 0.0004557,
+      "unit": "kg/kg",
+      "original": {
+        "value": "0.0004557",
+        "unit": "kg/kg"
+      },
+      "status": "effective",
+      "authority": "cp_23",
+      "trace": [
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, line 16",
+          "quote": "Initialize room concentration to the outdoor concentration and start at 00:00 with zero occupants."
+        },
+        {
+          "source_id": "field_notes",
+          "locator": "lines 3-11",
+          "quote": "Outside trace = 0.0004557 kg/kg = 300 ppm under project rounding."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "src_co2_201_concentration",
+      "owner": "src_co2_201",
+      "name": "concentration",
+      "value": 100.0,
+      "unit": "kg/kg",
+      "original": {
+        "value": "100",
+        "unit": "kg/kg"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Parameter_Calculations, row 11",
+          "quote": "Parameter: peopleSource concentration | Symbol: C_source | Input Value: 100 | Units: kg/kg | Formula / Basis: Modeling parameter"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "set_oa_201_value",
+      "owner": "set_oa_201",
+      "name": "value",
+      "value": 0.0004557,
+      "unit": "kg/kg",
+      "original": {
+        "value": "0.0004557",
+        "unit": "kg/kg"
+      },
+      "status": "effective",
+      "authority": "dr_iaq_05",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 15",
+          "quote": "Key Parameter: C_out | Value: 0.0004557 | Units: kg/kg"
+        },
+        {
+          "source_id": "dr_iaq_05",
+          "locator": "section 'Decisions', line 12",
+          "quote": "2. Outdoor CO2 for the reference model remains **300 ppm**, represented as `0.3 * 1.519E-3 kg/kg`."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "set_oa_201_value_sim_legacy",
+      "owner": "set_oa_201",
+      "name": "value",
+      "value": 0.0005316499999999999,
+      "unit": "kg/kg",
+      "original": {
+        "value": "0.35*C_nominal",
+        "unit": "kg/kg"
+      },
+      "status": "superseded",
+      "authority": "sim_legacy",
+      "trace": [
+        {
+          "source_id": "sim_legacy",
+          "locator": "lines 1-14",
+          "quote": "parameter Real C_out = 0.35*C_nominal \"STALE: 350 ppm equivalent\";"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "set_co2_201_value",
+      "owner": "set_co2_201",
+      "name": "value",
+      "value": 1.0,
+      "unit": "1",
+      "original": {
+        "value": "1",
+        "unit": "normalized"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 12",
+          "quote": "Key Parameter: Setpoint | Value: 1 | Units: normalized"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "gain_norm_201_gain",
+      "owner": "gain_norm_201",
+      "name": "gain",
+      "value": 658.327847,
+      "unit": "1",
+      "original": {
+        "value": "658.327847",
+        "unit": "1/(kg/kg)"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 10",
+          "quote": "Key Parameter: Gain | Value: 658.327847 | Units: 1/(kg/kg)"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "gain_air_201_gain",
+      "owner": "gain_air_201",
+      "name": "gain",
+      "value": -119.99999987999999,
+      "unit": "kg",
+      "original": {
+        "value": "-0.0333333333",
+        "unit": "kg/s per ACH"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 13",
+          "quote": "Key Parameter: Gain | Value: -0.0333333333 | Units: kg/s per ACH"
+        },
+        {
+          "source_id": "dr_iaq_05",
+          "locator": "section 'Decisions', line 14",
+          "quote": "The airflow conversion uses `m = ACH * V * rho / 3600`."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "gain_peo_201_gain",
+      "owner": "gain_peo_201",
+      "name": "gain",
+      "value": 8.18e-08,
+      "unit": "kg/s",
+      "original": {
+        "value": "8.18e-08",
+        "unit": "kg/(s.person)"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 14",
+          "quote": "Key Parameter: Gain | Value: 8.18e-08 | Units: kg/(s.person)"
+        },
+        {
+          "source_id": "cds_iaq_02",
+          "locator": "paragraph 13 (section '3. Occupant source implementation')",
+          "quote": "m_peopleSource = (8.18E-6 / 100) * nPeo"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "ctl_co2_201_gain",
+      "owner": "ctl_co2_201",
+      "name": "gain",
+      "value": 0.0016666666666666668,
+      "unit": "1/s",
+      "original": {
+        "value": "6",
+        "unit": "ACH/normalized"
+      },
+      "status": "effective",
+      "authority": "cr_iaq_007",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Parameter_Calculations, row 15",
+          "quote": "Parameter: Controller proportional gain | Symbol: Kp | Input Value: 6 | Units: ACH/normalized | Formula / Basis: CR-IAQ-007"
+        },
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 8-14",
+          "quote": "Controller: Kp=6.0 ACH/normalized"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "ctl_co2_201_gain_cds_iaq_02",
+      "owner": "ctl_co2_201",
+      "name": "gain",
+      "value": 0.0011111111111111111,
+      "unit": "1/s",
+      "original": {
+        "value": "4.0",
+        "unit": "ACH per normalized concentration error"
+      },
+      "status": "superseded",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 22",
+          "quote": "The controller proportional gain shall be 4.0 ACH per normalized concentration error."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "ctl_co2_201_bias",
+      "owner": "ctl_co2_201",
+      "name": "bias",
+      "value": 0.0009722222222222222,
+      "unit": "1/s",
+      "original": {
+        "value": "3.5",
+        "unit": "1/h"
+      },
+      "status": "effective",
+      "authority": "cr_iaq_007",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Parameter_Calculations, row 14",
+          "quote": "Parameter: Controller bias | Symbol: ACH_bias | Input Value: 3.5 | Units: 1/h | Formula / Basis: CR-IAQ-007"
+        },
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 8-14",
+          "quote": "bias=3.5 ACH"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "ctl_co2_201_bias_sim_legacy",
+      "owner": "ctl_co2_201",
+      "name": "bias",
+      "value": 0.0008333333333333334,
+      "unit": "1/s",
+      "original": {
+        "value": "3.0",
+        "unit": "ACH"
+      },
+      "status": "superseded",
+      "authority": "sim_legacy",
+      "trace": [
+        {
+          "source_id": "sim_legacy",
+          "locator": "lines 1-14",
+          "quote": "parameter Real uBias = 3.0 \"STALE ACH bias\";"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "ctl_co2_201_output_min",
+      "owner": "ctl_co2_201",
+      "name": "output_min",
+      "value": 5.555555555555556e-05,
+      "unit": "1/s",
+      "original": {
+        "value": "0.2",
+        "unit": "1/h"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Parameter_Calculations, row 12",
+          "quote": "Parameter: Minimum ACH command | Symbol: ACH_min | Input Value: 0.2 | Units: 1/h | Formula / Basis: Input"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "ctl_co2_201_output_max",
+      "owner": "ctl_co2_201",
+      "name": "output_max",
+      "value": 0.0016666666666666668,
+      "unit": "1/s",
+      "original": {
+        "value": "6",
+        "unit": "1/h"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Parameter_Calculations, row 13",
+          "quote": "Parameter: Maximum ACH command | Symbol: ACH_max | Input Value: 6 | Units: 1/h | Formula / Basis: Input"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "sch_occ_201_times",
+      "owner": "sch_occ_201",
+      "name": "times",
+      "value": [
+        0.0,
+        25200.0,
+        28800.0,
+        36000.0,
+        43200.0,
+        46800.0,
+        54000.0,
+        61200.0,
+        64800.0
+      ],
+      "unit": "s",
+      "original": {
+        "value": "00:00, 07:00, 08:00, 10:00, 12:00, 13:00, 15:00, 17:00, 18:00",
+        "unit": "hh:mm"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 4",
+          "quote": "Start Time: 00:00"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 5",
+          "quote": "Start Time: 07:00"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 6",
+          "quote": "Start Time: 08:00"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 7",
+          "quote": "Start Time: 10:00"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 8",
+          "quote": "Start Time: 12:00"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 9",
+          "quote": "Start Time: 13:00"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 10",
+          "quote": "Start Time: 15:00"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 11",
+          "quote": "Start Time: 17:00"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 12",
+          "quote": "Start Time: 18:00"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "sch_occ_201_values",
+      "owner": "sch_occ_201",
+      "name": "values",
+      "value": [
+        0.0,
+        2.0,
+        8.0,
+        12.0,
+        4.0,
+        15.0,
+        10.0,
+        3.0,
+        0.0
+      ],
+      "unit": "1",
+      "original": {
+        "value": "0, 2, 8, 12, 4, 15, 10, 3, 0",
+        "unit": "person"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 4",
+          "quote": "Occupants: 0"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 5",
+          "quote": "Occupants: 2"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 6",
+          "quote": "Occupants: 8"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 7",
+          "quote": "Occupants: 12"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 8",
+          "quote": "Occupants: 4"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 9",
+          "quote": "Occupants: 15"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 10",
+          "quote": "Occupants: 10"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 11",
+          "quote": "Occupants: 3"
+        },
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Occupancy_Schedule, row 12",
+          "quote": "Occupants: 0"
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "system_nominal_concentration",
+      "owner": "system",
+      "name": "nominal_concentration",
+      "value": 0.001519,
+      "unit": "kg/kg",
+      "original": {
+        "value": "0.001519",
+        "unit": "kg/kg"
+      },
+      "status": "effective",
+      "authority": "iaq_register",
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Parameter_Calculations, row 18",
+          "quote": "Parameter: Project nominal mass fraction | Symbol: C_nom_project | Input Value: 0.001519 | Units: kg/kg | Formula / Basis: Approved rounded value | Derived Value: 0.001519"
+        },
+        {
+          "source_id": "cds_iaq_02",
+          "locator": "paragraph 7 (section '2. Concentration conventions')",
+          "quote": "The owner compliance limit is 1000 ppm absolute room CO2. Under the project molecular-weight convention this is represented by the rounded trace-substance mass fraction C_nominal = 1.519E-3 kg/kg."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "system_stop_time",
+      "owner": "system",
+      "name": "stop_time",
+      "value": 86400.0,
+      "unit": "s",
+      "original": {
+        "value": "24",
+        "unit": "h"
+      },
+      "status": "verification_only",
+      "authority": "cp_23",
+      "trace": [
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, line 17",
+          "quote": "Execute the occupancy schedule continuously through 24:00."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "system_output_interval",
+      "owner": "system",
+      "name": "output_interval",
+      "value": 60.0,
+      "unit": "s",
+      "original": {
+        "value": "60",
+        "unit": "s"
+      },
+      "status": "verification_only",
+      "authority": "cp_23",
+      "trace": [
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 20-21",
+          "quote": "Log at 60 s intervals"
+        }
+      ],
+      "assumption_ids": []
+    }
+  ],
+  "state_machines": [],
+  "requirements": [
+    {
+      "id": "iaq_fun_001",
+      "tags": [
+        "IAQ-FUN-001"
+      ],
+      "text": "The system shall provide outdoor air to the room through the supply-air path and discharge room air through the exhaust path.",
+      "category": "functional",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 4",
+          "quote": "The system shall provide outdoor air to the room through the supply-air path and discharge room air through the exhaust path."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_fun_002",
+      "tags": [
+        "IAQ-FUN-002"
+      ],
+      "text": "The ventilation controller shall modulate fresh-air mass flow using measured room CO2 concentration as feedback.",
+      "category": "functional",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 5",
+          "quote": "The ventilation controller shall modulate fresh-air mass flow using measured room CO2 concentration as feedback."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_fun_003",
+      "tags": [
+        "IAQ-FUN-003"
+      ],
+      "text": "The occupied-room CO2 concentration shall not exceed 1000 ppm under the design occupancy schedule.",
+      "category": "performance",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 6",
+          "quote": "The occupied-room CO2 concentration shall not exceed 1000 ppm under the design occupancy schedule."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_fun_004",
+      "tags": [
+        "IAQ-FUN-004"
+      ],
+      "text": "The outdoor-air CO2 concentration used by the demonstration model shall be 300 ppm.",
+      "category": "performance",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 7",
+          "quote": "The outdoor-air CO2 concentration used by the demonstration model shall be 300 ppm."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_fun_005",
+      "tags": [
+        "IAQ-FUN-005"
+      ],
+      "text": "CO2 generation shall be proportional to the number of occupants scheduled in the room.",
+      "category": "functional",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 8",
+          "quote": "CO2 generation shall be proportional to the number of occupants scheduled in the room."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_per_001",
+      "tags": [
+        "IAQ-PER-001"
+      ],
+      "text": "The controlled room air volume shall be 100 m^3.",
+      "category": "performance",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 9",
+          "quote": "The controlled room air volume shall be 100 m^3."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_per_002",
+      "tags": [
+        "IAQ-PER-002"
+      ],
+      "text": "The nominal air density for ventilation mass-flow conversion shall be 1.2 kg/m^3.",
+      "category": "performance",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 10",
+          "quote": "The nominal air density for ventilation mass-flow conversion shall be 1.2 kg/m^3."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_per_003",
+      "tags": [
+        "IAQ-PER-003"
+      ],
+      "text": "Each occupant shall contribute 8.18E-6 kg/s of CO2 at the design activity level.",
+      "category": "performance",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 11",
+          "quote": "Each occupant shall contribute 8.18E-6 kg/s of CO2 at the design activity level."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_per_004",
+      "tags": [
+        "IAQ-PER-004"
+      ],
+      "text": "The peopleSource implementation shall use a trace-substance concentration parameter of 100 kg/kg and a carrier mass-flow command equal to occupant CO2 generation divided by 100.",
+      "category": "modeling",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 12",
+          "quote": "The peopleSource implementation shall use a trace-substance concentration parameter of 100 kg/kg and a carrier mass-flow command equal to occupant CO2 generation divided by 100."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_per_005",
+      "tags": [
+        "IAQ-PER-005"
+      ],
+      "text": "The nominal trace-substance concentration used for equation scaling shall be 1.519E-3 kg/kg.",
+      "category": "modeling",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 13",
+          "quote": "The nominal trace-substance concentration used for equation scaling shall be 1.519E-3 kg/kg."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_per_006",
+      "tags": [
+        "IAQ-PER-006"
+      ],
+      "text": "The fresh-air concentration of 300 ppm shall be represented as 0.3 times the nominal 1000 ppm mass fraction.",
+      "category": "modeling",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 14",
+          "quote": "The fresh-air concentration of 300 ppm shall be represented as 0.3 times the nominal 1000 ppm mass fraction."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_001",
+      "tags": [
+        "IAQ-CTL-001"
+      ],
+      "text": "The controller input shall be normalized such that a measured concentration of 1.519E-3 kg/kg produces a normalized value of 1.0.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 15",
+          "quote": "The controller input shall be normalized such that a measured concentration of 1.519E-3 kg/kg produces a normalized value of 1.0."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_002",
+      "tags": [
+        "IAQ-CTL-002"
+      ],
+      "text": "The CO2 setpoint presented to the controller shall be 1.0 in normalized concentration units.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 16",
+          "quote": "The CO2 setpoint presented to the controller shall be 1.0 in normalized concentration units."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_003",
+      "tags": [
+        "IAQ-CTL-003"
+      ],
+      "text": "The ventilation controller output shall represent an air-change-rate command in ACH.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 17",
+          "quote": "The ventilation controller output shall represent an air-change-rate command in ACH."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_004",
+      "tags": [
+        "IAQ-CTL-004"
+      ],
+      "text": "The ventilation command shall be limited to 0.2 through 6.0 ACH during automatic operation.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 18",
+          "quote": "The ventilation command shall be limited to 0.2 through 6.0 ACH during automatic operation."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_005",
+      "tags": [
+        "IAQ-CTL-005"
+      ],
+      "text": "The ACH command shall be converted to source mass-flow magnitude using room volume, nominal air density and 3600 s/h.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 19",
+          "quote": "The ACH command shall be converted to source mass-flow magnitude using room volume, nominal air density and 3600 s/h."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_006",
+      "tags": [
+        "IAQ-CTL-006"
+      ],
+      "text": "The simulation source component shall use negative mass-flow sign for air entering the room because of the source-port sign convention.",
+      "category": "interface",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 20",
+          "quote": "The simulation source component shall use negative mass-flow sign for air entering the room because of the source-port sign convention."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_007",
+      "tags": [
+        "IAQ-CTL-007"
+      ],
+      "text": "The controller shall use the absolute 1000 ppm room concentration as its compliance limit.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 21",
+          "quote": "The controller shall use the absolute 1000 ppm room concentration as its compliance limit."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_008",
+      "tags": [
+        "IAQ-CTL-008"
+      ],
+      "text": "The controller proportional gain shall be 4.0 ACH per normalized concentration error.",
+      "category": "control",
+      "status": "superseded",
+      "superseded_by": "iaq_ctl_009",
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 22",
+          "quote": "The controller proportional gain shall be 4.0 ACH per normalized concentration error."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_009",
+      "tags": [
+        "IAQ-CTL-009"
+      ],
+      "text": "The controller proportional gain shall be 6.0 ACH per normalized concentration error with an output bias of 3.5 ACH.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 23",
+          "quote": "The controller proportional gain shall be 6.0 ACH per normalized concentration error with an output bias of 3.5 ACH."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ctl_010",
+      "tags": [
+        "IAQ-CTL-010"
+      ],
+      "text": "Integral action shall be disabled in the released hackathon reference run to avoid negative windup during long unoccupied periods.",
+      "category": "control",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 24",
+          "quote": "Integral action shall be disabled in the released hackathon reference run to avoid negative windup during long unoccupied periods."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_sch_001",
+      "tags": [
+        "IAQ-SCH-001"
+      ],
+      "text": "The controller demonstration shall use the approved weekday occupancy schedule with a maximum of 15 occupants.",
+      "category": "schedule",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 25",
+          "quote": "The controller demonstration shall use the approved weekday occupancy schedule with a maximum of 15 occupants."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_sch_002",
+      "tags": [
+        "IAQ-SCH-002"
+      ],
+      "text": "The number-of-people signal shall be piecewise constant between defined schedule change times.",
+      "category": "schedule",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 26",
+          "quote": "The number-of-people signal shall be piecewise constant between defined schedule change times."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_int_001",
+      "tags": [
+        "IAQ-INT-001"
+      ],
+      "text": "The room CO2 measurement shall be represented internally as a Real-valued trace-substance mass fraction in kg/kg.",
+      "category": "interface",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 27",
+          "quote": "The room CO2 measurement shall be represented internally as a Real-valued trace-substance mass fraction in kg/kg."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_int_002",
+      "tags": [
+        "IAQ-INT-002"
+      ],
+      "text": "The controller shall provide a Real-valued ACH command to the airflow conversion gain.",
+      "category": "interface",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 28",
+          "quote": "The controller shall provide a Real-valued ACH command to the airflow conversion gain."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_int_003",
+      "tags": [
+        "IAQ-INT-003"
+      ],
+      "text": "The occupancy schedule shall provide an integer-valued people count to the CO2 source calculation.",
+      "category": "interface",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 29",
+          "quote": "The occupancy schedule shall provide an integer-valued people count to the CO2 source calculation."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_int_004",
+      "tags": [
+        "IAQ-INT-004"
+      ],
+      "text": "The fresh-air source shall receive both a mass-flow command and a trace-substance concentration parameter.",
+      "category": "interface",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 30",
+          "quote": "The fresh-air source shall receive both a mass-flow command and a trace-substance concentration parameter."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_saf_001",
+      "tags": [
+        "IAQ-SAF-001"
+      ],
+      "text": "If the room CO2 sensor signal is invalid for more than 60 s, the controller shall command 4.0 ACH and raise a sensor-fault indication.",
+      "category": "safety",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 31",
+          "quote": "If the room CO2 sensor signal is invalid for more than 60 s, the controller shall command 4.0 ACH and raise a sensor-fault indication."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ver_001",
+      "tags": [
+        "IAQ-VER-001"
+      ],
+      "text": "The 24-hour reference simulation shall log room CO2, outdoor CO2, occupant count, ACH command and physical supply mass flow at 60 s intervals.",
+      "category": "verification",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 32",
+          "quote": "The 24-hour reference simulation shall log room CO2, outdoor CO2, occupant count, ACH command and physical supply mass flow at 60 s intervals."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_ver_002",
+      "tags": [
+        "IAQ-VER-002"
+      ],
+      "text": "During the approved 24-hour reference run, the maximum room CO2 concentration shall be no greater than 1000 ppm.",
+      "category": "verification",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 33",
+          "quote": "During the approved 24-hour reference run, the maximum room CO2 concentration shall be no greater than 1000 ppm."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_dat_001",
+      "tags": [
+        "IAQ-DAT-001"
+      ],
+      "text": "The conversion between ppm and kg/kg for this benchmark shall use molecular weights 44.01 kg/kmol for CO2 and 28.97 kg/kmol for dry air.",
+      "category": "data",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 34",
+          "quote": "The conversion between ppm and kg/kg for this benchmark shall use molecular weights 44.01 kg/kmol for CO2 and 28.97 kg/kmol for dry air."
+        }
+      ],
+      "assumption_ids": []
+    },
+    {
+      "id": "iaq_dat_002",
+      "tags": [
+        "IAQ-DAT-002"
+      ],
+      "text": "The value C={100} kg/kg in the peopleSource shall not be interpreted as the physical room concentration or a realistic gas mixture composition.",
+      "category": "data",
+      "status": "active",
+      "superseded_by": null,
+      "satisfied_by": [],
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Requirements_Register, row 35",
+          "quote": "The value C={100} kg/kg in the peopleSource shall not be interpreted as the physical room concentration or a realistic gas mixture composition."
+        }
+      ],
+      "assumption_ids": []
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "ac_01",
+      "tags": [
+        "AC-01"
+      ],
+      "text": "Maximum room CO2 <= 1000 ppm.",
+      "check": {
+        "mode": "always",
+        "condition": "zon_201_concentration_out <= system_nominal_concentration",
+        "start_s": null,
+        "end_s": null
+      },
+      "reason": null,
+      "trace": [
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 25-41",
+          "quote": "Maximum room CO2 <= 1000 ppm."
+        }
+      ]
+    },
+    {
+      "id": "ac_02",
+      "tags": [
+        "AC-02"
+      ],
+      "text": "Outdoor concentration remains 300 ppm in baseline run.",
+      "check": {
+        "mode": "always",
+        "condition": "set_oa_201_y == set_oa_201_value",
+        "start_s": null,
+        "end_s": null
+      },
+      "reason": null,
+      "trace": [
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 25-41",
+          "quote": "Outdoor concentration remains 300 ppm in baseline run."
+        }
+      ]
+    },
+    {
+      "id": "ac_03",
+      "tags": [
+        "AC-03"
+      ],
+      "text": "ACH command remains within 0.2..6.0 ACH.",
+      "check": {
+        "mode": "always",
+        "condition": "ctl_co2_201_command_out >= ctl_co2_201_output_min and ctl_co2_201_command_out <= ctl_co2_201_output_max",
+        "start_s": null,
+        "end_s": null
+      },
+      "reason": null,
+      "trace": [
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 25-41",
+          "quote": "ACH command remains within 0.2..6.0 ACH."
+        }
+      ]
+    },
+    {
+      "id": "ac_04",
+      "tags": [
+        "AC-04"
+      ],
+      "text": "physical_supply_m_flow_kg_s = -source_m_flow_command_kg_s.",
+      "check": null,
+      "reason": "It relates two signals by arithmetic, which a Check cannot express; the mass-flow source kind sets its delivered flow to the negated command by construction, and the 24 h test checks the two signs.",
+      "trace": [
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 25-41",
+          "quote": "physical_supply_m_flow_kg_s = -source_m_flow_command_kg_s."
+        }
+      ]
+    },
+    {
+      "id": "ac_05",
+      "tags": [
+        "AC-05"
+      ],
+      "text": "CO2 source injection equals occupants*8.18E-6 kg/s.",
+      "check": null,
+      "reason": "It relates two signals by arithmetic, which a Check cannot express; the carrier gain and the 100 kg/kg carrier fraction give 8.18E-6 kg/s per person by construction.",
+      "trace": [
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 25-41",
+          "quote": "CO2 source injection equals occupants*8.18E-6 kg/s."
+        }
+      ]
+    },
+    {
+      "id": "ac_06",
+      "tags": [
+        "AC-06"
+      ],
+      "text": "Trend contains 1441 rows including 00:00 and 24:00 endpoints.",
+      "check": null,
+      "reason": "It is a property of the logged trend file, not of the model's behaviour.",
+      "trace": [
+        {
+          "source_id": "cp_23",
+          "locator": "page 1, lines 25-41",
+          "quote": "Trend contains 1441 rows including 00:00 and 24:00 endpoints."
+        }
+      ]
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "as_ducts_direct",
+      "text": "The supply and exhaust ducts have no storage in the benchmark, so the source, the room and the boundary are connected directly and the ducts are not modelled as parts.",
+      "basis": "inferred",
+      "affects": [
+        "if_air_01",
+        "if_air_03"
+      ],
+      "confidence": 0.9,
+      "trace": [
+        {
+          "source_id": "iaq_register",
+          "locator": "sheet Component_Schedule, row 16",
+          "quote": "Notes: No dynamic storage in benchmark."
+        }
+      ]
+    }
+  ],
+  "questions": [],
+  "conflicts": [
+    {
+      "id": "cf_ctl_co2_201_gain",
+      "subject": {
+        "element_id": "ctl_co2_201_gain",
+        "field": "value"
+      },
+      "candidates": [
+        {
+          "value": "6 ACH/normalized",
+          "source_id": "cr_iaq_007",
+          "authority_rank": 1,
+          "element_id": "ctl_co2_201_gain"
+        },
+        {
+          "value": "4.0 ACH per normalized concentration error",
+          "source_id": "iaq_register",
+          "authority_rank": 3,
+          "element_id": "ctl_co2_201_gain_cds_iaq_02"
+        },
+        {
+          "value": "4.0 ACH/normalized",
+          "source_id": "sim_legacy",
+          "authority_rank": 5,
+          "element_id": null
+        }
+      ],
+      "resolution": "6 ACH/normalized",
+      "rationale": "CR-IAQ-007 is an approved change record; the register marks the 4.0 tuning 'Superseded By: CR-IAQ-007' and the archived model calls it stale."
+    },
+    {
+      "id": "cf_ctl_co2_201_bias",
+      "subject": {
+        "element_id": "ctl_co2_201_bias",
+        "field": "value"
+      },
+      "candidates": [
+        {
+          "value": "3.5 1/h",
+          "source_id": "cr_iaq_007",
+          "authority_rank": 1,
+          "element_id": "ctl_co2_201_bias"
+        },
+        {
+          "value": "3.0 ACH",
+          "source_id": "sim_legacy",
+          "authority_rank": 5,
+          "element_id": "ctl_co2_201_bias_sim_legacy"
+        }
+      ],
+      "resolution": "3.5 1/h",
+      "rationale": "CR-IAQ-007 set the bias to 3.5 ACH; the archived model's 3.0 is marked stale."
+    },
+    {
+      "id": "cf_set_oa_201_value",
+      "subject": {
+        "element_id": "set_oa_201_value",
+        "field": "value"
+      },
+      "candidates": [
+        {
+          "value": "0.0004557 kg/kg",
+          "source_id": "dr_iaq_05",
+          "authority_rank": 2,
+          "element_id": "set_oa_201_value"
+        },
+        {
+          "value": "0.35*C_nominal kg/kg",
+          "source_id": "sim_legacy",
+          "authority_rank": 5,
+          "element_id": "set_oa_201_value_sim_legacy"
+        }
+      ],
+      "resolution": "0.0004557 kg/kg",
+      "rationale": "DR-IAQ-05 keeps outdoor CO2 at 300 ppm; the archived model's 350 ppm is stale."
+    },
+    {
+      "id": "cf_sch_occ_201_values",
+      "subject": {
+        "element_id": "sch_occ_201_values",
+        "field": "value"
+      },
+      "candidates": [
+        {
+          "value": "peak 15 people, 13:00-15:00",
+          "source_id": "occ_sch_04",
+          "authority_rank": 6,
+          "element_id": "sch_occ_201_values"
+        },
+        {
+          "value": "peak 12 people",
+          "source_id": "sim_legacy",
+          "authority_rank": 5,
+          "element_id": null
+        }
+      ],
+      "resolution": "peak 15 people, 13:00-15:00",
+      "rationale": "OCC-SCH-04 Rev C is the approved schedule (change log: peak increased from 12 to 15); the archived model is a known stale source."
+    }
+  ]
+}

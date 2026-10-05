@@ -16,6 +16,8 @@ _TABLE: dict[str, tuple[str, float, float]] = {
     "s": ("s", 1.0, 0.0),
     "min": ("s", 60.0, 0.0),
     "h": ("s", 3600.0, 0.0),
+    "kg": ("kg", 1.0, 0.0),
+    "kg/m3": ("kg/m3", 1.0, 0.0),
     "kg/s": ("kg/s", 1.0, 0.0),
     "m3/s": ("m3/s", 1.0, 0.0),
     # Mole/volume fraction; converting ppm to a mass fraction needs molar masses, not a unit table.
@@ -40,8 +42,8 @@ _TABLE: dict[str, tuple[str, float, float]] = {
 
 # Keys whose case carries meaning are matched case-sensitively before lower-casing, so "C"
 # (coulomb) never reads as Celsius and "K" / "k" stay unambiguous.
-_CASE_SENSITIVE = {"m", "mm", "cm", "m2", "m3", "s", "min", "h", "kg/s", "m3/s", "ppm", "kg/kg",
-                   "turns", "1", "1/h", "1/s"}
+_CASE_SENSITIVE = {"m", "mm", "cm", "m2", "m3", "s", "min", "h", "kg", "kg/m3", "kg/s", "m3/s",
+                   "ppm", "kg/kg", "turns", "1", "1/h", "1/s"}
 
 SI_UNITS = frozenset(si for si, _, _ in _TABLE.values())
 

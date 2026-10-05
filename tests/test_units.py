@@ -57,3 +57,11 @@ def test_unknown_unit_raises(unit):
     with pytest.raises(UnknownUnit) as exc:
         to_si(1.0, unit)
     assert exc.value.unit == unit
+
+
+@pytest.mark.parametrize("written, expected", [
+    ("kg/m3", (1.2, "kg/m3")), ("kg/m^3", (1.2, "kg/m3")), ("kg", (1.2, "kg"))])
+def test_density_and_mass_units_for_air_volumes(written, expected):
+    # phase 10: air density converts ACH to mass flow; an ACH-to-mass-flow gain is in kg in SI
+    value, unit = to_si(1.2, written)
+    assert (round(value, 9), unit) == expected

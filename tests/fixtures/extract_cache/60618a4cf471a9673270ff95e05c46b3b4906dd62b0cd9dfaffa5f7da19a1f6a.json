@@ -1,0 +1,112 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "checks": [],
+  "command_precedence": null,
+  "events": [
+   {
+    "edge": "rising",
+    "id": "start_pressed",
+    "port_id": "plc_5_open_command"
+   },
+   {
+    "edge": "rising",
+    "id": "tc_5_reports_60",
+    "port_id": "plc_5_open_command"
+   }
+  ],
+  "initial_state": "idle",
+  "states": [
+   {
+    "chunk_id": "src_heated_tank_thermostat_txt#0",
+    "entry_actions": [],
+    "id": "idle",
+    "legacy_names": [],
+    "name": "Idle",
+    "outputs": [
+     {
+      "port_id": "plc_5_open_command",
+      "value": false
+     }
+    ],
+    "quote": "When the operator presses START, PLC-5 opens FV-51 and keeps it open until the level reaches 0.9 m, then closes it and enables the heater."
+   },
+   {
+    "chunk_id": "src_heated_tank_thermostat_txt#0",
+    "entry_actions": [],
+    "id": "filling",
+    "legacy_names": [],
+    "name": "Filling",
+    "outputs": [
+     {
+      "port_id": "plc_5_open_command",
+      "value": true
+     }
+    ],
+    "quote": "When the operator presses START, PLC-5 opens FV-51 and keeps it open until the level reaches 0.9 m, then closes it and enables the heater."
+   },
+   {
+    "chunk_id": "src_heated_tank_thermostat_txt#0",
+    "entry_actions": [],
+    "id": "draining",
+    "legacy_names": [],
+    "name": "Draining",
+    "outputs": [
+     {
+      "port_id": "plc_5_open_command",
+      "value": true
+     }
+    ],
+    "quote": "When TC-5 reports 60 degC, PLC-5 opens drain valve DV-52, which passes 0.005 m3/s when open, to discharge the hot water to the wash line until the level falls to 0.1 m."
+   }
+  ],
+  "timers": [],
+  "transitions": [
+   {
+    "actions": [],
+    "chunk_id": "src_heated_tank_thermostat_txt#0",
+    "except_states": null,
+    "from_state": "idle",
+    "guard": null,
+    "priority": 1,
+    "quote": "When the operator presses START, PLC-5 opens FV-51 and keeps it open until the level reaches 0.9 m, then closes it and enables the heater.",
+    "to_state": "filling",
+    "trigger_event": "start_pressed"
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_heated_tank_thermostat_txt#0",
+    "except_states": null,
+    "from_state": "filling",
+    "guard": "plc_5_tank_level >= 0.9",
+    "priority": 2,
+    "quote": "When the operator presses START, PLC-5 opens FV-51 and keeps it open until the level reaches 0.9 m, then closes it and enables the heater.",
+    "to_state": "idle",
+    "trigger_event": null
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_heated_tank_thermostat_txt#0",
+    "except_states": null,
+    "from_state": "idle",
+    "guard": null,
+    "priority": 1,
+    "quote": "When TC-5 reports 60 degC, PLC-5 opens drain valve DV-52, which passes 0.005 m3/s when open, to discharge the hot water to the wash line until the level falls to 0.1 m.",
+    "to_state": "draining",
+    "trigger_event": "tc_5_reports_60"
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_heated_tank_thermostat_txt#0",
+    "except_states": null,
+    "from_state": "draining",
+    "guard": "plc_5_tank_level <= 0.1",
+    "priority": 2,
+    "quote": "When TC-5 reports 60 degC, PLC-5 opens drain valve DV-52, which passes 0.005 m3/s when open, to discharge the hot water to the wash line until the level falls to 0.1 m.",
+    "to_state": "idle",
+    "trigger_event": null
+   }
+  ]
+ },
+ "schema": "BehaviourReply"
+}

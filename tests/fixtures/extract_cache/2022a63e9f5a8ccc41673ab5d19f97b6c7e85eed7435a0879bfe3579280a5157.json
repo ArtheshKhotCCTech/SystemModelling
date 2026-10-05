@@ -1,0 +1,51 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#109",
+    "date": "2026-04-04",
+    "file_name": "10_demo_run_900s.csv",
+    "quote": "Source ID: SRC-10 | Filename / Artifact: 10_demo_run_900s.csv | Type: CSV test data | Revision / Date: Synthetic / 2026-04-04 | Reliability: Medium | Contains: Time series: levels, commands, valves, state | Known Caveat: 1 s logging.",
+    "revision": "Synthetic",
+    "role": "register",
+    "tag": "SRC-10",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#110",
+    "date": "2026-01-28",
+    "file_name": "11_partial_legacy_architecture.puml",
+    "quote": "Source ID: SRC-11 | Filename / Artifact: 11_partial_legacy_architecture.puml | Type: Existing model | Revision / Date: Draft / 2026-01-28 | Reliability: Low | Contains: Legacy structure | Known Caveat: Missing sensors and shutdown detail.",
+    "revision": "Draft",
+    "role": "register",
+    "tag": "SRC-11",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#111",
+    "date": "2026-04-04",
+    "file_name": "12_operator_shift_notes.txt",
+    "quote": "Source ID: SRC-12 | Filename / Artifact: 12_operator_shift_notes.txt | Type: Engineer notes | Revision / Date: 2026-04-04 | Reliability: Low | Contains: Observed timing and behavior | Known Caveat: Informal shorthand.",
+    "revision": null,
+    "role": "register",
+    "tag": "SRC-12",
+    "title": null
+   }
+  ],
+  "parameters": [],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

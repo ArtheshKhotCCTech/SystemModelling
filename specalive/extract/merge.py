@@ -6,6 +6,8 @@
 # are resolved through the aliases, and a controller's ports are made from its connections.
 # Phase 9: an instrument's unconnected measured input is wired to the one part the evidence names
 # as what it measures (catalogue `measures`), traced to that evidence; never guessed.
+# An input wired from several ports keeps the best-evidenced driver, naming the others in a
+# Conflict; a tie is a Question.
 from __future__ import annotations
 
 import re
@@ -13,7 +15,18 @@ from dataclasses import dataclass, field
 
 from specalive.core.catalogue import Catalogue, PortSpec
 from specalive.core.ids import IdCollision, IdRegistry, make_id
-from specalive.core.ir import Assumption, Connection, Part, Port, Question, Source, TraceLink
+from specalive.core.ir import (
+    Assumption,
+    Candidate,
+    Conflict,
+    ConflictSubject,
+    Connection,
+    Part,
+    Port,
+    Question,
+    Source,
+    TraceLink,
+)
 from specalive.extract.fragments import (
     AliasFragment,
     ConnectionFragment,
@@ -21,7 +34,7 @@ from specalive.extract.fragments import (
     PartFragment,
     name_key,
 )
-from specalive.extract.precedence import rank_of
+from specalive.extract.precedence import LOWEST_RANK, rank_of
 from specalive.ingest.evidence import EvidenceBundle
 
 __all__ = ["name_key", "ir_sources", "resolve_parts", "resolve_connections", "PartSet",
@@ -464,7 +477,8 @@ def measurement_links(parts: PartSet, connections: list[Connection],
             for other in sorted(parts.parts, key=lambda p: p.id):
                 source = next((q for q in other.ports if q.role == measured
                                and q.direction == "out" and q.domain == port.domain), None)
-                if other.id == sensor.id or source is None:
+                # an instrument does not measure another instrument of its own kind
+                if other.id == sensor.id or other.kind == sensor.kind or source is None:
                     continue
                 links = ([t for t in sensor.trace if _names_any(t.quote, other.tags)]
                          + [t for t in other.trace if _names_any(t.quote, sensor.tags)])
@@ -489,4 +503,54 @@ def measurement_links(parts: PartSet, connections: list[Connection],
             else:
                 out.missing.append(f"{sensor.id}: input {role} is not connected and no source "
                                    f"names the part whose {measured} it measures")
+    return out
+
+
+# --- one driver per input ----------------------------------------------------------------------
+
+@dataclass
+class Drivers:
+    connections: list[Connection] = field(default_factory=list)
+    conflicts: list[Conflict] = field(default_factory=list)
+    questions: list[Question] = field(default_factory=list)
+
+
+def single_drivers(connections: list[Connection], sources: list[Source]) -> Drivers:
+    """An input takes its value from one port. When the evidence wires an input from several,
+    the connection traced to the most authoritative source (then to the most sources) is kept
+    and the others are named in a Conflict; a tie is a Question and keeps none, never a guess."""
+    roles = {s.id: s.role for s in sources}
+
+    def evidence(c: Connection) -> tuple[int, int]:
+        ranks = [rank_of(roles.get(t.source_id, "other")) for t in c.trace]
+        return (min(ranks, default=LOWEST_RANK), -len({t.source_id for t in c.trace}))
+
+    out = Drivers()
+    by_input: dict[str, list[Connection]] = {}
+    for c in connections:
+        by_input.setdefault(c.to_port, []).append(c)
+    for port, group in sorted(by_input.items()):
+        if len(group) == 1:
+            out.connections.append(group[0])
+            continue
+        ranked = sorted(group, key=lambda c: (evidence(c), c.id))
+        drivers = sorted({c.from_port for c in group})
+        if evidence(ranked[0]) == evidence(ranked[1]):
+            out.questions.append(Question(
+                id=make_id("q", f"q driver {port}"), options=drivers, affects=[port],
+                text=f"Input {port} is wired from {', '.join(drivers)} by equally authoritative "
+                     "evidence, and an input takes one value. Which one drives it?"))
+            continue
+        win = ranked[0]
+        out.connections.append(win)
+        out.conflicts.append(Conflict(
+            id=make_id("cf", f"cf driver {port}"),
+            subject=ConflictSubject(element_id=win.id, field="from_port"),
+            candidates=[Candidate(value=c.from_port, element_id=c.id,
+                                  source_id=c.trace[0].source_id if c.trace else "unknown",
+                                  authority_rank=evidence(c)[0]) for c in ranked],
+            resolution=win.from_port,
+            rationale=f"{port} can take one driver; {win.from_port} is traced to the most "
+                      "authoritative evidence"))
+    out.connections.sort(key=lambda c: c.id)
     return out

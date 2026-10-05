@@ -4,6 +4,7 @@
 # checked; anything unmatched or ambiguous is NOT COMPARED with the reason. Continuous signals are
 # compared by error at the reference sample times, discrete signals and states by their change
 # times matched in order, within tolerances whose source (the IR or a declared default) is stated.
+# A model run that ends before the reference fails every mapped signal: the overlap alone passed.
 from __future__ import annotations
 
 import bisect
@@ -363,10 +364,17 @@ def compare_signals(ref: Reference, trace: Trace, mappings: list[ColumnMapping],
     """One result per reference column; `vm` gives the state enumerations for state columns."""
     span = (max(ref.times[0], trace.times[0]) if trace.times else 0.0,
             min(ref.times[-1], trace.times[-1]) if trace.times else 0.0)
+    # a run that stops early cannot match what the reference does after it stopped
+    early = (f"the model run ends at {trace.times[-1]:g} s, before the reference's "
+             f"{ref.times[-1]:g} s" if trace.times and ref.times
+             and trace.times[-1] < ref.times[-1] - tol.event_time.value else None)
     results = []
     for m in mappings:
         if m.status != MAPPED:
             results.append(SignalResult(m.column, None, None, None, NOT_COMPARED, m.reason))
+            continue
+        if early and m.variable in trace.values:
+            results.append(SignalResult(m.column, m.variable, m.ir_id, m.kind, FAIL, early))
             continue
         if m.variable not in trace.values:
             results.append(SignalResult(m.column, m.variable, m.ir_id, m.kind, NOT_COMPARED,

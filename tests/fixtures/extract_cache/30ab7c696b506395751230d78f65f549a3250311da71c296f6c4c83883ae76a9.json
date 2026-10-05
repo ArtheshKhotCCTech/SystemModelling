@@ -1,0 +1,81 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [],
+  "parameters": [],
+  "parts": [],
+  "requirements": [
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#29",
+    "quote": "STOP commands received during SHUT mode shall be ignored until shutdown is complete.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-CTL-003",
+    "text": "STOP commands received during SHUT mode shall be ignored until shutdown is complete."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#30",
+    "quote": "START commands received during SHUT mode shall be ignored until shutdown is complete.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-CTL-004",
+    "text": "START commands received during SHUT mode shall be ignored until shutdown is complete."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#31",
+    "quote": "Shutdown completion shall require Tank 1 and Tank 2 to both be at or below their low-level setpoints.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-CTL-005",
+    "text": "Shutdown completion shall require Tank 1 and Tank 2 to both be at or below their low-level setpoints."
+   },
+   {
+    "category": "Verification",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#32",
+    "quote": "The demonstration run shall simulate from 0 s through 900 s.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-TST-001",
+    "text": "The demonstration run shall simulate from 0 s through 900 s."
+   },
+   {
+    "category": "Verification",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#33",
+    "quote": "The demonstration run shall apply START at 20 s, STOP at 220 s, START at 280 s, STOP at 650 s and SHUT at 700 s.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-TST-002",
+    "text": "The demonstration run shall apply START at 20 s, STOP at 220 s, START at 280 s, STOP at 650 s and SHUT at 700 s."
+   },
+   {
+    "category": "Data",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#34",
+    "quote": "Level values shall be represented internally in metres with a nominal valid range of 0.0 to 1.0 m.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-DAT-001",
+    "text": "Level values shall be represented internally in metres with a nominal valid range of 0.0 to 1.0 m."
+   },
+   {
+    "category": "Data",
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#35",
+    "quote": "Valve commands shall be represented as Boolean open/closed commands.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "URS-DAT-002",
+    "text": "Valve commands shall be represented as Boolean open/closed commands."
+   }
+  ],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

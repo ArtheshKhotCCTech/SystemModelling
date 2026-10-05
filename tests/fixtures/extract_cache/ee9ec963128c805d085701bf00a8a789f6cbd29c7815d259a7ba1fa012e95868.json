@@ -1,0 +1,459 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#37",
+    "names": [
+     "TK-101",
+     "tank1"
+    ],
+    "quote": "Tag: TK-101 | Alias: tank1"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#38",
+    "names": [
+     "TK-102",
+     "tank2"
+    ],
+    "quote": "Tag: TK-102 | Alias: tank2"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#39",
+    "names": [
+     "XV-101",
+     "valve1",
+     "V1"
+    ],
+    "quote": "Tag: XV-101 | Alias: valve1 / V1"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#40",
+    "names": [
+     "XV-102",
+     "valve2",
+     "V2"
+    ],
+    "quote": "Tag: XV-102 | Alias: valve2 / V2"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#41",
+    "names": [
+     "XV-103",
+     "valve3",
+     "V3"
+    ],
+    "quote": "Tag: XV-103 | Alias: valve3 / V3"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#42",
+    "names": [
+     "LT-101",
+     "level1"
+    ],
+    "quote": "Tag: LT-101 | Alias: level1"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#43",
+    "names": [
+     "LT-102",
+     "level2"
+    ],
+    "quote": "Tag: LT-102 | Alias: level2"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#44",
+    "names": [
+     "PB-START",
+     "start"
+    ],
+    "quote": "Tag: PB-START | Alias: start"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#45",
+    "names": [
+     "PB-STOP",
+     "stop"
+    ],
+    "quote": "Tag: PB-STOP | Alias: stop"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#46",
+    "names": [
+     "PB-SHUT",
+     "shut"
+    ],
+    "quote": "Tag: PB-SHUT | Alias: shut"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#47",
+    "names": [
+     "PLC-101",
+     "tankController"
+    ],
+    "quote": "Tag: PLC-101 | Alias: tankController"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#48",
+    "names": [
+     "SRC-101",
+     "source"
+    ],
+    "quote": "Tag: SRC-101 | Alias: source"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#49",
+    "names": [
+     "DRN-101",
+     "ambient1"
+    ],
+    "quote": "Tag: DRN-101 | Alias: ambient1"
+   }
+  ],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#0",
+    "date": "2026-04-10",
+    "file_name": null,
+    "quote": "Tank Filling/Emptying System - Synthetic Requirements Register",
+    "revision": "Compiled",
+    "role": "register",
+    "tag": "Tank Filling/Emptying System - Synthetic Requirements Register",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#37",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "area",
+    "owner_tag": "TK-101",
+    "provisional": false,
+    "quote": "Cross-section Area (m^2): 1.2",
+    "stated_status": null,
+    "unit": "m^2",
+    "value": "1.2"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#37",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "initial_level",
+    "owner_tag": "TK-101",
+    "provisional": false,
+    "quote": "initial level 0.05 m",
+    "stated_status": null,
+    "unit": "m",
+    "value": "0.05"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#38",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "area",
+    "owner_tag": "TK-102",
+    "provisional": false,
+    "quote": "Cross-section Area (m^2): 1.4",
+    "stated_status": null,
+    "unit": "m^2",
+    "value": "1.4"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#38",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "initial_level",
+    "owner_tag": "TK-102",
+    "provisional": false,
+    "quote": "initial level 0.05 m",
+    "stated_status": null,
+    "unit": "m",
+    "value": "0.05"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#39",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "nominal_flow",
+    "owner_tag": "XV-101",
+    "provisional": false,
+    "quote": "Nominal Flow (m^3/s): 0.006",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.006"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#40",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "nominal_flow",
+    "owner_tag": "XV-102",
+    "provisional": false,
+    "quote": "Nominal Flow (m^3/s): 0.0045",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.0045"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#41",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "nominal_flow",
+    "owner_tag": "XV-103",
+    "provisional": false,
+    "quote": "Nominal Flow (m^3/s): 0.005",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.005"
+   }
+  ],
+  "parts": [
+   {
+    "aliases": [
+     "tank1"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "Intermediate receiving tank"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#37",
+    "description": null,
+    "kind": "tank",
+    "name": null,
+    "quote": "Tag: TK-101 | Alias: tank1 | Type: Tank | Service: Intermediate receiving tank | Cross-section Area (m^2): 1.2 | Height (m): 1 | Max Working Level (m): 0.9 | Signal / Sensor: LT-101 | Revision Source: MDS-01 | Comments: Vertical tank; initial level 0.05 m.",
+    "tag": "TK-101"
+   },
+   {
+    "aliases": [
+     "tank2"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "Final receiving/drain tank"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#38",
+    "description": null,
+    "kind": "tank",
+    "name": null,
+    "quote": "Tag: TK-102 | Alias: tank2 | Type: Tank | Service: Final receiving/drain tank | Cross-section Area (m^2): 1.4 | Height (m): 1 | Max Working Level (m): 0.9 | Signal / Sensor: LT-102 | Revision Source: MDS-01 | Comments: Vertical tank; initial level 0.05 m.",
+    "tag": "TK-102"
+   },
+   {
+    "aliases": [
+     "valve1",
+     "V1"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "Feed source to TK-101"
+     },
+     {
+      "key": "fail position",
+      "value": "Closed"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#39",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "Tag: XV-101 | Alias: valve1 / V1 | Type: On-off valve | Service: Feed source to TK-101 | Nominal Flow (m^3/s): 0.006 | Fail Position: Closed | Signal / Sensor: DO-101 | Revision Source: VD-101 Rev B | Comments: Spring return closed; full-open time 0.8 s.",
+    "tag": "XV-101"
+   },
+   {
+    "aliases": [
+     "valve2",
+     "V2"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "TK-101 to TK-102"
+     },
+     {
+      "key": "fail position",
+      "value": "Closed"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#40",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "Tag: XV-102 | Alias: valve2 / V2 | Type: On-off valve | Service: TK-101 to TK-102 | Nominal Flow (m^3/s): 0.0045 | Fail Position: Closed | Signal / Sensor: DO-102 | Revision Source: VD-102 Rev B | Comments: Spring return closed.",
+    "tag": "XV-102"
+   },
+   {
+    "aliases": [
+     "valve3",
+     "V3"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "TK-102 to drain"
+     },
+     {
+      "key": "fail position",
+      "value": "Closed"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#41",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "Tag: XV-103 | Alias: valve3 / V3 | Type: On-off valve | Service: TK-102 to drain | Nominal Flow (m^3/s): 0.005 | Fail Position: Closed | Signal / Sensor: DO-103 | Revision Source: VD-103 Rev B | Comments: Spring return closed.",
+    "tag": "XV-103"
+   },
+   {
+    "aliases": [
+     "level1"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "TK-101 level"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#42",
+    "description": null,
+    "kind": "level_sensor",
+    "name": null,
+    "quote": "Tag: LT-101 | Alias: level1 | Type: Level transmitter | Service: TK-101 level | Signal / Sensor: AI-101 | Revision Source: ICD-01 | Comments: 4-20 mA mapped 0.0-1.0 m.",
+    "tag": "LT-101"
+   },
+   {
+    "aliases": [
+     "level2"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "TK-102 level"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#43",
+    "description": null,
+    "kind": "level_sensor",
+    "name": null,
+    "quote": "Tag: LT-102 | Alias: level2 | Type: Level transmitter | Service: TK-102 level | Signal / Sensor: AI-102 | Revision Source: ICD-01 | Comments: 4-20 mA mapped 0.0-1.0 m.",
+    "tag": "LT-102"
+   },
+   {
+    "aliases": [
+     "start"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "Start/resume command"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#44",
+    "description": null,
+    "kind": "command_button",
+    "name": null,
+    "quote": "Tag: PB-START | Alias: start | Type: Momentary pushbutton | Service: Start/resume command | Signal / Sensor: DI-101 | Revision Source: ICD-01 | Comments: Normally open.",
+    "tag": "PB-START"
+   },
+   {
+    "aliases": [
+     "stop"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "Pause command"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#45",
+    "description": null,
+    "kind": "command_button",
+    "name": null,
+    "quote": "Tag: PB-STOP | Alias: stop | Type: Momentary pushbutton | Service: Pause command | Signal / Sensor: DI-102 | Revision Source: ICD-01 | Comments: Normally open.",
+    "tag": "PB-STOP"
+   },
+   {
+    "aliases": [
+     "shut"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "Controlled shutdown/drain"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#46",
+    "description": null,
+    "kind": "command_button",
+    "name": null,
+    "quote": "Tag: PB-SHUT | Alias: shut | Type: Momentary pushbutton | Service: Controlled shutdown/drain | Signal / Sensor: DI-103 | Revision Source: ICD-01 | Comments: Not an E-stop.",
+    "tag": "PB-SHUT"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "Sequence and mode control"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#47",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "Tag: PLC-101 | Alias: tankController | Type: Controller | Service: Sequence and mode control | Revision Source: CDS-02 | Comments: 100 ms scan.",
+    "tag": "PLC-101"
+   },
+   {
+    "aliases": [
+     "source"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "Supply to XV-101"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#48",
+    "description": null,
+    "kind": "fluid_source",
+    "name": null,
+    "quote": "Tag: SRC-101 | Alias: source | Type: Boundary source | Service: Supply to XV-101 | Revision Source: MDS-01 | Comments: Ideal source.",
+    "tag": "SRC-101"
+   },
+   {
+    "aliases": [
+     "ambient1"
+    ],
+    "attributes": [
+     {
+      "key": "service",
+      "value": "Drain from XV-103"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#49",
+    "description": null,
+    "kind": "fluid_sink",
+    "name": null,
+    "quote": "Tag: DRN-101 | Alias: ambient1 | Type: Boundary sink | Service: Drain from XV-103 | Revision Source: MDS-01 | Comments: Ideal sink.",
+    "tag": "DRN-101"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

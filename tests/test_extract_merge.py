@@ -292,3 +292,68 @@ def test_nothing_named_is_reported_missing_not_guessed(catalogue):
     links = measurement_links(ps, [], catalogue)
     assert links.connections == [] and links.questions == []
     assert any("lt_1" in m and "level_in" in m for m in links.missing)
+
+
+# --- one driver per input (fresh-run finding R6) ------------------------------------------
+
+def _driven_twice():
+    from specalive.core.ir import Connection, Source, TraceLink
+
+    sources = [Source(id="io", title="I/O list", role="register"),
+               Source(id="mail", title="Email", role="correspondence")]
+    io = TraceLink(source_id="io", locator="row 4", quote="DO-01 | XV-101 open")
+    mail = TraceLink(source_id="mail", locator="line 9", quote="START: Command XV-101 open.")
+    good = Connection(id="c_plc", from_port="plc_v1", to_port="xv_cmd", medium_or_signal="cmd",
+                      trace=[io])
+    bad = Connection(id="c_pb", from_port="pb_out", to_port="xv_cmd", medium_or_signal="cmd",
+                     trace=[mail])
+    return sources, good, bad
+
+
+def test_an_input_driven_twice_keeps_the_better_evidenced_driver_and_records_the_loser():
+    from specalive.extract.merge import single_drivers
+
+    sources, good, bad = _driven_twice()
+    r = single_drivers([bad, good], sources)
+    assert [c.id for c in r.connections] == ["c_plc"]
+    [conflict] = r.conflicts
+    assert conflict.subject.element_id == "c_plc" and conflict.resolution == "plc_v1"
+    assert {c.value for c in conflict.candidates} == {"plc_v1", "pb_out"}
+    assert r.questions == []
+
+
+def test_an_input_driven_twice_with_equal_evidence_is_a_question_and_kept_by_neither():
+    from specalive.core.ir import Connection
+    from specalive.extract.merge import single_drivers
+
+    sources, good, _ = _driven_twice()
+    twin = Connection(id="c_twin", from_port="pb_out", to_port="xv_cmd", medium_or_signal="cmd",
+                      trace=good.trace)
+    r = single_drivers([good, twin], sources)
+    assert r.connections == [] and r.conflicts == []
+    [q] = r.questions
+    assert set(q.options) == {"plc_v1", "pb_out"} and q.default_if_unanswered is None
+
+
+def test_inputs_driven_once_are_untouched():
+    from specalive.extract.merge import single_drivers
+
+    sources, good, _ = _driven_twice()
+    r = single_drivers([good], sources)
+    assert r.connections == [good] and r.conflicts == [] and r.questions == []
+
+
+def test_a_sensor_named_beside_another_sensor_still_measures_the_tank(catalogue):
+    # fresh-run finding: "LT-101 / LT-102" named both transmitters together, and the other
+    # transmitter's own level output made the link look ambiguous
+    from specalive.extract.merge import measurement_links
+
+    ps = resolve_parts([pf("Tag: TK-1 | Type: Tank", "TK-1", "tank", source_id="src_r"),
+                        pf("LT-1 reads TK-1; LT-2 is its twin", "LT-1", "level_sensor",
+                           source_id="src_t"),
+                        pf("LT-2 is a level transmitter", "LT-2", "level_sensor",
+                           source_id="src_u")], [], catalogue)
+    links = measurement_links(ps, [], catalogue)
+    assert ("tk_1_level_out", "lt_1_level_in") in {(c.from_port, c.to_port)
+                                                     for c in links.connections}
+    assert all("lt_1" not in q.affects for q in links.questions)

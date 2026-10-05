@@ -156,6 +156,11 @@ class TransitionSpec(_Located):
     guard: str | None
     actions: list[str]
     priority: int
+    # with from_state "*": the states the rule does not leave from (default keeps old replies valid)
+    except_states: list[str] | None = None
+
+
+WindowBasis = Literal["stated_time", "event", "run_bound"]
 
 
 class CheckSpec(BaseModel):
@@ -164,6 +169,13 @@ class CheckSpec(BaseModel):
     condition: str
     start_s: float | None
     end_s: float | None
+    # where each bound comes from; the defaults only keep replies recorded before phase 9 valid
+    start_basis: WindowBasis | None = None
+    end_basis: WindowBasis | None = None
+
+
+class CommandPrecedenceSpec(_Located):
+    events: list[str] = Field(description="event ids, the one that wins first")
 
 
 class BehaviourReply(BaseModel):
@@ -173,6 +185,7 @@ class BehaviourReply(BaseModel):
     states: list[StateSpec]
     transitions: list[TransitionSpec]
     checks: list[CheckSpec]
+    command_precedence: CommandPrecedenceSpec | None = None
 
 
 # --- between modules -----------------------------------------------------------------------

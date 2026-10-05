@@ -212,3 +212,73 @@ def test_part_owned_and_superseded_values_are_not_run_parameters():
                                           _run("old_stop_time", 600.0, status="superseded")])
     apply_run_names(d)
     assert all(p.name != "stop_time" for p in d.parameters)
+
+
+# --- inputs wired to nothing (phase 9 closure) -------------------------------------------
+
+def test_an_input_connected_to_nothing_is_a_question_before_compile():
+    from specalive.extract.gaps import unconnected_inputs
+
+    wire = Connection(id="c1", from_port="xv_outlet", to_port="tk_inlet", medium_or_signal="water",
+                      trace=T)
+    questions = unconnected_inputs(draft(parts=[tank(), valve()], connections=[wire]))
+    # xv_inlet and xv_cmd_in feed nothing into the model; an output left open is not a gap
+    assert [(q.affects, q.id) for q in questions] == [
+        (["xv"], "q_unconnected_xv_cmd_in"), (["xv"], "q_unconnected_xv_inlet")]
+    assert "xv_cmd_in" in questions[0].text and "connected to nothing" in questions[0].text
+    assert all(q.default_if_unanswered is None and q.options == [] for q in questions)
+
+
+def test_a_fully_wired_model_has_no_wiring_question():
+    from _modelica_support import golden_model
+    from specalive.extract.gaps import unconnected_inputs
+
+    g = golden_model()
+    d = draft(parts=list(g.parts), connections=list(g.connections))
+    assert unconnected_inputs(d) == []
+
+
+def test_candidates_that_agree_on_the_value_are_not_ambiguous():
+    # fresh-run finding: the stop time came back twice (effective and verification-only, both
+    # 900 s), was reported as ambiguous, and the run fell back to 1 s
+    from specalive.extract.gaps import apply_run_names
+
+    d = draft(parameters=[_run("simulation_stop_time", 900.0, status="effective"),
+                          _run("simulation_stop_time", 900.0).model_copy(
+                              update={"id": "system_simulation_stop_time_verification"})])
+    assert apply_run_names(d) == []
+    assert [p.value for p in d.parameters if p.name == "stop_time"] == [900.0]
+
+
+# --- ids unique across element kinds (phase 10, L2 finding) -------------------------------
+
+def test_a_source_whose_id_another_element_has_is_renamed_everywhere():
+    # L2: a cited record "RM-201" and the room part RM-201 both became rm_201, and the URS
+    # document and a requirement tagged with its number both became urs_iaq_001
+    from specalive.core.ir import Candidate, ConflictSubject, Requirement
+    from specalive.extract.gaps import unique_ids
+
+    link = [TraceLink(source_id="tk", locator="p.1", quote="Tank TK-9")]
+    d = draft(sources=[Source(id="tk", title="TK record", role="change_record")],
+              parts=[tank(trace=link)], parameters=[prm("tk", "area", 2.0, "m2", trace=link)],
+              requirements=[Requirement(id="tk_r", text="t", category="c", status="active",
+                                        trace=link)])
+    d.parameters[0] = d.parameters[0].model_copy(update={"authority": "tk"})
+    d.conflicts = [Conflict(id="cf", subject=ConflictSubject(element_id="tk_area", field="value"),
+                            candidates=[Candidate(value="2", source_id="tk", authority_rank=1),
+                                        Candidate(value="3", source_id="tk", authority_rank=2)],
+                            resolution="2", rationale="r")]
+    notes = unique_ids(d)
+    assert [s.id for s in d.sources] == ["doc_tk"] and d.parts[0].id == "tk"
+    assert d.parts[0].trace[0].source_id == "doc_tk"
+    assert d.parameters[0].authority == "doc_tk" and d.parameters[0].trace[0].source_id == "doc_tk"
+    assert d.requirements[0].trace[0].source_id == "doc_tk"
+    assert {c.source_id for c in d.conflicts[0].candidates} == {"doc_tk"}
+    assert notes and "tk" in notes[0]
+
+
+def test_unique_ids_leaves_a_clean_draft_alone():
+    from specalive.extract.gaps import unique_ids
+
+    d = draft(parts=[tank()], parameters=[prm("tk", "area", 2.0, "m2")])
+    assert unique_ids(d) == [] and [s.id for s in d.sources] == ["spec"]

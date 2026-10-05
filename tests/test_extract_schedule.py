@@ -100,3 +100,27 @@ def test_no_buttons_or_no_mention_gives_nothing():
                parts=[]).parameters == []
     r = run([chunk("tp", "p.1", "20\nOPEN\n")], [source("tp", "verification_procedure")])
     assert r.parameters == [] and r.questions == []
+
+
+def test_press_times_whose_quote_does_not_name_the_button_are_replaced():
+    # fresh-run finding: START was given a sentence about every button's edges
+    harness = [TraceLink(source_id="tp", locator="p.2",
+                         quote="A test harness supplies button edges at 20, 220, 280 and 700 seconds.")]
+    unnamed = Parameter(id="pb_start_press_times", owner="pb_start", name="press_times",
+                        value=[20.0, 220.0, 280.0, 700.0], unit="s",
+                        original=OriginalValue(value="20, 220, 280, 700", unit="s"),
+                        status="verification_only", authority="tp", trace=harness)
+    r = run([chunk("tp", "p.1", TABLE)], [source("tp", "verification_procedure")], [unnamed])
+    assert values(r)["pb_start"] == [20.0, 280.0]
+    assert [p.id for p in r.replaced] == ["pb_start_press_times"]
+    assert next(p for p in r.parameters if p.owner == "pb_start").id == "pb_start_press_times"
+
+
+def test_unnamed_press_times_stay_when_no_schedule_names_the_button():
+    harness = [TraceLink(source_id="tp", locator="p.2", quote="Edges at 20 and 280 seconds.")]
+    unnamed = Parameter(id="pb_start_press_times", owner="pb_start", name="press_times",
+                        value=[20.0, 280.0], unit="s", original=OriginalValue(value="20, 280", unit="s"),
+                        status="verification_only", authority="tp", trace=harness)
+    r = run([chunk("tp", "p.1", "nothing here")], [source("tp", "verification_procedure")],
+            [unnamed])
+    assert r.replaced == [] and "pb_start" not in values(r)

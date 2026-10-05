@@ -1,0 +1,152 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "TK-101",
+     "tank1"
+    ],
+    "quote": "TK-101 [tank] aka tank1"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "TK-102",
+     "tank2"
+    ],
+    "quote": "TK-102 [tank] aka tank2"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "XV-101",
+     "valve1",
+     "V1"
+    ],
+    "quote": "XV-101 [on_off_valve] aka valve1, V1"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "XV-102",
+     "valve2",
+     "V2"
+    ],
+    "quote": "XV-102 [on_off_valve] aka valve2, V2"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "XV-103",
+     "valve3",
+     "V3"
+    ],
+    "quote": "XV-103 [on_off_valve] aka valve3, V3"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "LT-101",
+     "level1"
+    ],
+    "quote": "LT-101 [level_sensor] aka level1"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "LT-102",
+     "level2"
+    ],
+    "quote": "LT-102 [level_sensor] aka level2"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "PB-START",
+     "start"
+    ],
+    "quote": "PB-START [command_button] aka start"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "PB-STOP",
+     "stop"
+    ],
+    "quote": "PB-STOP [command_button] aka stop"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "PB-SHUT",
+     "shut"
+    ],
+    "quote": "PB-SHUT [command_button] aka shut"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "PLC-101",
+     "tankController"
+    ],
+    "quote": "PLC-101 [sequence_controller] aka tankController"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "SRC-101",
+     "source"
+    ],
+    "quote": "SRC-101 [fluid_source] aka source"
+   },
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "names": [
+     "DRN-101",
+     "ambient1"
+    ],
+    "quote": "DRN-101 [fluid_sink] aka ambient1"
+   }
+  ],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_09_datasets_10_demo_run_900s_csv#10"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "date": "2026-04-04",
+    "file_name": null,
+    "quote": "file: 10_demo_run_900s.csv",
+    "revision": "Synthetic",
+    "role": "reference_data",
+    "tag": "09_datasets/10_demo_run_900s.csv",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_09_datasets_10_demo_run_900s_csv#0",
+    "cited_document": null,
+    "configuration": "verification",
+    "name": "simulation_stop_time",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "time_s from 0 to 900",
+    "stated_status": null,
+    "unit": "s",
+    "value": "900"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

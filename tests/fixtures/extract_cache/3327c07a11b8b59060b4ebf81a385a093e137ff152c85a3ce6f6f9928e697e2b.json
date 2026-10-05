@@ -1,0 +1,281 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#77",
+    "from_role": null,
+    "from_tag": "SRC-101",
+    "medium_or_signal": "Liquid",
+    "quote": "Interface ID: IF-HYD-01 | From: SRC-101 | From Port / Signal: fluidOut | To: XV-101 | To Port / Signal: inlet | Medium / Item: Liquid | Direction: SRC -> V1",
+    "signal_name": null,
+    "tag": "IF-HYD-01",
+    "to_role": "inlet",
+    "to_tag": "XV-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#78",
+    "from_role": "outlet",
+    "from_tag": "XV-101",
+    "medium_or_signal": "Liquid",
+    "quote": "Interface ID: IF-HYD-02 | From: XV-101 | From Port / Signal: outlet | To: TK-101 | To Port / Signal: inlet | Medium / Item: Liquid | Direction: V1 -> T1",
+    "signal_name": null,
+    "tag": "IF-HYD-02",
+    "to_role": "inlet",
+    "to_tag": "TK-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#79",
+    "from_role": "outlet",
+    "from_tag": "TK-101",
+    "medium_or_signal": "Liquid",
+    "quote": "Interface ID: IF-HYD-03 | From: TK-101 | From Port / Signal: outlet | To: XV-102 | To Port / Signal: inlet | Medium / Item: Liquid | Direction: T1 -> V2",
+    "signal_name": null,
+    "tag": "IF-HYD-03",
+    "to_role": "inlet",
+    "to_tag": "XV-102"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#80",
+    "from_role": "outlet",
+    "from_tag": "XV-102",
+    "medium_or_signal": "Liquid",
+    "quote": "Interface ID: IF-HYD-04 | From: XV-102 | From Port / Signal: outlet | To: TK-102 | To Port / Signal: inlet | Medium / Item: Liquid | Direction: V2 -> T2",
+    "signal_name": null,
+    "tag": "IF-HYD-04",
+    "to_role": "inlet",
+    "to_tag": "TK-102"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#81",
+    "from_role": "outlet",
+    "from_tag": "TK-102",
+    "medium_or_signal": "Liquid",
+    "quote": "Interface ID: IF-HYD-05 | From: TK-102 | From Port / Signal: outlet | To: XV-103 | To Port / Signal: inlet | Medium / Item: Liquid | Direction: T2 -> V3",
+    "signal_name": null,
+    "tag": "IF-HYD-05",
+    "to_role": "inlet",
+    "to_tag": "XV-103"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#82",
+    "from_role": "outlet",
+    "from_tag": "XV-103",
+    "medium_or_signal": "Liquid",
+    "quote": "Interface ID: IF-HYD-06 | From: XV-103 | From Port / Signal: outlet | To: DRN-101 | To Port / Signal: fluidIn | Medium / Item: Liquid | Direction: V3 -> drain",
+    "signal_name": null,
+    "tag": "IF-HYD-06",
+    "to_role": null,
+    "to_tag": "DRN-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#83",
+    "from_role": null,
+    "from_tag": "LT-101",
+    "medium_or_signal": "Level measurement",
+    "quote": "Interface ID: IF-CTL-01 | From: LT-101 | From Port / Signal: AI-101 | To: PLC-101 | To Port / Signal: level1 | Medium / Item: Level measurement | Direction: Sensor -> controller",
+    "signal_name": "level1",
+    "tag": "IF-CTL-01",
+    "to_role": null,
+    "to_tag": "PLC-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#84",
+    "from_role": null,
+    "from_tag": "LT-102",
+    "medium_or_signal": "Level measurement",
+    "quote": "Interface ID: IF-CTL-02 | From: LT-102 | From Port / Signal: AI-102 | To: PLC-101 | To Port / Signal: level2 | Medium / Item: Level measurement | Direction: Sensor -> controller",
+    "signal_name": "level2",
+    "tag": "IF-CTL-02",
+    "to_role": null,
+    "to_tag": "PLC-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#85",
+    "from_role": null,
+    "from_tag": "PB-START",
+    "medium_or_signal": "Command",
+    "quote": "Interface ID: IF-CTL-03 | From: PB-START | From Port / Signal: DI-101 | To: PLC-101 | To Port / Signal: start | Medium / Item: Command | Direction: Operator -> controller",
+    "signal_name": "start",
+    "tag": "IF-CTL-03",
+    "to_role": null,
+    "to_tag": "PLC-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#86",
+    "from_role": null,
+    "from_tag": "PB-STOP",
+    "medium_or_signal": "Command",
+    "quote": "Interface ID: IF-CTL-04 | From: PB-STOP | From Port / Signal: DI-102 | To: PLC-101 | To Port / Signal: stop | Medium / Item: Command | Direction: Operator -> controller",
+    "signal_name": "stop",
+    "tag": "IF-CTL-04",
+    "to_role": null,
+    "to_tag": "PLC-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#87",
+    "from_role": null,
+    "from_tag": "PB-SHUT",
+    "medium_or_signal": "Command",
+    "quote": "Interface ID: IF-CTL-05 | From: PB-SHUT | From Port / Signal: DI-103 | To: PLC-101 | To Port / Signal: shut | Medium / Item: Command | Direction: Operator -> controller",
+    "signal_name": "shut",
+    "tag": "IF-CTL-05",
+    "to_role": null,
+    "to_tag": "PLC-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#88",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "Open command",
+    "quote": "Interface ID: IF-CTL-06 | From: PLC-101 | From Port / Signal: valve1 | To: XV-101 | To Port / Signal: DO-101 | Medium / Item: Open command | Direction: Controller -> valve",
+    "signal_name": "valve1",
+    "tag": "IF-CTL-06",
+    "to_role": null,
+    "to_tag": "XV-101"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#89",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "Open command",
+    "quote": "Interface ID: IF-CTL-07 | From: PLC-101 | From Port / Signal: valve2 | To: XV-102 | To Port / Signal: DO-102 | Medium / Item: Open command | Direction: Controller -> valve",
+    "signal_name": "valve2",
+    "tag": "IF-CTL-07",
+    "to_role": null,
+    "to_tag": "XV-102"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#90",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "Open command",
+    "quote": "Interface ID: IF-CTL-08 | From: PLC-101 | From Port / Signal: valve3 | To: XV-103 | To Port / Signal: DO-103 | Medium / Item: Open command | Direction: Controller -> valve",
+    "signal_name": "valve3",
+    "tag": "IF-CTL-08",
+    "to_role": null,
+    "to_tag": "XV-103"
+   }
+  ],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#92",
+    "date": "2026-01-15",
+    "file_name": null,
+    "quote": "Date: 2026-01-15 | Record: URS-001 | Revision: A | Status: Released",
+    "revision": "A",
+    "role": "change_record",
+    "tag": "URS-001",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#77",
+    "cited_document": "P&ID/MDS-01",
+    "configuration": "nominal",
+    "name": "nominal_value",
+    "owner_tag": "IF-HYD-01",
+    "provisional": false,
+    "quote": "Nominal Value: 0.006 m^3/s",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.006"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#78",
+    "cited_document": "P&ID/MDS-01",
+    "configuration": "nominal",
+    "name": "nominal_value",
+    "owner_tag": "IF-HYD-02",
+    "provisional": false,
+    "quote": "Nominal Value: 0.006 m^3/s",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.006"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#79",
+    "cited_document": "P&ID/MDS-01",
+    "configuration": "nominal",
+    "name": "nominal_value",
+    "owner_tag": "IF-HYD-03",
+    "provisional": false,
+    "quote": "Nominal Value: 0.0045 m^3/s",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.0045"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#80",
+    "cited_document": "P&ID/DR-02",
+    "configuration": "nominal",
+    "name": "nominal_value",
+    "owner_tag": "IF-HYD-04",
+    "provisional": false,
+    "quote": "Nominal Value: 0.0045 m^3/s",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.0045"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#81",
+    "cited_document": "P&ID/MDS-01",
+    "configuration": "nominal",
+    "name": "nominal_value",
+    "owner_tag": "IF-HYD-05",
+    "provisional": false,
+    "quote": "Nominal Value: 0.005 m^3/s",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.005"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#82",
+    "cited_document": "P&ID/MDS-01",
+    "configuration": "nominal",
+    "name": "nominal_value",
+    "owner_tag": "IF-HYD-06",
+    "provisional": false,
+    "quote": "Nominal Value: 0.005 m^3/s",
+    "stated_status": null,
+    "unit": "m^3/s",
+    "value": "0.005"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#83",
+    "cited_document": "ICD-01",
+    "configuration": "nominal",
+    "name": "nominal_value",
+    "owner_tag": "IF-CTL-01",
+    "provisional": false,
+    "quote": "Nominal Value: 0..1 m",
+    "stated_status": null,
+    "unit": "m",
+    "value": "0..1"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#84",
+    "cited_document": "ICD-01",
+    "configuration": "nominal",
+    "name": "nominal_value",
+    "owner_tag": "IF-CTL-02",
+    "provisional": false,
+    "quote": "Nominal Value: 0..1 m",
+    "stated_status": null,
+    "unit": "m",
+    "value": "0..1"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

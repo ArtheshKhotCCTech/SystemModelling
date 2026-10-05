@@ -4,11 +4,15 @@
 # a source states become traced Assumptions. The honesty gate then removes every element with no
 # trace and no assumption — cascading to whatever referred to it — and never adds a trace.
 # Phase 9: a system value whose name ends in a run parameter name (core RUN_PARAMETERS, what the
-# generator's experiment reads) is also given that name, with a declared Assumption.
+# generator's experiment reads) is also given that name, with a declared Assumption. An input port
+# connected to nothing becomes a Question, so a model that cannot compile says why before omc.
+# Phase 10: a source whose id another element has is renamed doc_<id>, references following.
 from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+
+from pydantic import BaseModel
 
 from specalive.core.catalogue import Catalogue
 from specalive.core.ids import make_id
@@ -99,6 +103,8 @@ def apply_run_names(draft: Draft) -> list[str]:
         if any(p.name == run_name for p in system):
             continue
         found = sorted((p for p in system if p.name.endswith(f"_{run_name}")), key=lambda p: p.id)
+        if len({(str(p.value), p.unit) for p in found}) == 1:
+            found = found[:1]  # several statements of one value are not a choice
         if len(found) > 1:
             missing.append(f"{run_name} ({meaning}): several system values could be it "
                            f"({', '.join(p.name for p in found)}); none is used")
@@ -190,6 +196,69 @@ def missing_documents(sources: list[Source], unresolved: set[str]) -> list[str]:
         out.append(f"{tag} is named as a value's source, but the bundle neither contains nor "
                    "describes it")
     return out
+
+
+def unconnected_inputs(draft: Draft) -> list[Question]:
+    """A Question for each input port connected to nothing: its value is then undetermined and
+    the Modelica model cannot compile, so the gap is named before omc is run. Never wired here."""
+    connected = {c.to_port for c in draft.connections} | {c.from_port for c in draft.connections}
+    out = []
+    for part in sorted(draft.parts, key=lambda p: p.id):
+        name = part.tags[0] if part.tags else part.name
+        for port in sorted(part.ports, key=lambda q: q.id):
+            if port.direction != "in" or port.id in connected:
+                continue
+            out.append(Question(
+                id=make_id("q", f"q unconnected {port.id}"), affects=[part.id],
+                text=f"Input {port.role} ({port.id}) of {name} ({part.id}) is connected to "
+                     "nothing, so the model cannot be completed. What drives it?"))
+    return out
+
+
+_GROUPS = ("parts", "connections", "parameters", "state_machines", "requirements",
+           "acceptance_criteria", "assumptions", "questions", "conflicts")
+
+
+def _rewrite_source(node, old: str, new: str) -> None:
+    """Every reference to source `old` under `node` (a trace, a parameter's authority, a
+    conflict candidate) now names `new`."""
+    if isinstance(node, BaseModel):
+        for name in type(node).model_fields:
+            value = getattr(node, name)
+            if name in ("source_id", "authority") and value == old:
+                setattr(node, name, new)
+            else:
+                _rewrite_source(value, old, new)
+    elif isinstance(node, (list, tuple)):
+        for item in node:
+            _rewrite_source(item, old, new)
+    elif isinstance(node, dict):
+        for item in node.values():
+            _rewrite_source(item, old, new)
+
+
+def unique_ids(draft: Draft) -> list[str]:
+    """Ids are unique across every element kind. A source whose id another element has (a cited
+    record named like a part, a document numbered like one of its requirements) becomes
+    doc_<id>, and every reference to it follows; parts and requirements keep theirs, since
+    everything else points at them. Returns a note per rename."""
+    sources, draft.sources = draft.sources, []
+    others = draft.ids()
+    draft.sources = sources
+    taken = others | {s.id for s in sources}
+    notes = []
+    for src in sorted(sources, key=lambda s: s.id):
+        if src.id not in others:
+            continue
+        new, n = make_id("doc", f"doc {src.id}"), 2
+        while new in taken:
+            new, n = make_id("doc", f"doc {src.id} {n}"), n + 1
+        taken.add(new)
+        old, src.id = src.id, new
+        for group in _GROUPS:
+            _rewrite_source(getattr(draft, group), old, new)
+        notes.append(f"source {old} shares its id with another element; it is {new}")
+    return notes
 
 
 # --- honesty gate --------------------------------------------------------------------------

@@ -126,3 +126,161 @@ kinds:
       connectors: {inlet: inlet}
     required: []
     defaults: {}
+
+  # --- continuous feedback pattern (phase 10, FR-10): air volumes with a trace substance, and
+  # signal blocks. Every Modelica class is SpecAlive (ADR "L2 plant") or MSL Blocks.
+
+  room_volume:
+    description: Well-mixed air volume of constant mass; its trace-substance mass fraction integrates what each inflow brings, the exhaust leaves at the room's fraction.
+    ports:
+      supply_in: {direction: in, domain: fluid, unit: kg/s}
+      source_in: {direction: in, domain: fluid, unit: kg/s}
+      exhaust_out: {direction: out, domain: fluid, unit: kg/s}
+      concentration_out: {direction: out, domain: signal_real, unit: kg/kg}
+    sysml:
+      part_def: RoomVolume
+      ports: {supply_in: FluidPort, source_in: FluidPort, exhaust_out: FluidPort, concentration_out: RealSignal}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.RoomVolume
+      parameters: {volume: V, density: rho, initial_concentration: C_start}
+      connectors: {supply_in: supply, source_in: source, exhaust_out: exhaust, concentration_out: concentration}
+    required: [volume, density]
+    defaults:
+      initial_concentration:
+        value: 0.0
+        unit: kg/kg
+        assumption: No initial trace-substance fraction was stated for the room; it is assumed to start free of it.
+
+  mass_flow_source:
+    description: Commanded air supply. Its command is the mass flow at the source's own port, positive into the source (source-port sign convention), so a negative command delivers air to the network; the trace-substance fraction supplied is an input signal.
+    ports:
+      m_flow_in: {direction: in, domain: signal_real, unit: kg/s}
+      c_in: {direction: in, domain: signal_real, unit: kg/kg}
+      outlet: {direction: out, domain: fluid, unit: kg/s}
+    sysml:
+      part_def: MassFlowSource
+      ports: {m_flow_in: RealSignal, c_in: RealSignal, outlet: FluidPort}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.MassFlowSource
+      parameters: {}
+      connectors: {m_flow_in: m_flow_in, c_in: C_in, outlet: outlet}
+    required: []
+    defaults: {}
+
+  trace_substance_source:
+    description: Injects a commanded carrier flow at a fixed trace-substance mass fraction; the substance added is the carrier flow times that fraction, which may be a scaling device rather than a physical composition.
+    ports:
+      m_flow_in: {direction: in, domain: signal_real, unit: kg/s}
+      outlet: {direction: out, domain: fluid, unit: kg/s}
+    sysml:
+      part_def: TraceSubstanceSource
+      ports: {m_flow_in: RealSignal, outlet: FluidPort}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.TraceSource
+      parameters: {concentration: C}
+      connectors: {m_flow_in: m_flow_in, outlet: outlet}
+    required: [concentration]
+    defaults: {}
+
+  pressure_boundary:
+    description: Ideal boundary that accepts whatever air flow arrives; no pressure dynamics.
+    ports:
+      inlet: {direction: in, domain: fluid, unit: kg/s}
+    sysml:
+      part_def: PressureBoundary
+      ports: {inlet: FluidPort}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.Boundary
+      parameters: {}
+      connectors: {inlet: inlet}
+    required: []
+    defaults: {}
+
+  concentration_sensor:
+    description: Ideal concentration sensor passing the measured trace-substance mass fraction on unchanged.
+    ports:
+      c_in: {direction: in, domain: signal_real, unit: kg/kg}
+      c_out: {direction: out, domain: signal_real, unit: kg/kg}
+    # c_in reads the concentration_out of the volume the sensor's evidence names.
+    measures: {c_in: concentration_out}
+    sysml:
+      part_def: ConcentrationSensor
+      ports: {c_in: RealSignal, c_out: RealSignal}
+    modelica:
+      source: msl
+      class: Modelica.Blocks.Routing.RealPassThrough
+      parameters: {}
+      connectors: {c_in: u, c_out: y}
+    required: []
+    defaults: {}
+
+  gain:
+    description: Signal gain, y = k * u; the unit of k converts the input's unit to the output's.
+    ports:
+      u: {direction: in, domain: signal_real}
+      y: {direction: out, domain: signal_real}
+    sysml:
+      part_def: Gain
+      ports: {u: RealSignal, y: RealSignal}
+    modelica:
+      source: msl
+      class: Modelica.Blocks.Math.Gain
+      parameters: {gain: k}
+      connectors: {u: u, y: y}
+    required: [gain]
+    defaults: {}
+
+  constant:
+    description: Constant signal, such as a setpoint or a fixed boundary value.
+    ports:
+      y: {direction: out, domain: signal_real}
+    sysml:
+      part_def: ConstantSignal
+      ports: {y: RealSignal}
+    modelica:
+      source: msl
+      class: Modelica.Blocks.Sources.Constant
+      parameters: {value: k}
+      connectors: {y: y}
+    required: [value]
+    defaults: {}
+
+  p_controller:
+    description: Proportional controller with bias and output limits, command = limit(bias + gain * (measurement - setpoint)); no integral term.
+    ports:
+      setpoint_in: {direction: in, domain: signal_real}
+      measurement_in: {direction: in, domain: signal_real}
+      command_out: {direction: out, domain: signal_real}
+    sysml:
+      part_def: PController
+      ports: {setpoint_in: RealSignal, measurement_in: RealSignal, command_out: RealSignal}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.PController
+      parameters: {gain: k, bias: bias, output_min: yMin, output_max: yMax}
+      connectors: {setpoint_in: u_s, measurement_in: u_m, command_out: y}
+    required: [gain, output_min, output_max]
+    defaults:
+      bias:
+        value: 0.0
+        unit: "1"
+        assumption: No controller bias was stated; the output is assumed to be zero when the measurement equals the setpoint.
+
+  schedule_table:
+    description: Piecewise-constant schedule; each value holds from its time until the next.
+    ports:
+      y: {direction: out, domain: signal_real}
+    sysml:
+      part_def: ScheduleTable
+      ports: {y: RealSignal}
+    modelica:
+      source: specalive
+      class: SpecAlive.Components.ScheduleTable
+      parameters: {times: times, values: values}
+      connectors: {y: y}
+    required: [times, values]
+    defaults: {}

@@ -4,8 +4,8 @@
 # checks transitions in IR priority order; a deadline per timer, and a remaining time for each
 # timer a save_history can freeze, which a history return restores (phase 9: the history state
 # and remaining times only where something assigns them; omc refuses an unassigned discrete
-# variable); outputs as equations over the
-# state; window-free `always` acceptance criteria that read only this controller as asserts.
+# variable, so a timer nothing starts is a constant that never expires); outputs as equations
+# over the state; window-free `always` acceptance criteria that read only this controller as asserts.
 from __future__ import annotations
 
 from collections import defaultdict
@@ -398,7 +398,15 @@ class _Controller:
         if self._uses_history():
             decls.append(f"State {HISTORY_VAR}(start = State.{initial}, fixed = true) "
                          '"State a history return goes back to";')
+        actions = [a for t in self.sm.transitions for a in t.actions]
+        actions += [a for s in self.sm.states for a in s.entry_actions]
+        started = {parse_action(a).args[0] for a in actions
+                   if parse_action(a).verb == "start_timer"}
         for t in self.sm.timers:
+            if t.id not in started:  # no when-clause would assign it: it never expires
+                decls.append(f"parameter Real {self.deadline[t.id]} = Modelica.Constants.inf "
+                             f"{string(f'Never started, so never expires [IR {t.id}]')};")
+                continue
             decls.append(f"discrete Real {self.deadline[t.id]}(start = Modelica.Constants.inf, "
                          f"fixed = true) {string(f'Time the timer expires [IR {t.id}]')};")
             if t.id in self.frozen:

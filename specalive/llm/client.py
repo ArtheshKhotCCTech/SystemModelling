@@ -60,6 +60,9 @@ class CallUsage:
 
 
 Transport = Callable[[dict[str, Any]], RawResponse]
+# Sent with every request: with temperature 0 it makes a fresh call repeat best-effort (OpenAI
+# does not guarantee it). Not part of the cache key, so recorded responses stay valid.
+SEED = 0
 
 
 def strict_json_schema(model: type[BaseModel]) -> dict[str, Any]:
@@ -118,6 +121,9 @@ class OpenAITransport:
 
 
 class LLMClient:
+    # may be called from several threads at once (the cache writes atomically); callers check it
+    parallel_safe = True
+
     def __init__(self, settings: Settings, cache: ResponseCache | None = None,
                  transport: Transport | None = None) -> None:
         self._settings = settings
@@ -147,6 +153,7 @@ class LLMClient:
         request = {
             "model": s.model,
             "temperature": 0,
+            "seed": SEED,
             "messages": [
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": _user_content(input_text, image, image_media_type)},

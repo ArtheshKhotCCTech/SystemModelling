@@ -1,0 +1,222 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_02_engineering_data_02_engineering_data_register_xlsx#95"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#93",
+    "date": null,
+    "file_name": null,
+    "quote": "Record: MDS-01 | Revision: 1.2 | Status: Released",
+    "revision": "1.2",
+    "role": "change_record",
+    "tag": "MDS-01",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#94",
+    "date": null,
+    "file_name": null,
+    "quote": "Record: ICD-01 | Revision: B | Status: Released",
+    "revision": "B",
+    "role": "change_record",
+    "tag": "ICD-01",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#95",
+    "date": null,
+    "file_name": null,
+    "quote": "Record: DR-02 | Revision: Final | Status: Approved",
+    "revision": "Final",
+    "role": "change_record",
+    "tag": "DR-02",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#96",
+    "date": null,
+    "file_name": null,
+    "quote": "Record: CR-004 | Revision: 1 | Status: Approved",
+    "revision": "1",
+    "role": "change_record",
+    "tag": "CR-004",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#97",
+    "date": null,
+    "file_name": null,
+    "quote": "Record: TP-17 | Revision: C | Status: Released",
+    "revision": "C",
+    "role": "change_record",
+    "tag": "TP-17",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#98",
+    "date": null,
+    "file_name": null,
+    "quote": "Record: SIM-LEGACY | Revision: 1.2 | Status: Released",
+    "revision": "1.2",
+    "role": "change_record",
+    "tag": "SIM-LEGACY",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#100",
+    "date": "2026-01-15",
+    "file_name": "01_customer_URS.pdf",
+    "quote": "Source ID: SRC-01 | Filename / Artifact: 01_customer_URS.pdf",
+    "revision": "Rev A",
+    "role": "requirement_spec",
+    "tag": "SRC-01",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#101",
+    "date": "2026-04-10",
+    "file_name": "02_engineering_data_register.xlsx",
+    "quote": "Source ID: SRC-02 | Filename / Artifact: 02_engineering_data_register.xlsx",
+    "revision": "Compiled",
+    "role": "register",
+    "tag": "SRC-02",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#102",
+    "date": null,
+    "file_name": "03_reference_control_diagram.png",
+    "quote": "Source ID: SRC-03 | Filename / Artifact: 03_reference_control_diagram.png",
+    "revision": null,
+    "role": "other",
+    "tag": "SRC-03",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#103",
+    "date": "2026-02-20",
+    "file_name": "04_control_logic_design_notes.docx",
+    "quote": "Source ID: SRC-04 | Filename / Artifact: 04_control_logic_design_notes.docx",
+    "revision": "Rev B",
+    "role": "design_note",
+    "tag": "SRC-04",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#104",
+    "date": "2026-02-16..03-12",
+    "file_name": "05_controls_email_thread.eml",
+    "quote": "Source ID: SRC-05 | Filename / Artifact: 05_controls_email_thread.eml",
+    "revision": null,
+    "role": "correspondence",
+    "tag": "SRC-05",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#105",
+    "date": "2026-02-19",
+    "file_name": "06_design_review_minutes.md",
+    "quote": "Source ID: SRC-06 | Filename / Artifact: 06_design_review_minutes.md",
+    "revision": null,
+    "role": "review_decision",
+    "tag": "SRC-06",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#106",
+    "date": "2026-02-02",
+    "file_name": "07_legacy_tank_demo.mo",
+    "quote": "Source ID: SRC-07 | Filename / Artifact: 07_legacy_tank_demo.mo",
+    "revision": "Rev 1.2",
+    "role": "legacy_model",
+    "tag": "SRC-07",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#107",
+    "date": "2026-02-05",
+    "file_name": "08_valve_datasheet.pdf",
+    "quote": "Source ID: SRC-08 | Filename / Artifact: 08_valve_datasheet.pdf",
+    "revision": "Rev B",
+    "role": "datasheet",
+    "tag": "SRC-08",
+    "title": null
+   },
+   {
+    "approved": false,
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#108",
+    "date": "2026-04-03",
+    "file_name": "09_test_procedure_TP17.pdf",
+    "quote": "Source ID: SRC-09 | Filename / Artifact: 09_test_procedure_TP17.pdf",
+    "revision": "Rev C",
+    "role": "verification_procedure",
+    "tag": "SRC-09",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#96",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "high_setpoint",
+    "owner_tag": "T1",
+    "provisional": false,
+    "quote": "T1 high 0.78 -> 0.80 m",
+    "stated_status": null,
+    "unit": "m",
+    "value": "0.80"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#96",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "post_transfer_wait",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "post-transfer wait 10 -> 12 s",
+    "stated_status": null,
+    "unit": "s",
+    "value": "12"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_engineering_data_register_xlsx#96",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "inter_cycle_wait",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "inter-cycle wait 10 -> 8 s",
+    "stated_status": null,
+    "unit": "s",
+    "value": "8"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

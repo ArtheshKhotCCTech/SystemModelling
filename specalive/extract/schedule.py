@@ -3,7 +3,9 @@
 # assembles a button's press_times. This module does it without the LLM: it matches each button's
 # aliases in verification and requirement chunks, collects the times per source, and gives each
 # button one verification_only press_times traced to every verbatim match. Disagreeing sources
-# become a Question with no value; nothing is guessed.
+# become a Question with no value; nothing is guessed. press_times the LLM gave from a quote
+# that does not name the button (a sentence about every button) are replaced when a schedule
+# names it.
 from __future__ import annotations
 
 import re
@@ -26,6 +28,7 @@ _SECONDS_HEADER = re.compile(r"time\s*[(\[]\s*s\s*[)\]]", re.IGNORECASE)
 class Schedules:
     parameters: list[Parameter] = field(default_factory=list)
     questions: list[Question] = field(default_factory=list)
+    replaced: list[Parameter] = field(default_factory=list)  # press_times this schedule supersedes
 
 
 @dataclass(frozen=True)
@@ -70,7 +73,17 @@ def press_schedules(bundle: EvidenceBundle, parts: list[Part], parameters: list[
     """press_times for every button that has none yet, from the schedules the evidence states."""
     out = Schedules()
     sources = {s.id: s for s in bundle.sources}
-    have = {p.owner for p in parameters if p.name == PARAMETER}
+    given = {}  # button -> its press_times whose quotes do not name it
+    have = set()
+    for p in parameters:
+        if p.name != PARAMETER:
+            continue
+        tags = next((q.tags for q in parts if q.id == p.owner), [])
+        if any(re.search(_alias(t), link.quote, re.IGNORECASE) for t in tags if t.strip()
+               for link in p.trace):
+            have.add(p.owner)
+        else:
+            given.setdefault(p.owner, []).append(p)
     taken = {p.id for p in parameters}
     for part in sorted(parts, key=lambda p: p.id):
         if part.kind != BUTTON_KIND or part.id in have:
@@ -89,6 +102,9 @@ def press_schedules(bundle: EvidenceBundle, parts: list[Part], parameters: list[
                     traces.append(link)
         if not per_source:
             continue
+        for old in given.get(part.id, []):
+            out.replaced.append(old)
+            taken.discard(old.id)
         schedules = {sid: sorted(t) for sid, (t, _) in per_source.items()}
         order = sorted(per_source, key=lambda sid: (rank_of(sources[sid].role), sid))
         if len({tuple(v) for v in schedules.values()}) > 1:

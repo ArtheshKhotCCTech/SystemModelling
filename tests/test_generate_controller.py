@@ -316,3 +316,14 @@ def test_a_timer_nothing_freezes_has_no_remaining_time():
 
 def test_a_frozen_timer_still_has_its_remaining_time(text):
     assert "discrete Real wait_after_fill_timer_remaining(start = 0, fixed = true)" in text
+
+
+def test_a_timer_nothing_starts_is_a_constant_that_never_expires():
+    # adversarial finding (contradiction spec): a discrete deadline no when-clause assigns does
+    # not compile; a timer that is never started simply never expires
+    ir = no_history_ir()
+    ir["state_machines"][0]["states"][2]["entry_actions"] = []
+    out = render_plant(ir)
+    assert "discrete Real hold_timer_deadline" not in out
+    assert "parameter Real hold_timer_deadline = Modelica.Constants.inf" in out
+    assert "hold_timer_deadline :=" not in out

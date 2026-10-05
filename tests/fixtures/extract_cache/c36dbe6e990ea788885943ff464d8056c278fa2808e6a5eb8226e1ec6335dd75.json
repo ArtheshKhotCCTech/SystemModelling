@@ -1,0 +1,144 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "checks": [],
+  "command_precedence": null,
+  "events": [
+   {
+    "edge": "rising",
+    "id": "fill_pressed",
+    "port_id": "fill_cmd_out"
+   }
+  ],
+  "initial_state": "idle",
+  "states": [
+   {
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "entry_actions": [],
+    "id": "idle",
+    "legacy_names": [],
+    "name": "Idle",
+    "outputs": [
+     {
+      "port_id": "xv_301_cmd_in",
+      "value": false
+     },
+     {
+      "port_id": "xv_302_cmd_in",
+      "value": false
+     }
+    ],
+    "quote": "A rainwater buffer system collects roof runoff from a supply boundary through on/off inlet valve XV-301 into buffer tank BT-1, which has a cross-section of 2.5 m2 and a height of 1.5 m; level transmitter LT-301 reports the tank level to controller PLC-3, which opens XV-301 when the operator presses FILL, closes it when the level reaches 1.2 m, waits 30 s, and then opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m; XV-301 passes 0.004 m3/s and XV-302 passes 0.006 m3/s when open, and both valves are spring-return closed."
+   },
+   {
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "entry_actions": [],
+    "id": "filling",
+    "legacy_names": [],
+    "name": "Filling",
+    "outputs": [
+     {
+      "port_id": "xv_301_cmd_in",
+      "value": true
+     },
+     {
+      "port_id": "xv_302_cmd_in",
+      "value": false
+     }
+    ],
+    "quote": "A rainwater buffer system collects roof runoff from a supply boundary through on/off inlet valve XV-301 into buffer tank BT-1, which has a cross-section of 2.5 m2 and a height of 1.5 m; level transmitter LT-301 reports the tank level to controller PLC-3, which opens XV-301 when the operator presses FILL, closes it when the level reaches 1.2 m, waits 30 s, and then opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m; XV-301 passes 0.004 m3/s and XV-302 passes 0.006 m3/s when open, and both valves are spring-return closed."
+   },
+   {
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "entry_actions": [
+     "start_timer(plc_3_timer)"
+    ],
+    "id": "waiting",
+    "legacy_names": [],
+    "name": "Waiting",
+    "outputs": [
+     {
+      "port_id": "xv_301_cmd_in",
+      "value": false
+     },
+     {
+      "port_id": "xv_302_cmd_in",
+      "value": false
+     }
+    ],
+    "quote": "A rainwater buffer system collects roof runoff from a supply boundary through on/off inlet valve XV-301 into buffer tank BT-1, which has a cross-section of 2.5 m2 and a height of 1.5 m; level transmitter LT-301 reports the tank level to controller PLC-3, which opens XV-301 when the operator presses FILL, closes it when the level reaches 1.2 m, waits 30 s, and then opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m; XV-301 passes 0.004 m3/s and XV-302 passes 0.006 m3/s when open, and both valves are spring-return closed."
+   },
+   {
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "entry_actions": [],
+    "id": "discharging",
+    "legacy_names": [],
+    "name": "Discharging",
+    "outputs": [
+     {
+      "port_id": "xv_301_cmd_in",
+      "value": false
+     },
+     {
+      "port_id": "xv_302_cmd_in",
+      "value": true
+     }
+    ],
+    "quote": "A rainwater buffer system collects roof runoff from a supply boundary through on/off inlet valve XV-301 into buffer tank BT-1, which has a cross-section of 2.5 m2 and a height of 1.5 m; level transmitter LT-301 reports the tank level to controller PLC-3, which opens XV-301 when the operator presses FILL, closes it when the level reaches 1.2 m, waits 30 s, and then opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m; XV-301 passes 0.004 m3/s and XV-302 passes 0.006 m3/s when open, and both valves are spring-return closed."
+   }
+  ],
+  "timers": [
+   {
+    "duration_parameter_id": "plc_3_delay",
+    "id": "plc_3_timer"
+   }
+  ],
+  "transitions": [
+   {
+    "actions": [],
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "except_states": null,
+    "from_state": "idle",
+    "guard": null,
+    "priority": 1,
+    "quote": "A rainwater buffer system collects roof runoff from a supply boundary through on/off inlet valve XV-301 into buffer tank BT-1, which has a cross-section of 2.5 m2 and a height of 1.5 m; level transmitter LT-301 reports the tank level to controller PLC-3, which opens XV-301 when the operator presses FILL, closes it when the level reaches 1.2 m, waits 30 s, and then opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m; XV-301 passes 0.004 m3/s and XV-302 passes 0.006 m3/s when open, and both valves are spring-return closed.",
+    "to_state": "filling",
+    "trigger_event": "fill_pressed"
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "except_states": null,
+    "from_state": "filling",
+    "guard": "plc_3_tank_level >= bt_1_output_max",
+    "priority": 1,
+    "quote": "A rainwater buffer system collects roof runoff from a supply boundary through on/off inlet valve XV-301 into buffer tank BT-1, which has a cross-section of 2.5 m2 and a height of 1.5 m; level transmitter LT-301 reports the tank level to controller PLC-3, which opens XV-301 when the operator presses FILL, closes it when the level reaches 1.2 m, waits 30 s, and then opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m; XV-301 passes 0.004 m3/s and XV-302 passes 0.006 m3/s when open, and both valves are spring-return closed.",
+    "to_state": "waiting",
+    "trigger_event": null
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "except_states": null,
+    "from_state": "waiting",
+    "guard": "timer_expired(plc_3_timer)",
+    "priority": 1,
+    "quote": "A rainwater buffer system collects roof runoff from a supply boundary through on/off inlet valve XV-301 into buffer tank BT-1, which has a cross-section of 2.5 m2 and a height of 1.5 m; level transmitter LT-301 reports the tank level to controller PLC-3, which opens XV-301 when the operator presses FILL, closes it when the level reaches 1.2 m, waits 30 s, and then opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m; XV-301 passes 0.004 m3/s and XV-302 passes 0.006 m3/s when open, and both valves are spring-return closed.",
+    "to_state": "discharging",
+    "trigger_event": null
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_one_paragraph_spec_txt#0",
+    "except_states": null,
+    "from_state": "discharging",
+    "guard": "plc_3_tank_level <= bt_1_output_min",
+    "priority": 1,
+    "quote": "A rainwater buffer system collects roof runoff from a supply boundary through on/off inlet valve XV-301 into buffer tank BT-1, which has a cross-section of 2.5 m2 and a height of 1.5 m; level transmitter LT-301 reports the tank level to controller PLC-3, which opens XV-301 when the operator presses FILL, closes it when the level reaches 1.2 m, waits 30 s, and then opens outlet valve XV-302 to discharge the tank to a garden sink until the level falls to 0.2 m; XV-301 passes 0.004 m3/s and XV-302 passes 0.006 m3/s when open, and both valves are spring-return closed.",
+    "to_state": "idle",
+    "trigger_event": null
+   }
+  ]
+ },
+ "schema": "BehaviourReply"
+}
