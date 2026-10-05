@@ -1,5 +1,9 @@
 // Compiles the model in this folder: loads MSL 4.0.0 and model.mo, then checks and builds
 // system_model.System. Run from this folder:  omc compile.mos
+if not regularFileExists("model.mo") then
+  print("model.mo is not in the current folder (" + cd() + ").\nRun this script from the folder that holds it:  cd Result/L1_tank  then  omc compile.mos\n");
+  exit(1);
+end if;
 loadModel(Modelica, {"4.0.0"}); getErrorString();
 loadFile("model.mo"); getErrorString();
 checkModel(system_model.System); getErrorString();
