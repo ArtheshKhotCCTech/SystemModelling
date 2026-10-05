@@ -1,0 +1,9 @@
+// Simulates the model in this folder over its experiment (start/stop/interval in model.mo)
+// and writes room_co2_ventilation.System_res.csv. Run from this folder:  omc simulate.mos
+if not regularFileExists("model.mo") then
+  print("model.mo is not in the current folder (" + cd() + ").\nRun this script from the folder that holds it:  cd Result/L2_room_co2  then  omc simulate.mos\n");
+  exit(1);
+end if;
+loadModel(Modelica, {"4.0.0"}); getErrorString();
+loadFile("model.mo"); getErrorString();
+simulate(room_co2_ventilation.System, outputFormat="csv"); getErrorString();

@@ -1,0 +1,124 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "checks": [],
+  "command_precedence": null,
+  "events": [
+   {
+    "edge": "rising",
+    "id": "fill_command",
+    "port_id": "plc_7_lt_7"
+   },
+   {
+    "edge": "falling",
+    "id": "drain_command",
+    "port_id": "plc_7_lt_7"
+   }
+  ],
+  "initial_state": "idle",
+  "states": [
+   {
+    "chunk_id": "src_missing_units_and_ics_txt#0",
+    "entry_actions": [],
+    "id": "filling",
+    "legacy_names": [],
+    "name": "Filling",
+    "outputs": [
+     {
+      "port_id": "iv_71_outlet",
+      "value": true
+     },
+     {
+      "port_id": "ov_72_outlet",
+      "value": false
+     }
+    ],
+    "quote": "PLC-7 opens IV-71 when the operator presses FILL and closes it when the level reaches 1.4."
+   },
+   {
+    "chunk_id": "src_missing_units_and_ics_txt#0",
+    "entry_actions": [],
+    "id": "draining",
+    "legacy_names": [],
+    "name": "Draining",
+    "outputs": [
+     {
+      "port_id": "iv_71_outlet",
+      "value": false
+     },
+     {
+      "port_id": "ov_72_outlet",
+      "value": true
+     }
+    ],
+    "quote": "PLC-7 opens OV-72 when the operator presses DRAIN and closes it when the tank is empty."
+   },
+   {
+    "chunk_id": "src_missing_units_and_ics_txt#0",
+    "entry_actions": [],
+    "id": "idle",
+    "legacy_names": [],
+    "name": "Idle",
+    "outputs": [
+     {
+      "port_id": "iv_71_outlet",
+      "value": false
+     },
+     {
+      "port_id": "ov_72_outlet",
+      "value": false
+     }
+    ],
+    "quote": "PLC-7 opens IV-71 when the operator presses FILL and closes it when the level reaches 1.4."
+   }
+  ],
+  "timers": [],
+  "transitions": [
+   {
+    "actions": [],
+    "chunk_id": "src_missing_units_and_ics_txt#0",
+    "except_states": null,
+    "from_state": "idle",
+    "guard": null,
+    "priority": 1,
+    "quote": "PLC-7 opens IV-71 when the operator presses FILL and closes it when the level reaches 1.4.",
+    "to_state": "filling",
+    "trigger_event": "fill_command"
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_missing_units_and_ics_txt#0",
+    "except_states": null,
+    "from_state": "idle",
+    "guard": null,
+    "priority": 2,
+    "quote": "PLC-7 opens OV-72 when the operator presses DRAIN and closes it when the tank is empty.",
+    "to_state": "draining",
+    "trigger_event": "drain_command"
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_missing_units_and_ics_txt#0",
+    "except_states": null,
+    "from_state": "filling",
+    "guard": "plc_7_lt_7 >= st_7_initial_level",
+    "priority": 3,
+    "quote": "PLC-7 opens IV-71 when the operator presses FILL and closes it when the level reaches 1.4.",
+    "to_state": "idle",
+    "trigger_event": null
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_missing_units_and_ics_txt#0",
+    "except_states": null,
+    "from_state": "draining",
+    "guard": "plc_7_lt_7 <= 0",
+    "priority": 4,
+    "quote": "PLC-7 opens OV-72 when the operator presses DRAIN and closes it when the tank is empty.",
+    "to_state": "idle",
+    "trigger_event": null
+   }
+  ]
+ },
+ "schema": "BehaviourReply"
+}

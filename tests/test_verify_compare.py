@@ -265,3 +265,13 @@ def test_variable_missing_from_the_result_is_not_compared():
                                   [_mapping("lvl", "continuous", "t.level")], plant_model(),
                                   VariableMap(), _tol())
     assert r.status == compare.NOT_COMPARED and "t.level" in r.detail
+
+
+def test_a_model_run_that_ends_before_the_reference_fails_every_signal():
+    # fresh-run finding: a 1 s run "matched" a 900 s reference over the one second they shared
+    ref = _ref({"lvl": [0.0, 1.0, 2.0, 3.0, 4.0]})
+    trace = Trace([0.0, 1.0], {"t.level": [0.0, 1.0]})
+    [r] = compare.compare_signals(ref, trace, [_mapping("lvl", "continuous", "t.level")],
+                                  plant_model(), VariableMap(), _tol())
+    assert r.status == compare.FAIL
+    assert "ends at 1 s" in r.detail and "4 s" in r.detail

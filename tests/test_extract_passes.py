@@ -1,4 +1,4 @@
-# Purpose: pins the LLM extraction passes (FR-04 requirements 1-4, R-EXT-4) with the model faked:
+﻿# Purpose: pins the LLM extraction passes (FR-04 requirements 1-4, R-EXT-4) with the model faked:
 # chunk ids and the fixed pass order, batching under a size cap, verbatim quote checking (a
 # fragment whose quote is not in its chunk is discarded and counted, acceptance 8), chunk roles
 # carried onto fragments, the catalogue in the prompt, the glossary handed to later passes, and
@@ -290,7 +290,7 @@ def test_batch_whose_reply_is_cut_off_is_split_and_retried(catalogue):
 
 
 def test_behaviour_pass_asks_once_more_with_the_problems_and_keeps_the_better_answer(catalogue):
-    from specalive.extract.extract import Passes, run_behaviour_passes
+    from specalive.extract.extract import BEHAVIOUR_ATTEMPTS, Passes, run_behaviour_passes
     from specalive.extract.fragments import Draft, ExtractReport
 
     ctx = _ctx()
@@ -305,7 +305,8 @@ def test_behaviour_pass_asks_once_more_with_the_problems_and_keeps_the_better_an
     passes = Passes(behaviour_refs=list(ctx.refs.values()))
     report = ExtractReport()
     run_behaviour_passes(passes, draft, llm, ctx.refs, ctx.source_map, report)
-    assert len(llm.calls) == 2
+    # every attempt is used: the draft has no `delay` parameter, so each loses the timer
+    assert len(llm.calls) == BEHAVIOUR_ATTEMPTS
     assert "nowhere" in llm.calls[1][1].split("PROBLEMS")[1]
     sm = draft.state_machines[0]
     assert [t.id for t in sm.transitions] == ["tr_idle_1", "tr_fill_1"]
@@ -373,8 +374,8 @@ def test_wiring_map_holds_only_outputs_wired_to_exactly_one_controller_input():
     assert controller_inputs_by_source(owner, wire) == {"lt_9_out": "ctl_level"}
 
 
-def test_a_history_return_that_clears_the_history_is_discarded():
-    # clear_history before going back to the saved state resumes nothing (phase 9, L1 finding)
+def test_a_history_return_loses_its_clear_history_but_keeps_the_resume():
+    # clear_history before going back to the saved state would resume nothing (phase 9, L1)
     reply = _machine(states=[_state("idle", {"ctl_valve": False}),
                              _state("fill", {"ctl_valve": True}), _state("paused")],
                      transitions=[_tr("idle", "fill", 1, trigger="go_cmd"),
@@ -382,5 +383,488 @@ def test_a_history_return_that_clears_the_history_is_discarded():
                                   _tr("paused", "history", 1, trigger="go_cmd",
                                       actions=["clear_history"])])
     result = build_state_machine(reply, _ctx())
-    assert all(t.to != "history" for t in result.machine.transitions)
-    assert any("clear_history" in d.reason and d.kind == "transition" for d in result.discarded)
+    # phase 9 closure: the action goes, the resume stays (it was the whole transition before,
+    # which lost the L1 resume on every attempt)
+    [back] = [t for t in result.machine.transitions if t.to == "history"]
+    assert back.actions == []
+    assert any("clear_history" in d.reason and d.kind == "action" for d in result.discarded)
+
+
+# --- honest checks and priority collisions (phase 9 closure) -----------------------------
+
+def _ctx_with_criteria(**criteria):
+    import dataclasses
+
+    from specalive.extract.fragments import name_key
+
+    return dataclasses.replace(_ctx(), criteria={name_key(k): v for k, v in criteria.items()})
+
+
+def test_a_check_window_the_criterion_does_not_state_is_discarded():
+    # the L1 finding: "before the first transfer begins" came back as "at 20 s"
+    ctx = _ctx_with_criteria(ac_1="The valve shall be closed from 220 s until 280 s.",
+                             ac_2="The level shall reach high before the transfer begins.",
+                             ac_3="After the drain the valve shall stay closed.")
+    reply = _machine(checks=[
+        {"criterion_tag": "AC-1", "mode": "always", "condition": "ctl_valve == false",
+         "start_s": 220.0, "end_s": 280.0},
+        {"criterion_tag": "AC-2", "mode": "at", "condition": "ctl_level >= high",
+         "start_s": 20.0, "end_s": None},
+        {"criterion_tag": "AC-3", "mode": "always", "condition": "ctl_valve == false",
+         "start_s": None, "end_s": 900.0}])
+    result = build_state_machine(reply, ctx)
+    assert set(result.checks) == {"AC-1"}
+    assert not any(d.kind == "check" for d in result.discarded)  # omitted, nothing to fix
+    dropped = {d.quote: d.reason for d in result.omitted if d.kind == "check"}
+    assert set(dropped) == {"ctl_level >= high", "ctl_valve == false"}
+    assert "20 s" in dropped["ctl_level >= high"] and "900 s" in dropped["ctl_valve == false"]
+
+
+def test_a_stated_time_matches_as_a_number_not_as_part_of_an_id():
+    ctx = _ctx_with_criteria(ac_1="T1 shall be full at 20.0 s.", ac_2="T1 shall be full.")
+    reply = _machine(checks=[
+        {"criterion_tag": "ac_1", "mode": "at", "condition": "ctl_level >= high",
+         "start_s": 20.0, "end_s": None},
+        {"criterion_tag": "ac_2", "mode": "at", "condition": "ctl_level >= high",
+         "start_s": 1.0, "end_s": None}])  # the 1 of "T1" is not a stated time
+    assert set(build_state_machine(reply, ctx).checks) == {"ac_1"}
+
+
+def test_checks_without_criterion_text_keep_the_old_rules():
+    reply = _machine(checks=[{"criterion_tag": "AC-9", "mode": "at", "condition": "ctl_level >= high",
+                              "start_s": 20.0, "end_s": None}])
+    assert set(build_state_machine(reply, _ctx()).checks) == {"AC-9"}
+
+
+def test_the_prompt_leaves_event_timed_criteria_unchecked():
+    from specalive.extract.extract import BEHAVIOUR_PROMPT
+
+    assert "only an event" in BEHAVIOUR_PROMPT and "never stand in the" in BEHAVIOUR_PROMPT
+    assert "holds for the whole run" in BEHAVIOUR_PROMPT
+
+
+def _commands_ctx():
+    import dataclasses
+
+    ctx = _ctx()
+    owner = ctx.owner.model_copy(update={"ports": ctx.owner.ports + [
+        Port(id="ctl_halt", role="halt", direction="in", domain="signal_bool")]})
+    return dataclasses.replace(ctx, owner=owner, operands=ctx.operands | {"ctl_halt"})
+
+
+def _commands_machine(stop_priority):
+    return _machine(
+        events=[{"id": "go_cmd", "port_id": "ctl_go", "edge": "rising"},
+                {"id": "halt_cmd", "port_id": "ctl_halt", "edge": "rising"}],
+        transitions=[_tr("idle", "fill", 1, trigger="go_cmd"),
+                     _tr("fill", "idle", 1, trigger="halt_cmd"),
+                     _tr("fill", "hold", stop_priority, trigger="go_cmd"),
+                     _tr("hold", "idle", 1, guard="timer_expired(delay_timer)")])
+
+
+def test_a_priority_collision_names_the_transition_it_collides_with():
+    result = build_state_machine(_commands_machine(stop_priority=1), _commands_ctx())
+    [d] = [d for d in result.discarded if d.kind == "transition"]
+    assert "halt_cmd -> idle" in d.reason and "precedence" in d.reason
+    assert result.collisions == [("fill", 1, "halt_cmd -> idle", "go_cmd -> hold")]
+
+
+def test_a_collision_left_after_every_attempt_becomes_a_question(catalogue):
+    from specalive.extract.extract import BEHAVIOUR_ATTEMPTS, Passes, run_behaviour_passes
+    from specalive.extract.fragments import Draft, ExtractReport
+
+    ctx = _commands_ctx()
+    draft = Draft(name="m", description="d", parts=[ctx.owner.model_copy(update={
+        "trace": [{"source_id": "note", "locator": "line 4", "quote": LOGIC}]})])
+    llm = FakeLLM({"BehaviourReply": lambda text: _commands_machine(1).model_dump()})
+    run_behaviour_passes(Passes(behaviour_refs=list(ctx.refs.values())), draft, llm, ctx.refs,
+                         ctx.source_map, ExtractReport())
+    assert BEHAVIOUR_ATTEMPTS == 3 and len(llm.calls) == 3
+    [q] = draft.questions
+    assert q.affects == ["ctl"] and set(q.options) == {"halt_cmd -> idle", "go_cmd -> hold"}
+    assert "fill" in q.text and q.default_if_unanswered is None
+
+
+def test_a_collision_fixed_on_retry_leaves_no_question(catalogue):
+    from specalive.extract.extract import Passes, run_behaviour_passes
+    from specalive.extract.fragments import Draft, ExtractReport
+
+    ctx = _commands_ctx()
+    draft = Draft(name="m", description="d", parts=[ctx.owner.model_copy(update={
+        "trace": [{"source_id": "note", "locator": "line 4", "quote": LOGIC}]})])
+    llm = FakeLLM({"BehaviourReply": lambda text: _commands_machine(
+        2 if "PROBLEMS" in text else 1).model_dump()})
+    run_behaviour_passes(Passes(behaviour_refs=list(ctx.refs.values())), draft, llm, ctx.refs,
+                         ctx.source_map, ExtractReport())
+    assert len(llm.calls) >= 2 and draft.questions == []
+    assert [t.priority for t in draft.state_machines[0].transitions if t.from_ == "fill"] == [1, 2]
+
+
+# --- command precedence numbers the priorities (F2b) -------------------------------------
+
+PRECEDENCE = "In FILL the inlet valve is open"  # a verbatim piece of LOGIC
+
+
+def _precedence_machine(events, quote=PRECEDENCE, halt=1, go=1, guard=1):
+    return _machine(
+        events=[{"id": "go_cmd", "port_id": "ctl_go", "edge": "rising"},
+                {"id": "halt_cmd", "port_id": "ctl_halt", "edge": "rising"}],
+        command_precedence={"chunk_id": "src_n#0", "quote": quote, "events": events},
+        transitions=[_tr("idle", "fill", 1, trigger="go_cmd"),
+                     _tr("fill", "hold", guard, guard="ctl_level >= high",
+                         actions=["start_timer(delay_timer)"]),
+                     _tr("fill", "idle", halt, trigger="halt_cmd"),
+                     _tr("fill", "idle", go, trigger="go_cmd")])
+
+
+def test_stated_command_precedence_numbers_commands_then_guards():
+    result = build_state_machine(_precedence_machine(["halt_cmd", "go_cmd"]), _commands_ctx())
+    assert result.discarded == [] and result.collisions == []
+    fill = sorted((t.priority, t.trigger or t.guard) for t in result.machine.transitions
+                  if t.from_ == "fill")
+    assert fill == [(1, "halt_cmd"), (2, "go_cmd"), (3, "ctl_level >= high")]
+    assert [t.id for t in result.machine.transitions if t.from_ == "fill"] == [
+        "tr_fill_3", "tr_fill_1", "tr_fill_2"]  # in reply order, named by the new numbers
+    assert any(t.quote == PRECEDENCE for t in result.machine.trace)
+
+
+def test_a_precedence_naming_an_unkept_event_drops_that_name_only():
+    result = build_state_machine(_precedence_machine(["halt_cmd", "nope", "go_cmd"]),
+                                 _commands_ctx())
+    assert [d.quote for d in result.discarded] == ["nope"]
+    assert result.collisions == []
+
+
+def test_an_untraced_precedence_is_discarded_and_the_reply_numbers_stand():
+    result = build_state_machine(_precedence_machine(["halt_cmd", "go_cmd"], quote="not there"),
+                                 _commands_ctx())
+    assert any(d.kind == "command precedence" for d in result.discarded)
+    assert [c[:2] for c in result.collisions] == [("fill", 1), ("fill", 1)]
+
+
+def test_commands_the_precedence_leaves_out_keep_their_reply_order_after_listed_ones():
+    result = build_state_machine(_precedence_machine(["halt_cmd"], go=2, guard=3),
+                                 _commands_ctx())
+    fill = sorted((t.priority, t.trigger or t.guard) for t in result.machine.transitions
+                  if t.from_ == "fill")
+    assert fill == [(1, "halt_cmd"), (2, "go_cmd"), (3, "ctl_level >= high")]
+
+
+# --- where a check's window comes from (F1b) ---------------------------------------------
+
+def _check(start_s, end_s, start_basis, end_basis, mode="always"):
+    return {"criterion_tag": "AC-1", "mode": mode, "condition": "ctl_valve == false",
+            "start_s": start_s, "end_s": end_s, "start_basis": start_basis,
+            "end_basis": end_basis}
+
+
+@pytest.mark.parametrize("check, kept", [
+    (_check(220.0, 280.0, "stated_time", "stated_time"), True),
+    (_check(None, None, "run_bound", "run_bound"), True),
+    (_check(None, 280.0, "event", "stated_time"), False),        # after the drain ... 280 s
+    (_check(220.0, None, "stated_time", "event"), False),
+    (_check(None, 280.0, "stated_time", "stated_time"), False),  # a stated time needs a value
+    (_check(5.0, 280.0, "run_bound", "stated_time"), False),     # a run bound has no value
+    # an 'at' check has no end: its end basis is not judged (the L1 START at 280 s)
+    (_check(280.0, None, "stated_time", "event", mode="at"), True),
+    (_check(None, None, "event", "event", mode="at"), False),
+])
+def test_a_check_is_kept_only_when_each_bound_is_a_stated_time_or_the_run(check, kept):
+    ctx = _ctx_with_criteria(ac_1="The valve shall be closed from 220 s until 280 s.")
+    result = build_state_machine(_machine(checks=[check]), ctx)
+    assert (set(result.checks) == {"AC-1"}) is kept
+    if not kept:
+        assert any(d.kind == "check" for d in result.discarded + result.omitted)
+    # an event-timed bound is a correct omission: reported, but never sent back to be fixed
+    judged = (check["start_basis"],) if check["mode"] == "at" else (
+        check["start_basis"], check["end_basis"])
+    if "event" in judged:
+        assert [d.kind for d in result.omitted] == ["check"] and result.discarded == []
+
+
+def test_the_prompt_asks_for_precedence_and_window_bases():
+    from specalive.extract.extract import BEHAVIOUR_PROMPT
+
+    assert "command_precedence" in BEHAVIOUR_PROMPT
+    assert "start_basis" in BEHAVIOUR_PROMPT and "end_basis" in BEHAVIOUR_PROMPT
+
+
+# --- a controller output or event on another part's port wires it (F4) -------------------
+
+VALVE_LOGIC = "PLC opens XV-7 when the operator presses GO-7, then waits."
+
+
+def _foreign_parts():
+    valve = Part(id="xv_7", kind="on_off_valve", name="Valve", tags=["XV-7", "inlet valve"],
+                 trace=[], ports=[Port(id="xv_7_cmd_in", role="cmd_in", direction="in",
+                                       domain="signal_bool")])
+    button = Part(id="go_7", kind="command_button", name="Go", tags=["GO-7"], trace=[],
+                  ports=[Port(id="go_7_cmd_out", role="cmd_out", direction="out",
+                              domain="signal_bool")])
+    other = Part(id="xv_8", kind="on_off_valve", name="Valve", tags=["XV-8"], trace=[],
+                 ports=[Port(id="xv_8_cmd_in", role="cmd_in", direction="in",
+                             domain="signal_bool")])
+    return [valve, button, other]
+
+
+def _foreign_ctx(connected=()):
+    import dataclasses
+
+    b = bundle([source("src_n", "design_note")], [chunk("src_n", "line 4", LOGIC),
+                                                  chunk("src_n", "line 5", VALVE_LOGIC)])
+    ctx = _ctx()
+    return dataclasses.replace(
+        ctx, refs=index_chunks(b),
+        operands=ctx.operands | {"xv_7_cmd_in", "go_7_cmd_out", "xv_8_cmd_in"},
+        others={q.id: (p, q) for p in _foreign_parts() for q in p.ports},
+        connected=set(connected))
+
+
+def _foreign_machine():
+    return _machine(
+        events=[{"id": "go_cmd", "port_id": "go_7_cmd_out", "edge": "rising"}],
+        timers=[],
+        states=[_state("idle", {"xv_7_cmd_in": False, "xv_8_cmd_in": False}),
+                _state("fill", {"xv_7_cmd_in": True})],
+        transitions=[{**_tr("idle", "fill", 1, trigger="go_cmd", quote=VALVE_LOGIC),
+                      "chunk_id": "src_n#1"}])
+
+
+def test_a_named_part_whose_port_the_reply_uses_is_wired_to_a_new_controller_port():
+    result = build_state_machine(_foreign_machine(), _foreign_ctx())
+    assert [(p.id, p.direction) for p in result.ports] == [("ctl_go_7", "in"),
+                                                            ("ctl_inlet_valve", "out")]
+    assert sorted((c.from_port, c.to_port) for c in result.connections) == [
+        ("ctl_inlet_valve", "xv_7_cmd_in"), ("go_7_cmd_out", "ctl_go_7")]
+    assert all(any(VALVE_LOGIC == t.quote for t in c.trace) for c in result.connections)
+    sm = result.machine
+    assert [e.port for e in sm.events] == ["ctl_go_7"]
+    assert sm.states[1].outputs == {"ctl_inlet_valve": True}
+    # XV-8 is never named by a kept quote: its output is dropped, not wired
+    assert any("xv_8_cmd_in" in d.quote for d in result.discarded)
+
+
+def test_an_already_connected_foreign_port_is_not_wired_again():
+    result = build_state_machine(_foreign_machine(), _foreign_ctx(connected={"xv_7_cmd_in"}))
+    assert all(c.to_port != "xv_7_cmd_in" for c in result.connections)
+    assert any("xv_7_cmd_in" in d.quote for d in result.discarded)
+
+
+def test_the_behaviour_pass_adds_the_new_ports_and_connections_to_the_draft(catalogue):
+    from specalive.extract.extract import Passes, run_behaviour_passes
+    from specalive.extract.fragments import Draft, ExtractReport
+
+    ctx = _foreign_ctx()
+    trace = [{"source_id": "note", "locator": "line 5", "quote": VALVE_LOGIC}]
+    parts = [ctx.owner.model_copy(update={"trace": trace})]
+    parts += [p.model_copy(update={"trace": trace}) for p in _foreign_parts()]
+    draft = Draft(name="m", description="d", parts=parts)
+    llm = FakeLLM({"BehaviourReply": lambda text: _foreign_machine().model_dump()})
+    run_behaviour_passes(Passes(behaviour_refs=list(ctx.refs.values())), draft, llm, ctx.refs,
+                         ctx.source_map, ExtractReport())
+    owner = next(p for p in draft.parts if p.id == "ctl")
+    assert {"ctl_go_7", "ctl_inlet_valve"} <= {q.id for q in owner.ports}
+    assert {"xv_7_cmd_in", "ctl_go_7"} <= {c.to_port for c in draft.connections}
+    assert draft.state_machines[0].states[1].outputs == {"ctl_inlet_valve": True}
+
+
+# --- a rule "from any state" is expanded by code (phase 9 closure, option A) -------------
+
+def _any_machine(except_states):
+    return _machine(
+        states=[_state("idle", {"ctl_valve": False}), _state("fill", {"ctl_valve": True}),
+                _state("hold"), _state("stopped")],
+        transitions=[_tr("idle", "fill", 2, trigger="go_cmd"),
+                     {**_tr("*", "stopped", 1, trigger="go_cmd"),
+                      "except_states": except_states},
+                     _tr("stopped", "idle", 1, guard="ctl_level <= high")])
+
+
+def test_a_from_any_state_rule_becomes_one_transition_per_other_state():
+    result = build_state_machine(_any_machine(["hold"]), _ctx())
+    assert result.discarded == []
+    into = sorted(t.from_ for t in result.machine.transitions if t.to == "stopped")
+    # every kept state except the listed one and the rule's own target
+    assert into == ["fill", "idle"]
+    assert {t.priority for t in result.machine.transitions if t.to == "stopped"} == {1}
+
+
+def test_an_except_state_that_is_not_kept_is_reported_and_the_rest_expands():
+    result = build_state_machine(_any_machine(["nowhere"]), _ctx())
+    assert [d.quote for d in result.discarded] == ["nowhere"]
+    into = sorted(t.from_ for t in result.machine.transitions if t.to == "stopped")
+    assert into == ["fill", "hold", "idle"]
+
+
+def test_the_prompt_offers_the_from_any_state_form():
+    from specalive.extract.extract import BEHAVIOUR_PROMPT
+
+    assert '"*"' in BEHAVIOUR_PROMPT and "except_states" in BEHAVIOUR_PROMPT
+
+
+def test_an_omitted_check_is_reported_but_never_asked_about_again(catalogue):
+    from specalive.extract.extract import Passes, run_behaviour_passes
+    from specalive.extract.fragments import Draft, ExtractReport
+
+    ctx = _ctx()
+    draft = Draft(name="m", description="d", parameters=[], parts=[ctx.owner.model_copy(update={
+        "trace": [{"source_id": "note", "locator": "line 4", "quote": LOGIC}]})])
+    reply = _machine(timers=[], transitions=[_tr("idle", "fill", 1, trigger="go_cmd")],
+                     checks=[_check(None, 280.0, "event", "stated_time")])
+    llm = FakeLLM({"BehaviourReply": lambda text: reply.model_dump()})
+    report = ExtractReport()
+    run_behaviour_passes(Passes(behaviour_refs=list(ctx.refs.values())), draft, llm, ctx.refs,
+                         ctx.source_map, report)
+    assert len(llm.calls) == 1
+    assert [d.kind for d in report.discarded_fragments] == ["check"]
+
+
+# --- adversarial findings: events and timers that cannot mean what they say ---------------
+
+def test_an_event_on_a_real_input_is_discarded():
+    # heated-tank finding: "level reaches 0.9" as an event on the level input gave edge() of a
+    # continuous signal; a threshold is a guard, an event needs a Boolean command input
+    reply = _machine(events=[{"id": "go_cmd", "port_id": "ctl_go", "edge": "rising"},
+                             {"id": "level_up", "port_id": "ctl_level", "edge": "rising"}])
+    result = build_state_machine(reply, _ctx())
+    assert [e.id for e in result.machine.events] == ["go_cmd"]
+    [d] = [d for d in result.discarded if d.kind == "event"]
+    assert "signal_real" in d.reason
+
+
+def test_a_timer_whose_duration_is_not_a_time_is_discarded():
+    # contradiction-spec finding: a timer timed by the tank's area
+    import dataclasses
+
+    ctx = dataclasses.replace(_ctx(), parameters={"high", "delay"},
+                              parameter_units={"high": "m", "delay": "s"})
+    reply = _machine(timers=[{"id": "delay_timer", "duration_parameter_id": "delay"},
+                             {"id": "area_timer", "duration_parameter_id": "high"}])
+    result = build_state_machine(reply, ctx)
+    assert [t.id for t in result.machine.timers] == ["delay_timer"]
+    assert any(d.kind == "timer" and "not a time" in d.reason for d in result.discarded)
+
+
+# --- a register row names its own quantity (fresh-run finding R2) ------------------------
+
+ROW1 = "Parameter: Wait after Tank 1 low | Tag / Scope: Controller | Value: 12 | Units: s"
+ROW2 = "Parameter: Wait after Tank 2 low | Tag / Scope: Controller | Value: 8 | Units: s"
+ROW3 = "Parameter: Tank area | Tag / Scope: TK-9 | Value: 2 | Units: m2"
+ROW4 = "Tag: TK-9 | Cross-section Area (m2): 2 | Height (m): 3"
+
+
+def _register():
+    def row(n, text):
+        fields = dict(f.split(": ", 1) for f in text.split(" | "))
+        return chunk("reg", f"sheet P, row {n}", text, kind="table_row", fields=fields)
+    return bundle([source("reg", "register"), source("spec", "requirement_spec")],
+                  [row(2, ROW1), row(3, ROW2), row(4, ROW3), row(5, ROW4),
+                   chunk("spec", "line 1", "The inter-cycle wait shall be 8 s.")])
+
+
+def test_a_register_row_with_a_label_column_names_its_parameter(catalogue):
+    from _extract_support import param
+
+    replies = {"FragmentReply": lambda text: empty_reply(parameters=[
+        param("reg#0", ROW1, "PLC-9", "inter_cycle_wait", "12", "s"),
+        param("reg#1", ROW2, "PLC-9", "inter_cycle_wait", "8", "s"),   # the LLM merged them
+        param("reg#2", ROW3, "TK-9", "area", "2", "m2"),               # a catalogue name stays
+        param("reg#3", ROW4, "TK-9", "cross_section", "2", "m2"),      # no label column
+    ]) if "SOURCE reg" in text else empty_reply()}
+    llm = FakeLLM(replies)
+    passes = run_structure_passes(_register(), llm, catalogue, {"reg": "reg", "spec": "spec"})
+    assert [f.fragment.name for f in passes.parameters] == [
+        "wait_after_tank_1_low", "wait_after_tank_2_low", "area", "cross_section"]
+    # the next pass's glossary carries the register's own names
+    spec_input = next(c[1] for c in llm.calls if "SOURCE spec" in c[1])
+    assert "wait_after_tank_2_low" in spec_input and "inter_cycle_wait" not in spec_input
+
+
+# --- registers first, the rest in parallel (fresh-run finding R3) ------------------------
+
+def _many_sources():
+    sources = [source("reg", "register")] + [source(f"n{i}", "design_note") for i in range(5)]
+    chunks = [chunk("reg", "row 1", "Tag: TK-9 | Alias: tankA", kind="table_row",
+                    fields={"Tag": "TK-9", "Alias": "tankA"})]
+    chunks += [chunk(f"n{i}", "line 1", f"Valve XV-{i} feeds TK-9.") for i in range(5)]
+    return bundle(sources, chunks)
+
+
+def _reply_for(text):
+    for i in range(5):
+        if f"[n{i}#0]" in text:
+            return empty_reply(parts=[part(f"n{i}#0", f"Valve XV-{i}", f"XV-{i}", "on_off_valve")])
+    return empty_reply(parts=[part("reg#0", "Tag: TK-9 | Alias: tankA", "TK-9", "tank",
+                                   aliases=["tankA"])])
+
+
+def test_parallel_passes_give_the_same_result_and_inputs_as_sequential(catalogue):
+    b = _many_sources()
+    runs = []
+    for workers in (1, 4):
+        llm = FakeLLM({"FragmentReply": _reply_for})
+        passes = run_structure_passes(b, llm, catalogue, {s.id: s.id for s in b.sources},
+                                      workers=workers)
+        runs.append(([f.fragment.tag for f in passes.parts], sorted(c[1] for c in llm.calls)))
+    assert runs[0] == runs[1]
+    assert runs[0][0] == ["TK-9", "XV-0", "XV-1", "XV-2", "XV-3", "XV-4"]  # fixed source order
+
+
+def test_other_sources_read_against_the_registers_glossary_only(catalogue):
+    b = _many_sources()
+    llm = FakeLLM({"FragmentReply": _reply_for})
+    run_structure_passes(b, llm, catalogue, {s.id: s.id for s in b.sources})
+    later = [c[1] for c in llm.calls[1:]]
+    assert all("tankA" in text for text in later)          # the register's names reach them
+    assert all("XV-0" not in text.split("CHUNKS")[0] for text in later)  # not each other's
+
+
+def test_a_registers_requirement_rows_are_read_against_its_glossary(catalogue):
+    # fresh-run finding: a register's requirement rows, read in the first wave with no glossary,
+    # named "post-transfer waiting time" apart from the register's own parameter row
+    b = bundle([source("reg", "register")],
+               [chunk("reg", "sheet E, row 2", "Tag: TK-9 | Alias: tankA", kind="table_row",
+                      fields={"Tag": "TK-9", "Alias": "tankA"}),
+                chunk("reg", "sheet R, row 2", "Req: R-1 | Text: TK-9 shall hold 2 m.",
+                      kind="table_row", role="requirement_spec",
+                      fields={"Req": "R-1", "Text": "TK-9 shall hold 2 m."})])
+    llm = FakeLLM({"FragmentReply": lambda text: empty_reply(parts=[
+        part("reg#0", "Tag: TK-9 | Alias: tankA", "TK-9", "tank", aliases=["tankA"])])
+        if "[reg#0]" in text else empty_reply()})
+    run_structure_passes(b, llm, catalogue, {"reg": "reg"})
+    requirement_call = next(c[1] for c in llm.calls if "[reg#1]" in c[1])
+    assert "[reg#0]" not in requirement_call  # its own batch, in the second wave
+    assert "tankA" in requirement_call.split("CHUNKS")[0]
+
+
+def test_a_quote_cited_from_the_wrong_chunk_says_where_it_is_and_is_still_dropped():
+    # fresh-run finding: the stated command precedence was quoted from the review minutes but
+    # cited to a design-note chunk on every attempt; the reply is re-asked, never repaired
+    b = bundle([source("src_n", "design_note"), source("src_r", "review_decision")],
+               [chunk("src_n", "line 4", LOGIC),
+                chunk("src_r", "line 9", "D-01: Command precedence is HALT > GO.")])
+    import dataclasses
+
+    ctx = dataclasses.replace(_commands_ctx(), refs=index_chunks(b),
+                              source_map={"src_n": "note", "src_r": "minutes"})
+    reply = _machine(
+        events=[{"id": "go_cmd", "port_id": "ctl_go", "edge": "rising"},
+                {"id": "halt_cmd", "port_id": "ctl_halt", "edge": "rising"}],
+        command_precedence={"chunk_id": "src_n#0",
+                            "quote": "D-01: Command precedence is HALT > GO.",
+                            "events": ["halt_cmd", "go_cmd"]})
+    result = build_state_machine(reply, ctx)
+    [d] = [d for d in result.discarded if d.kind == "command precedence"]
+    assert "src_n#0" in d.reason and "it is in chunk src_r#0" in d.reason
+
+
+def test_a_timer_tested_but_never_started_is_reported_so_the_reply_is_asked_again():
+    # fresh-run finding: the fill transition lost its start_timer, so the wait never ended
+    reply = _machine(transitions=[_tr("idle", "fill", 1, trigger="go_cmd"),
+                                  _tr("fill", "hold", 1, guard="ctl_level >= high"),
+                                  _tr("hold", "idle", 1, guard="timer_expired(delay_timer)")])
+    result = build_state_machine(reply, _ctx())
+    assert len(result.machine.transitions) == 3  # nothing is dropped or repaired
+    [d] = result.discarded
+    assert d.kind == "timer" and "delay_timer" in d.reason and "hold" in d.reason
+    assert "never started" in d.reason

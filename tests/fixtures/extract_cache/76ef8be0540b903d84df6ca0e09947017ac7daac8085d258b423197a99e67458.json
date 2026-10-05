@@ -1,0 +1,121 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [
+   {
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "names": [
+     "tank1",
+     "TK-101"
+    ],
+    "quote": "tank1 = TK-101, tank2 = TK-102"
+   },
+   {
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "names": [
+     "tank2",
+     "TK-102"
+    ],
+    "quote": "tank1 = TK-101, tank2 = TK-102"
+   },
+   {
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "names": [
+     "valve1",
+     "XV-101"
+    ],
+    "quote": "valve1 = XV-101, valve2 = XV-102, valve3 = XV-103"
+   },
+   {
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "names": [
+     "valve2",
+     "XV-102"
+    ],
+    "quote": "valve1 = XV-101, valve2 = XV-102, valve3 = XV-103"
+   },
+   {
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "names": [
+     "valve3",
+     "XV-103"
+    ],
+    "quote": "valve1 = XV-101, valve2 = XV-102, valve3 = XV-103"
+   }
+  ],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_04_design_notes_12_operator_shift_notes_txt#1"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [],
+  "parameters": [],
+  "parts": [
+   {
+    "aliases": [
+     "tank1"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "description": null,
+    "kind": "tank",
+    "name": null,
+    "quote": "tank1 = TK-101",
+    "tag": "TK-101"
+   },
+   {
+    "aliases": [
+     "tank2"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "description": null,
+    "kind": "tank",
+    "name": null,
+    "quote": "tank2 = TK-102",
+    "tag": "TK-102"
+   },
+   {
+    "aliases": [
+     "valve1"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "valve1 = XV-101",
+    "tag": "XV-101"
+   },
+   {
+    "aliases": [
+     "valve2"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "valve2 = XV-102",
+    "tag": "XV-102"
+   },
+   {
+    "aliases": [
+     "valve3"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_12_operator_shift_notes_txt#2",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "valve3 = XV-103",
+    "tag": "XV-103"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

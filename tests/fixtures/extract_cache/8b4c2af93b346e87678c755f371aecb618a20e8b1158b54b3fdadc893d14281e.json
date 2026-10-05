@@ -1,0 +1,519 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "checks": [
+   {
+    "condition": "plc_101_level1 >= tk_101_high_level_setpoint",
+    "criterion_tag": "ac_01",
+    "end_basis": "event",
+    "end_s": null,
+    "mode": "eventually",
+    "start_basis": "run_bound",
+    "start_s": null
+   },
+   {
+    "condition": "plc_101_valve1 == false and plc_101_valve2 == false and plc_101_valve3 == false",
+    "criterion_tag": "ac_02",
+    "end_basis": "stated_time",
+    "end_s": 280.0,
+    "mode": "always",
+    "start_basis": "stated_time",
+    "start_s": 220.0
+   },
+   {
+    "condition": "in_state(transfer_t1_t2)",
+    "criterion_tag": "ac_03",
+    "end_basis": "event",
+    "end_s": null,
+    "mode": "at",
+    "start_basis": "stated_time",
+    "start_s": 280.0
+   },
+   {
+    "condition": "in_state(fill_t1)",
+    "criterion_tag": "ac_04",
+    "end_basis": "event",
+    "end_s": null,
+    "mode": "eventually",
+    "start_basis": "event",
+    "start_s": null
+   },
+   {
+    "condition": "plc_101_valve1 == false and plc_101_valve2 == false and plc_101_valve3 == false",
+    "criterion_tag": "ac_05",
+    "end_basis": "stated_time",
+    "end_s": 700.0,
+    "mode": "always",
+    "start_basis": "stated_time",
+    "start_s": 650.0
+   },
+   {
+    "condition": "plc_101_valve1 == false and plc_101_valve2 == true and plc_101_valve3 == true",
+    "criterion_tag": "ac_06",
+    "end_basis": "event",
+    "end_s": null,
+    "mode": "at",
+    "start_basis": "stated_time",
+    "start_s": 700.0
+   },
+   {
+    "condition": "in_state(idle)",
+    "criterion_tag": "ac_07",
+    "end_basis": "stated_time",
+    "end_s": 900.0,
+    "mode": "always",
+    "start_basis": "event",
+    "start_s": null
+   },
+   {
+    "condition": "not (plc_101_valve1 == true and plc_101_valve2 == true) and (not (plc_101_valve2 == true and plc_101_valve3 == true) or in_state(shutdown))",
+    "criterion_tag": "ac_08",
+    "end_basis": "run_bound",
+    "end_s": null,
+    "mode": "always",
+    "start_basis": "run_bound",
+    "start_s": null
+   }
+  ],
+  "command_precedence": {
+   "chunk_id": "src_04_design_notes_06_design_review_minutes_md#6",
+   "events": [
+    "shut_edge",
+    "stop_edge",
+    "start_edge"
+   ],
+   "quote": "- **D-01:** Command precedence is `SHUT > STOP > START`."
+  },
+  "events": [
+   {
+    "edge": "rising",
+    "id": "start_edge",
+    "port_id": "plc_101_start"
+   },
+   {
+    "edge": "rising",
+    "id": "stop_edge",
+    "port_id": "plc_101_stop"
+   },
+   {
+    "edge": "rising",
+    "id": "shut_edge",
+    "port_id": "plc_101_shut"
+   }
+  ],
+  "initial_state": "idle",
+  "states": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#9",
+    "entry_actions": [],
+    "id": "idle",
+    "legacy_names": [],
+    "name": "IDLE",
+    "outputs": [
+     {
+      "port_id": "plc_101_valve1",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve2",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve3",
+      "value": false
+     }
+    ],
+    "quote": "State: IDLE | Valve Command Pattern (V1,V2,V3): 0,0,0 | Definition / Exit Condition: All valves closed. A START edge begins FILL_T1. A SHUT command while already empty has no useful hydraulic effect and may be treated as completed shutdown."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#10",
+    "entry_actions": [],
+    "id": "fill_t1",
+    "legacy_names": [],
+    "name": "FILL_T1",
+    "outputs": [
+     {
+      "port_id": "plc_101_valve1",
+      "value": true
+     },
+     {
+      "port_id": "plc_101_valve2",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve3",
+      "value": false
+     }
+    ],
+    "quote": "State: FILL_T1 | Valve Command Pattern (V1,V2,V3): 1,0,0 | Definition / Exit Condition: Command XV-101 open. XV-102 and XV-103 closed. Transition when LT-101 >= T1_High."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#11",
+    "entry_actions": [],
+    "id": "wait_after_fill",
+    "legacy_names": [],
+    "name": "WAIT_AFTER_FILL",
+    "outputs": [
+     {
+      "port_id": "plc_101_valve1",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve2",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve3",
+      "value": false
+     }
+    ],
+    "quote": "State: WAIT_AFTER_FILL | Valve Command Pattern (V1,V2,V3): 0,0,0 | Definition / Exit Condition: All valves closed. Hold for the configured post-fill wait. STOP freezes remaining time."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#12",
+    "entry_actions": [],
+    "id": "transfer_t1_t2",
+    "legacy_names": [],
+    "name": "TRANSFER_T1_T2",
+    "outputs": [
+     {
+      "port_id": "plc_101_valve1",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve2",
+      "value": true
+     },
+     {
+      "port_id": "plc_101_valve3",
+      "value": false
+     }
+    ],
+    "quote": "State: TRANSFER_T1_T2 | Valve Command Pattern (V1,V2,V3): 0,1,0 | Definition / Exit Condition: Command XV-102 open. V1 and V3 closed. Transition when LT-101 <= T1_Low."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#13",
+    "entry_actions": [],
+    "id": "wait_after_transfer",
+    "legacy_names": [],
+    "name": "WAIT_AFTER_TRANSFER",
+    "outputs": [
+     {
+      "port_id": "plc_101_valve1",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve2",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve3",
+      "value": false
+     }
+    ],
+    "quote": "State: WAIT_AFTER_TRANSFER | Valve Command Pattern (V1,V2,V3): 0,0,0 | Definition / Exit Condition: All valves closed. Hold for configured post-transfer wait. STOP freezes remaining time."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#14",
+    "entry_actions": [],
+    "id": "drain_t2",
+    "legacy_names": [],
+    "name": "DRAIN_T2",
+    "outputs": [
+     {
+      "port_id": "plc_101_valve1",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve2",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve3",
+      "value": true
+     }
+    ],
+    "quote": "State: DRAIN_T2 | Valve Command Pattern (V1,V2,V3): 0,0,1 | Definition / Exit Condition: Command XV-103 open. V1 and V2 closed. Transition when LT-102 <= T2_Low."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#15",
+    "entry_actions": [],
+    "id": "wait_after_drain",
+    "legacy_names": [],
+    "name": "WAIT_AFTER_DRAIN",
+    "outputs": [
+     {
+      "port_id": "plc_101_valve1",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve2",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve3",
+      "value": false
+     }
+    ],
+    "quote": "State: WAIT_AFTER_DRAIN | Valve Command Pattern (V1,V2,V3): 0,0,0 | Definition / Exit Condition: All valves closed. Hold for inter-cycle wait, then return to FILL_T1 automatically."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#16",
+    "entry_actions": [],
+    "id": "paused",
+    "legacy_names": [],
+    "name": "PAUSED",
+    "outputs": [
+     {
+      "port_id": "plc_101_valve1",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve2",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve3",
+      "value": false
+     }
+    ],
+    "quote": "State: PAUSED | Valve Command Pattern (V1,V2,V3): 0,0,0 | Definition / Exit Condition: All valves closed. Preserve the interrupted sequence state and, if applicable, its remaining timer. START resumes the stored state."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#17",
+    "entry_actions": [],
+    "id": "shutdown",
+    "legacy_names": [],
+    "name": "SHUTDOWN",
+    "outputs": [
+     {
+      "port_id": "plc_101_valve1",
+      "value": false
+     },
+     {
+      "port_id": "plc_101_valve2",
+      "value": true
+     },
+     {
+      "port_id": "plc_101_valve3",
+      "value": true
+     }
+    ],
+    "quote": "State: SHUTDOWN | Valve Command Pattern (V1,V2,V3): 0,1,1 | Definition / Exit Condition: V1 closed; V2 and V3 commanded open together. Remain in SHUTDOWN until both tanks are at or below their low-level limits, then close all valves and go to IDLE."
+   }
+  ],
+  "timers": [
+   {
+    "duration_parameter_id": "plc_101_wait_after_tank_1_high",
+    "id": "wait_after_fill_timer"
+   },
+   {
+    "duration_parameter_id": "plc_101_wait_after_tank_1_low",
+    "id": "wait_after_transfer_timer"
+   },
+   {
+    "duration_parameter_id": "system_inter_cycle_wait",
+    "id": "wait_after_drain_timer"
+   }
+  ],
+  "transitions": [
+   {
+    "actions": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#32",
+    "except_states": null,
+    "from_state": "idle",
+    "guard": null,
+    "priority": 1,
+    "quote": "From: IDLE | Trigger / Guard: START edge | To: FILL_T1 | Actions: V1=1 | Comment: new cycle",
+    "to_state": "fill_t1",
+    "trigger_event": "start_edge"
+   },
+   {
+    "actions": [
+     "start_timer(wait_after_fill_timer)"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#33",
+    "except_states": null,
+    "from_state": "fill_t1",
+    "guard": "plc_101_level1 >= tk_101_high_level_setpoint",
+    "priority": 1,
+    "quote": "From: FILL_T1 | Trigger / Guard: LT-101 >= T1_High | To: WAIT_AFTER_FILL | Actions: V1=0; start timer",
+    "to_state": "wait_after_fill",
+    "trigger_event": null
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#34",
+    "except_states": null,
+    "from_state": "wait_after_fill",
+    "guard": "timer_expired(wait_after_fill_timer)",
+    "priority": 1,
+    "quote": "From: WAIT_AFTER_FILL | Trigger / Guard: timer expired | To: TRANSFER_T1_T2 | Actions: V2=1",
+    "to_state": "transfer_t1_t2",
+    "trigger_event": null
+   },
+   {
+    "actions": [
+     "start_timer(wait_after_transfer_timer)"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#35",
+    "except_states": null,
+    "from_state": "transfer_t1_t2",
+    "guard": "plc_101_level1 <= tk_101_low_level_setpoint",
+    "priority": 1,
+    "quote": "From: TRANSFER_T1_T2 | Trigger / Guard: LT-101 <= T1_Low | To: WAIT_AFTER_TRANSFER | Actions: V2=0; start timer",
+    "to_state": "wait_after_transfer",
+    "trigger_event": null
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#36",
+    "except_states": null,
+    "from_state": "wait_after_transfer",
+    "guard": "timer_expired(wait_after_transfer_timer)",
+    "priority": 1,
+    "quote": "From: WAIT_AFTER_TRANSFER | Trigger / Guard: timer expired | To: DRAIN_T2 | Actions: V3=1",
+    "to_state": "drain_t2",
+    "trigger_event": null
+   },
+   {
+    "actions": [
+     "start_timer(wait_after_drain_timer)"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#37",
+    "except_states": null,
+    "from_state": "drain_t2",
+    "guard": "plc_101_level2 <= tk_102_low_level_setpoint",
+    "priority": 1,
+    "quote": "From: DRAIN_T2 | Trigger / Guard: LT-102 <= T2_Low | To: WAIT_AFTER_DRAIN | Actions: V3=0; start timer",
+    "to_state": "wait_after_drain",
+    "trigger_event": null
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#38",
+    "except_states": null,
+    "from_state": "wait_after_drain",
+    "guard": "timer_expired(wait_after_drain_timer)",
+    "priority": 1,
+    "quote": "From: WAIT_AFTER_DRAIN | Trigger / Guard: timer expired | To: FILL_T1 | Actions: V1=1 | Comment: automatic repeat",
+    "to_state": "fill_t1",
+    "trigger_event": null
+   },
+   {
+    "actions": [
+     "save_history"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#39",
+    "except_states": null,
+    "from_state": "fill_t1",
+    "guard": null,
+    "priority": 2,
+    "quote": "From: normal/wait | Trigger / Guard: STOP edge | To: PAUSED | Actions: all valves 0 | Comment: store state + remaining wait",
+    "to_state": "paused",
+    "trigger_event": "stop_edge"
+   },
+   {
+    "actions": [
+     "save_history"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#39",
+    "except_states": null,
+    "from_state": "wait_after_fill",
+    "guard": null,
+    "priority": 2,
+    "quote": "From: normal/wait | Trigger / Guard: STOP edge | To: PAUSED | Actions: all valves 0 | Comment: store state + remaining wait",
+    "to_state": "paused",
+    "trigger_event": "stop_edge"
+   },
+   {
+    "actions": [
+     "save_history"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#39",
+    "except_states": null,
+    "from_state": "transfer_t1_t2",
+    "guard": null,
+    "priority": 2,
+    "quote": "From: normal/wait | Trigger / Guard: STOP edge | To: PAUSED | Actions: all valves 0 | Comment: store state + remaining wait",
+    "to_state": "paused",
+    "trigger_event": "stop_edge"
+   },
+   {
+    "actions": [
+     "save_history"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#39",
+    "except_states": null,
+    "from_state": "wait_after_transfer",
+    "guard": null,
+    "priority": 2,
+    "quote": "From: normal/wait | Trigger / Guard: STOP edge | To: PAUSED | Actions: all valves 0 | Comment: store state + remaining wait",
+    "to_state": "paused",
+    "trigger_event": "stop_edge"
+   },
+   {
+    "actions": [
+     "save_history"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#39",
+    "except_states": null,
+    "from_state": "drain_t2",
+    "guard": null,
+    "priority": 2,
+    "quote": "From: normal/wait | Trigger / Guard: STOP edge | To: PAUSED | Actions: all valves 0 | Comment: store state + remaining wait",
+    "to_state": "paused",
+    "trigger_event": "stop_edge"
+   },
+   {
+    "actions": [
+     "save_history"
+    ],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#39",
+    "except_states": null,
+    "from_state": "wait_after_drain",
+    "guard": null,
+    "priority": 2,
+    "quote": "From: normal/wait | Trigger / Guard: STOP edge | To: PAUSED | Actions: all valves 0 | Comment: store state + remaining wait",
+    "to_state": "paused",
+    "trigger_event": "stop_edge"
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#40",
+    "except_states": null,
+    "from_state": "paused",
+    "guard": null,
+    "priority": 1,
+    "quote": "From: PAUSED | Trigger / Guard: START edge | To: stored state | Actions: restore state outputs | Comment: resume",
+    "to_state": "history",
+    "trigger_event": "start_edge"
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#41",
+    "except_states": [
+     "shutdown"
+    ],
+    "from_state": "*",
+    "guard": null,
+    "priority": 1,
+    "quote": "From: any non-shutdown | Trigger / Guard: SHUT edge | To: SHUTDOWN | Actions: V1=0,V2=1,V3=1 | Comment: clear resume context",
+    "to_state": "shutdown",
+    "trigger_event": "shut_edge"
+   },
+   {
+    "actions": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#42",
+    "except_states": null,
+    "from_state": "shutdown",
+    "guard": "plc_101_level1 <= tk_101_low_level_setpoint and plc_101_level2 <= tk_102_low_level_setpoint",
+    "priority": 1,
+    "quote": "From: SHUTDOWN | Trigger / Guard: LT-101 <= T1_Low AND LT-102 <= T2_Low | To: IDLE | Actions: V2=0,V3=0 | Comment: shutdown complete",
+    "to_state": "idle",
+    "trigger_event": null
+   }
+  ]
+ },
+ "schema": "BehaviourReply"
+}

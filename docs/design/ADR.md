@@ -92,6 +92,25 @@ The index format is of two types
   - **Cost, accepted:** the PRD encourages MSL use. The catalogue allows a kind to target either
     a SpecAlive component or an MSL class, so the `Modelica.Fluid` variant stays open as an
     extension.
+- **Phase 10 (FR-10 requirement 4): the L2 room plant is lightweight SpecAlive components too,
+  with MSL `Blocks` for gains and constants.** A well-mixed volume of constant air mass,
+  `rho*V*der(C) = sum m_in*(C_in - C)`, with the bundle's effective values reproduces the L2
+  reference trace to 0.00 ppm (peak 996.5 ppm near 54 000 s), so the reference was generated
+  from that balance. The air connector is causal like the L1 volume flow: the upstream part
+  sets the mass flow and the trace fraction it carries. New kinds: `room_volume`,
+  `mass_flow_source` (command in the source-port sign convention, so negative delivers air),
+  `trace_substance_source` (fixed carrier fraction), `pressure_boundary`, `concentration_sensor`
+  (MSL `RealPassThrough`, `measures` the volume's `concentration_out`), `gain` and `constant`
+  (MSL `Math.Gain`, `Sources.Constant`), `p_controller` (bias, limits, no integral) and
+  `schedule_table` (two list parameters, so the IR schema is unchanged).
+  - **Rejected: MSL `Modelica.Fluid` (`MassFlowSource_T`, `ClosedVolume`, `DynamicPipe`, the
+    MoistAir medium with an extra property).** The reference is not an MSL run, so matching it
+    would only get harder; the medium packages, `nPorts`, ducts and an `inner system` would be
+    generator work with no gain in fidelity.
+  - **Consequence:** a gain's or a constant's value takes the unit of its use, so a SysML part
+    def leaves such an attribute untyped when its parts differ and each usage binds its own
+    typed value. Units stay SI through the chain: ACH (1/h) is 1/s, the ACH-to-mass-flow gain
+    is in kg.
 
 ### Product shape
 - **Command line only.** The team's decision, for the 2–3 day timeline. **Cost, accepted:** the

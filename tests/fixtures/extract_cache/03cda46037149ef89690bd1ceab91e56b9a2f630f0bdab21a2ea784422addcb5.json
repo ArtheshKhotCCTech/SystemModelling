@@ -1,0 +1,191 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [
+   {
+    "affects_tags": [
+     "SEN-CO2-201"
+    ],
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#2",
+    "quote": "Legacy draft assumes sensor output is ppm.",
+    "text": "Sensor output is assumed to be in ppm."
+   }
+  ],
+  "behaviour_chunk_ids": [],
+  "connections": [
+   {
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#1",
+    "from_role": "outlet",
+    "from_tag": "SRC-OA-201",
+    "medium_or_signal": "air",
+    "quote": "OA --> Room : supply air",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "supply_in",
+    "to_tag": "ZON-201"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#1",
+    "from_role": "exhaust_out",
+    "from_tag": "ZON-201",
+    "medium_or_signal": "air",
+    "quote": "Room --> EXH : exhaust air",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "inlet",
+    "to_tag": "BND-201"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#1",
+    "from_role": "concentration_out",
+    "from_tag": "ZON-201",
+    "medium_or_signal": "concentration",
+    "quote": "Room --> S : concentration",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "c_in",
+    "to_tag": "SEN-CO2-201"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#1",
+    "from_role": "c_out",
+    "from_tag": "SEN-CO2-201",
+    "medium_or_signal": "CO2",
+    "quote": "S --> PID : CO2",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "measurement_in",
+    "to_tag": "CTL-CO2-201"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#1",
+    "from_role": "command_out",
+    "from_tag": "CTL-CO2-201",
+    "medium_or_signal": "airflow request",
+    "quote": "PID --> OA : airflow request",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "m_flow_in",
+    "to_tag": "SRC-OA-201"
+   },
+   {
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#1",
+    "from_role": "outlet",
+    "from_tag": "SRC-CO2-201",
+    "medium_or_signal": "CO2",
+    "quote": "P --> Room : CO2",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "source_in",
+    "to_tag": "ZON-201"
+   }
+  ],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#0",
+    "date": "2026-01-18",
+    "file_name": null,
+    "quote": "@startuml",
+    "revision": "Draft",
+    "role": "legacy_architecture",
+    "tag": "03_architecture_diagrams/13_partial_existing_architecture.puml",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "volume",
+    "owner_tag": "ZON-201",
+    "provisional": false,
+    "quote": "RoomVolume\\nV=100 m3",
+    "stated_status": null,
+    "unit": "m3",
+    "value": "100"
+   }
+  ],
+  "parts": [
+   {
+    "aliases": [
+     "Room"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#0",
+    "description": null,
+    "kind": "room_volume",
+    "name": null,
+    "quote": "component \"RoomVolume\\nV=100 m3\" as Room",
+    "tag": "ZON-201"
+   },
+   {
+    "aliases": [
+     "OA"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#0",
+    "description": null,
+    "kind": "mass_flow_source",
+    "name": null,
+    "quote": "component \"FreshAirSource\" as OA",
+    "tag": "SRC-OA-201"
+   },
+   {
+    "aliases": [
+     "EXH"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#0",
+    "description": null,
+    "kind": "pressure_boundary",
+    "name": null,
+    "quote": "component \"ExhaustBoundary\" as EXH",
+    "tag": "BND-201"
+   },
+   {
+    "aliases": [
+     "S"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#0",
+    "description": null,
+    "kind": "concentration_sensor",
+    "name": null,
+    "quote": "component \"CO2 Sensor\\noutput: ppm ?\" as S",
+    "tag": "SEN-CO2-201"
+   },
+   {
+    "aliases": [
+     "PID"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#0",
+    "description": null,
+    "kind": "p_controller",
+    "name": null,
+    "quote": "component \"PID\" as PID",
+    "tag": "CTL-CO2-201"
+   },
+   {
+    "aliases": [
+     "P"
+    ],
+    "attributes": [],
+    "chunk_id": "src_03_architecture_diagrams_13_partial_existing_architecture_puml#0",
+    "description": null,
+    "kind": "trace_substance_source",
+    "name": null,
+    "quote": "component \"People CO2\" as P",
+    "tag": "SRC-CO2-201"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

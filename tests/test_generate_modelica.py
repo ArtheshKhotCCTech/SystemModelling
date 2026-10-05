@@ -20,7 +20,12 @@ from tests._modelica_support import golden_model, plant_ir, plant_model, require
 ROOT = Path(__file__).resolve().parent
 SNAPSHOT = ROOT / "fixtures" / "snapshots" / "L1_tank.mo"
 PKG = ROOT.parent / "specalive"
-IR_TAG = re.compile(r'\[IR (\w+)\]";')
+IR_TAG = re.compile(r'\[IR (\w+)\]"(?: annotation\(.*\))?;')
+
+
+def ends_with_ir(line: str, ir_id: str) -> bool:
+    # a declaration or connect ends with its "[IR id]" description, then its diagram annotation
+    return re.search(rf'\[IR {ir_id}\]"(?: annotation\(.*\))?;$', line.rstrip()) is not None
 
 
 @pytest.fixture(scope="module")
@@ -50,7 +55,7 @@ def system_section(text: str) -> str:
 
 def declaration(text: str, ir_id: str) -> str:
     lines = [line for line in system_section(text).splitlines()
-             if line.rstrip().endswith(f'[IR {ir_id}]";') and "connect(" not in line
+             if ends_with_ir(line, ir_id) and "connect(" not in line
              and not line.lstrip().startswith("parameter ")]
     assert len(lines) == 1, (ir_id, lines)
     return lines[0].strip()
@@ -116,10 +121,10 @@ def test_only_effective_and_verification_values_are_used(text):
 
 def test_connections_use_the_catalogue_connectors(text):
     system = system_section(text)
-    assert 'connect(src_101.outlet, xv_101.inlet) "liquid [IR if_hyd_01]";' in system
-    assert 'connect(tk_101.level, lt_101.u) "level [IR tk_101_lt_101]";' in system
-    assert 'connect(lt_101.y, plc_101.level1) "level measurement [IR if_ctl_01]";' in system
-    assert 'connect(plc_101.valve3, xv_103.open) "open command [IR if_ctl_08]";' in system
+    assert 'connect(src_101.outlet, xv_101.inlet) "liquid [IR if_hyd_01]" annotation(Line(' in system
+    assert 'connect(tk_101.level, lt_101.u) "level [IR tk_101_lt_101]" annotation(Line(' in system
+    assert 'connect(lt_101.y, plc_101.level1) "level measurement [IR if_ctl_01]" annotation(Line(' in system
+    assert 'connect(plc_101.valve3, xv_103.open) "open command [IR if_ctl_08]" annotation(Line(' in system
 
 
 def test_controller_instance_binds_the_parameters_its_machine_reads(text):
@@ -136,7 +141,7 @@ def test_assumed_elements_carry_assumption_comments(text):
     lines = system_section(text).splitlines()
 
     def comments_before(ir_id):
-        i = next(n for n, line in enumerate(lines) if line.rstrip().endswith(f'[IR {ir_id}]";'))
+        i = next(n for n, line in enumerate(lines) if ends_with_ir(line, ir_id))
         above = []
         while lines[i - 1].strip().startswith("//"):
             i -= 1
@@ -153,7 +158,7 @@ def test_assumed_elements_carry_assumption_comments(text):
 def test_experiment_comes_from_the_verification_stop_time(generated, text):
     # Requirement 6: StopTime from the IR; the interval has no IR value, so it is a declared
     # generator default, visible in the model and in the notes.
-    assert "annotation(experiment(StopTime = 900.0, Interval = 1.8));" in text
+    assert "experiment(StopTime = 900.0, Interval = 1.8));" in text
     assert "// ASSUMPTION (generator default): no output interval in the IR" in text
     assert len(generated.notes) == 1 and "Interval" in generated.notes[0]
 
@@ -181,7 +186,7 @@ def test_write_modelica_writes_model_mo(golden, catalogue, tmp_path, text):
 def test_small_plant_renders_with_escaped_strings(catalogue):
     out = modelica.render_modelica(plant_model(), catalogue).text
     assert 'SpecAlive.Components.Tank tank(A = tank_area, h_start = tank_initial_level) ' \
-           '"Tank \\"A\\" [IR tank]";' in out
+           '"Tank \\"A\\" [IR tank]" annotation(Placement(' in out
     assert "tank_high_old" not in out
     assert "model CommandButton" in out
 
@@ -252,7 +257,7 @@ def test_reserved_word_ids_become_legal_modelica_names(catalogue):
         if c["to_port"] == "drain_inlet":
             c["to_port"] = "end_inlet"
     out = modelica.render_modelica(SystemModel.model_validate(ir), catalogue).text
-    assert 'SpecAlive.Components.FluidSink end_ "Drain [IR end]";' in out
+    assert 'SpecAlive.Components.FluidSink end_ "Drain [IR end]" annotation(Placement(' in out
     assert "connect(v_out.outlet, end_.inlet)" in out
 
 
@@ -260,7 +265,7 @@ def test_experiment_defaults_without_a_stop_time(catalogue):
     ir = plant_ir()
     ir["parameters"] = [p for p in ir["parameters"] if p["id"] != "system_stop_time"]
     result = modelica.render_modelica(plant_model(ir), catalogue)
-    assert "annotation(experiment(StopTime = 1.0, Interval = 0.002));" in result.text
+    assert "experiment(StopTime = 1.0, Interval = 0.002));" in result.text
     assert len(result.notes) == 2
 
 
@@ -275,7 +280,7 @@ def test_output_interval_parameter_sets_the_interval(catalogue):
     ir["parameters"].append({**ir["parameters"][-1], "id": "system_output_interval",
                              "name": "output_interval", "value": 0.5})
     result = modelica.render_modelica(plant_model(ir), catalogue)
-    assert "annotation(experiment(StopTime = 200.0, Interval = 0.5));" in result.text
+    assert "experiment(StopTime = 200.0, Interval = 0.5));" in result.text
     assert result.notes == []
 
 

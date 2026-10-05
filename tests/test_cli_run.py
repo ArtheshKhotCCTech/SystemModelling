@@ -344,6 +344,15 @@ def test_acceptance_1_2_l1_bundle_end_to_end(tmp_path, monkeypatch):
     assert report["simulation"]["status"] == "ok"
     for c in report["criteria"]:
         assert c["status"] == "PASS" or (c["status"] == "NOT CHECKED" and c["detail"]), c
+    # FR-07 acceptance 2 in full: what the golden IR can check must be checked and pass (a
+    # criterion lost to NOT CHECKED is not a pass), and state changes match within +-2 s
+    golden = json.loads(GOLDEN.read_text(encoding="utf-8"))
+    checkable = {a["id"] for a in golden["acceptance_criteria"] if a.get("check")}
+    status = {c["id"]: c["status"] for c in report["criteria"]}
+    assert {i: status.get(i) for i in checkable} == {i: "PASS" for i in checkable}
+    timed = [s for s in report["signals"] if s["kind"] in ("discrete", "state")]
+    assert timed and all(s["status"] == "PASS" for s in timed), [
+        (s["column"], s["detail"]) for s in timed if s["status"] != "PASS"]
     cov = json.loads((out / "coverage.json").read_text(encoding="utf-8"))
     for category in ("parts", "ports", "connections"):
         assert cov[category]["percent"] >= 80.0, (category, cov[category])

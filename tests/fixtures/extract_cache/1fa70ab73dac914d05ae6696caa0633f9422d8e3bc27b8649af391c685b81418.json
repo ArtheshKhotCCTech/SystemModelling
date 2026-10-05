@@ -1,0 +1,99 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [],
+  "parameters": [],
+  "parts": [],
+  "requirements": [
+   {
+    "category": "Interface",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#24",
+    "quote": "Req ID: IAQ-INT-001 | Source / Rev: ICD-IAQ-03 | Requirement Text: The room CO2 measurement shall be represented internally as a Real-valued trace-substance mass fraction in kg/kg.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-INT-001",
+    "text": "The room CO2 measurement shall be represented internally as a Real-valued trace-substance mass fraction in kg/kg."
+   },
+   {
+    "category": "Interface",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#25",
+    "quote": "Req ID: IAQ-INT-002 | Source / Rev: ICD-IAQ-03 | Requirement Text: The controller shall provide a Real-valued ACH command to the airflow conversion gain.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-INT-002",
+    "text": "The controller shall provide a Real-valued ACH command to the airflow conversion gain."
+   },
+   {
+    "category": "Interface",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#26",
+    "quote": "Req ID: IAQ-INT-003 | Source / Rev: ICD-IAQ-03 | Requirement Text: The occupancy schedule shall provide an integer-valued people count to the CO2 source calculation.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-INT-003",
+    "text": "The occupancy schedule shall provide an integer-valued people count to the CO2 source calculation."
+   },
+   {
+    "category": "Interface",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#27",
+    "quote": "Req ID: IAQ-INT-004 | Source / Rev: ICD-IAQ-03 | Requirement Text: The fresh-air source shall receive both a mass-flow command and a trace-substance concentration parameter.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-INT-004",
+    "text": "The fresh-air source shall receive both a mass-flow command and a trace-substance concentration parameter."
+   },
+   {
+    "category": "Safety",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#28",
+    "quote": "Req ID: IAQ-SAF-001 | Source / Rev: DR-IAQ-05 | Requirement Text: If the room CO2 sensor signal is invalid for more than 60 s, the controller shall command 4.0 ACH and raise a sensor-fault indication.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-SAF-001",
+    "text": "If the room CO2 sensor signal is invalid for more than 60 s, the controller shall command 4.0 ACH and raise a sensor-fault indication."
+   },
+   {
+    "category": "Verification",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#29",
+    "quote": "Req ID: IAQ-VER-001 | Source / Rev: CP-23 Rev C | Requirement Text: The 24-hour reference simulation shall log room CO2, outdoor CO2, occupant count, ACH command and physical supply mass flow at 60 s intervals.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-VER-001",
+    "text": "The 24-hour reference simulation shall log room CO2, outdoor CO2, occupant count, ACH command and physical supply mass flow at 60 s intervals."
+   },
+   {
+    "category": "Verification",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#30",
+    "quote": "Req ID: IAQ-VER-002 | Source / Rev: CP-23 Rev C | Requirement Text: During the approved 24-hour reference run, the maximum room CO2 concentration shall be no greater than 1000 ppm.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-VER-002",
+    "text": "During the approved 24-hour reference run, the maximum room CO2 concentration shall be no greater than 1000 ppm."
+   },
+   {
+    "category": "Data",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#31",
+    "quote": "Req ID: IAQ-DAT-001 | Source / Rev: ICD-IAQ-03 | Requirement Text: The conversion between ppm and kg/kg for this benchmark shall use molecular weights 44.01 kg/kmol for CO2 and 28.97 kg/kmol for dry air.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-DAT-001",
+    "text": "The conversion between ppm and kg/kg for this benchmark shall use molecular weights 44.01 kg/kmol for CO2 and 28.97 kg/kmol for dry air."
+   },
+   {
+    "category": "Data",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#32",
+    "quote": "Req ID: IAQ-DAT-002 | Source / Rev: DR-IAQ-05 | Requirement Text: The value C={100} kg/kg in the peopleSource shall not be interpreted as the physical room concentration or a realistic gas mixture composition.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-DAT-002",
+    "text": "The value C={100} kg/kg in the peopleSource shall not be interpreted as the physical room concentration or a realistic gas mixture composition."
+   }
+  ],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

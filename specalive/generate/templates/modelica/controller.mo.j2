@@ -1,8 +1,9 @@
 {#- Purpose: one IR state machine as a Modelica controller class (FR-06 requirement 8): an
     enumeration of the IR states, the state and history variables, a deadline and a remaining
     time per timer, one when-clause whose body walks the source states and their transitions in
-    IR priority order, outputs as equations over the state, and invariants as asserts. Layout
-    only; every condition and statement arrives prepared by controller.py. #}
+    IR priority order, outputs as equations over the state, invariants as asserts, and an icon
+    with placed ports. Layout only; every condition and statement arrives prepared by
+    controller.py. #}
   model {{ c.class_name }} {{ c.description }}
 {% for comment in c.comments %}
     {{ comment }}
@@ -37,4 +38,5 @@
 {% for equation in c.equations %}
     {{ equation }}
 {% endfor %}
+    {{ c.icon }}
   end {{ c.class_name }};

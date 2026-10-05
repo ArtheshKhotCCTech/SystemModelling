@@ -16,6 +16,7 @@ from specalive.llm.client import (
     LLMError,
     LLMIncomplete,
     OpenAITransport,
+    SEED,
     RawResponse,
     strict_json_schema,
 )
@@ -70,6 +71,7 @@ def test_request_is_strict_structured_output_at_temperature_zero(tmp_path):
     make_client(tmp_path, t).complete(prompt="extract", input_text="tank T1", schema=Part)
     req = t.requests[0]
     assert req["temperature"] == 0
+    assert req["seed"] == SEED  # best-effort repeatability of a fresh call (fresh-run finding R4)
     assert req["model"] == "gpt-4o"
     fmt = req["response_format"]
     assert fmt["type"] == "json_schema"

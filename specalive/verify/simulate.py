@@ -132,6 +132,8 @@ _CLASS_END = re.compile(r"^\s*end\s+(\w+)\s*;")
 _DECL = re.compile(r"^\s*([A-Za-z_][\w.]*)\s+([A-Za-z_]\w*)(?:\[[^\]]*\])?(?:\(.*\))?\s*"
                    r"(?:\"((?:[^\"\\]|\\.)*)\")?\s*;\s*$")
 _IR_TAG = re.compile(r"\[IR (\w+)\]\s*$")
+# a generated declaration may end with its diagram placement: graphics, stripped before reading
+_TRAILING_ANNOTATION = re.compile(r"\s+annotation\s*\(.*\)\s*;\s*$")
 _ENUM = re.compile(r"type\s+(\w+)\s*=\s*enumeration\((.*?)\)\s*;", re.DOTALL)
 _LITERAL = re.compile(r"(\w+)\s*(?:\"(?:[^\"\\]|\\.)*\")?\s*(?:,|$)")
 
@@ -146,7 +148,7 @@ class _Class:
         """(type, name, IR id or None) for every one-line declaration."""
         found = []
         for line in self.lines:
-            m = _DECL.match(line)
+            m = _DECL.match(_TRAILING_ANNOTATION.sub(";", line))
             if m is None or m[1] in ("parameter", "constant", "connect", "end", "type"):
                 continue
             tag = _IR_TAG.search(m[3] or "")

@@ -1,0 +1,108 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [
+   {
+    "affects_tags": [
+     "ZON-201"
+    ],
+    "chunk_id": "src_09_datasets_12_bim_room_export_json#4",
+    "quote": "\"BIM export is authoritative for spatial identity and room volume only.",
+    "text": "BIM export is authoritative for spatial identity and room volume only."
+   }
+  ],
+  "behaviour_chunk_ids": [],
+  "connections": [
+   {
+    "chunk_id": "src_09_datasets_12_bim_room_export_json#2",
+    "from_role": "outlet",
+    "from_tag": "SRC-OA-201",
+    "medium_or_signal": "air",
+    "quote": "{\"connector_id\": \"SUP-201-A\", \"system\": \"OA-VENT-2\", \"role\": \"supply\"",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "supply_in",
+    "to_tag": "ZON-201"
+   },
+   {
+    "chunk_id": "src_09_datasets_12_bim_room_export_json#2",
+    "from_role": "exhaust_out",
+    "from_tag": "ZON-201",
+    "medium_or_signal": "air",
+    "quote": "{\"connector_id\": \"EXH-201-A\", \"system\": \"EA-VENT-2\", \"role\": \"exhaust\"",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "inlet",
+    "to_tag": "BND-201"
+   }
+  ],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_09_datasets_12_bim_room_export_json#0",
+    "date": "2026-01-20",
+    "file_name": null,
+    "quote": "\"revision\": \"BIM-2026-01-20\"",
+    "revision": null,
+    "role": "reference_data",
+    "tag": "BIM-2026-01-20",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_09_datasets_12_bim_room_export_json#1",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "volume",
+    "owner_tag": "ZON-201",
+    "provisional": false,
+    "quote": "\"reported_volume_m3\": 100.0",
+    "stated_status": null,
+    "unit": "m3",
+    "value": "100.0"
+   },
+   {
+    "chunk_id": "src_09_datasets_12_bim_room_export_json#1",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "maximum_occupancy",
+    "owner_tag": "SCH-OCC-201",
+    "provisional": false,
+    "quote": "\"design_people\": 15",
+    "stated_status": null,
+    "unit": "1",
+    "value": "15"
+   }
+  ],
+  "parts": [
+   {
+    "aliases": [
+     "RM-201"
+    ],
+    "attributes": [
+     {
+      "key": "level",
+      "value": "Level 02"
+     },
+     {
+      "key": "occupancy_classification",
+      "value": "Assembly - meeting/project room"
+     }
+    ],
+    "chunk_id": "src_09_datasets_12_bim_room_export_json#1",
+    "description": null,
+    "kind": "room_volume",
+    "name": "Seminar / Project Room 201",
+    "quote": "\"space_tag\": \"RM-201\", \"name\": \"Seminar / Project Room 201\", \"zone_tag\": \"ZON-201\"",
+    "tag": "ZON-201"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

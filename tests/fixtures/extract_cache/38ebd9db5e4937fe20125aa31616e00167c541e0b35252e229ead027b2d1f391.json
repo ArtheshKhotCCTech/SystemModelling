@@ -1,0 +1,139 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#75",
+    "from_role": null,
+    "from_tag": "DUCT-OUT-201",
+    "medium_or_signal": "Room air + CO2",
+    "quote": "Interface ID: IF-AIR-04 | From: DUCT-OUT-201 | From Port / Signal: port_b | To: BND-201 | To Port / Signal: airPort | Item / Quantity: Room air + CO2 | Direction: Duct -> boundary | Units: kg/s | Constraint / Semantics: Ideal pressure boundary.",
+    "signal_name": null,
+    "tag": "IF-AIR-04",
+    "to_role": "inlet",
+    "to_tag": "BND-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#76",
+    "from_role": "outlet",
+    "from_tag": "SRC-CO2-201",
+    "medium_or_signal": "CO2 trace substance",
+    "quote": "Interface ID: IF-TRC-01 | From: SRC-CO2-201 | From Port / Signal: tracePort | To: ZON-201 | To Port / Signal: traceInjection | Item / Quantity: CO2 trace substance | Direction: Source -> room | Units: kg/s CO2 | Constraint / Semantics: Actual CO2 addition = carrier m_flow * C_source.",
+    "signal_name": null,
+    "tag": "IF-TRC-01",
+    "to_role": "source_in",
+    "to_tag": "ZON-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#77",
+    "from_role": "y",
+    "from_tag": "SCH-OCC-201",
+    "medium_or_signal": "People count",
+    "quote": "Interface ID: IF-SIG-01 | From: SCH-OCC-201 | From Port / Signal: nPeo | To: GAIN-PEO-201 | To Port / Signal: u | Item / Quantity: People count | Direction: Schedule -> gain | Units: person | Constraint / Semantics: Piecewise constant integer count.",
+    "signal_name": null,
+    "tag": "IF-SIG-01",
+    "to_role": "u",
+    "to_tag": "GAIN-PEO-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#78",
+    "from_role": "y",
+    "from_tag": "GAIN-PEO-201",
+    "medium_or_signal": "Carrier mass flow",
+    "quote": "Interface ID: IF-SIG-02 | From: GAIN-PEO-201 | From Port / Signal: y | To: SRC-CO2-201 | To Port / Signal: m_flow | Item / Quantity: Carrier mass flow | Direction: Gain -> source | Units: kg/s | Constraint / Semantics: Gain = 8.18E-6/100 per person.",
+    "signal_name": null,
+    "tag": "IF-SIG-02",
+    "to_role": "m_flow_in",
+    "to_tag": "SRC-CO2-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#79",
+    "from_role": "y",
+    "from_tag": "SET-OA-201",
+    "medium_or_signal": "Outdoor CO2 mass fraction",
+    "quote": "Interface ID: IF-SIG-03 | From: SET-OA-201 | From Port / Signal: C_out | To: SRC-OA-201 | To Port / Signal: C | Item / Quantity: Outdoor CO2 mass fraction | Direction: Constant -> source | Units: kg/kg | Constraint / Semantics: 300 ppm = 0.3*C_nominal.",
+    "signal_name": null,
+    "tag": "IF-SIG-03",
+    "to_role": "c_in",
+    "to_tag": "SRC-OA-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#80",
+    "from_role": "concentration_out",
+    "from_tag": "ZON-201",
+    "medium_or_signal": "Room trace concentration",
+    "quote": "Interface ID: IF-SIG-04 | From: ZON-201 | From Port / Signal: C_room | To: SEN-CO2-201 | To Port / Signal: medium | Item / Quantity: Room trace concentration | Direction: Room -> sensor | Units: kg/kg | Constraint / Semantics: Ideal sensor in baseline.",
+    "signal_name": null,
+    "tag": "IF-SIG-04",
+    "to_role": "c_in",
+    "to_tag": "SEN-CO2-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#81",
+    "from_role": "c_out",
+    "from_tag": "SEN-CO2-201",
+    "medium_or_signal": "Measured CO2",
+    "quote": "Interface ID: IF-SIG-05 | From: SEN-CO2-201 | From Port / Signal: C | To: GAIN-NORM-201 | To Port / Signal: u | Item / Quantity: Measured CO2 | Direction: Sensor -> gain | Units: kg/kg | Constraint / Semantics: Normalize by 1/1.519E-3.",
+    "signal_name": null,
+    "tag": "IF-SIG-05",
+    "to_role": "u",
+    "to_tag": "GAIN-NORM-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#82",
+    "from_role": "y",
+    "from_tag": "GAIN-NORM-201",
+    "medium_or_signal": "Normalized CO2",
+    "quote": "Interface ID: IF-SIG-06 | From: GAIN-NORM-201 | From Port / Signal: y | To: CTL-CO2-201 | To Port / Signal: measurement | Item / Quantity: Normalized CO2 | Direction: Gain -> controller | Units: normalized | Constraint / Semantics: 1.0 corresponds to 1000 ppm.",
+    "signal_name": null,
+    "tag": "IF-SIG-06",
+    "to_role": "measurement_in",
+    "to_tag": "CTL-CO2-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#83",
+    "from_role": "y",
+    "from_tag": "SET-CO2-201",
+    "medium_or_signal": "Normalized setpoint",
+    "quote": "Interface ID: IF-SIG-07 | From: SET-CO2-201 | From Port / Signal: setpoint | To: CTL-CO2-201 | To Port / Signal: setpoint | Item / Quantity: Normalized setpoint | Direction: Constant -> controller | Units: normalized | Constraint / Semantics: Value = 1.0.",
+    "signal_name": null,
+    "tag": "IF-SIG-07",
+    "to_role": "setpoint_in",
+    "to_tag": "CTL-CO2-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#84",
+    "from_role": "command_out",
+    "from_tag": "CTL-CO2-201",
+    "medium_or_signal": "Air-change command",
+    "quote": "Interface ID: IF-SIG-08 | From: CTL-CO2-201 | From Port / Signal: ACH_cmd | To: GAIN-AIR-201 | To Port / Signal: u | Item / Quantity: Air-change command | Direction: Controller -> gain | Units: 1/h | Constraint / Semantics: Limited to 0.2..6 ACH.",
+    "signal_name": null,
+    "tag": "IF-SIG-08",
+    "to_role": "u",
+    "to_tag": "GAIN-AIR-201"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#85",
+    "from_role": "y",
+    "from_tag": "GAIN-AIR-201",
+    "medium_or_signal": "Source mass-flow command",
+    "quote": "Interface ID: IF-SIG-09 | From: GAIN-AIR-201 | From Port / Signal: m_flow_cmd | To: SRC-OA-201 | To Port / Signal: m_flow | Item / Quantity: Source mass-flow command | Direction: Gain -> fresh air | Units: kg/s | Constraint / Semantics: m_flow_cmd = -ACH*100*1.2/3600.",
+    "signal_name": null,
+    "tag": "IF-SIG-09",
+    "to_role": "m_flow_in",
+    "to_tag": "SRC-OA-201"
+   }
+  ],
+  "criteria": [],
+  "documents": [],
+  "parameters": [],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

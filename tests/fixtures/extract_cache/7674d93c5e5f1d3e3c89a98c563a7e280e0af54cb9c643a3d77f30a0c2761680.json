@@ -1,0 +1,392 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [
+   {
+    "affects_tags": [
+     "ZON-201"
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#34",
+    "quote": "Notes: Single-zone, perfectly mixed approximation.",
+    "text": "Single-zone, perfectly mixed approximation."
+   },
+   {
+    "affects_tags": [
+     "BND-201"
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#36",
+    "quote": "Notes: Ideal pressure sink.",
+    "text": "Ideal pressure sink."
+   },
+   {
+    "affects_tags": [
+     "SEN-CO2-201"
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#39",
+    "quote": "Notes: Ideal sensor in baseline model.",
+    "text": "Ideal sensor in baseline model."
+   }
+  ],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [],
+  "parameters": [
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#34",
+    "cited_document": "MDS-IAQ-01",
+    "configuration": "nominal",
+    "name": "volume",
+    "owner_tag": "ZON-201",
+    "provisional": false,
+    "quote": "Key Parameter: Volume | Value: 100 | Units: m^3",
+    "stated_status": null,
+    "unit": "m^3",
+    "value": "100"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#35",
+    "cited_document": "MDS-IAQ-01",
+    "configuration": "nominal",
+    "name": "outdoor_co2",
+    "owner_tag": "SRC-OA-201",
+    "provisional": false,
+    "quote": "Key Parameter: Outdoor CO2 | Value: 300 | Units: ppm",
+    "stated_status": null,
+    "unit": "ppm",
+    "value": "300"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#36",
+    "cited_document": "MDS-IAQ-01",
+    "configuration": "nominal",
+    "name": "pressure",
+    "owner_tag": "BND-201",
+    "provisional": false,
+    "quote": "Key Parameter: Pressure | Value: 101325 | Units: Pa",
+    "stated_status": null,
+    "unit": "Pa",
+    "value": "101325"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#37",
+    "cited_document": "MOD-NT-03",
+    "configuration": "nominal",
+    "name": "concentration",
+    "owner_tag": "SRC-CO2-201",
+    "provisional": false,
+    "quote": "Key Parameter: C_source | Value: 100 | Units: kg/kg",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "100"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#38",
+    "cited_document": "OCC-SCH-04",
+    "configuration": "nominal",
+    "name": "maximum_occupancy",
+    "owner_tag": "SCH-OCC-201",
+    "provisional": false,
+    "quote": "Key Parameter: Maximum occupancy | Value: 15 | Units: person",
+    "stated_status": null,
+    "unit": "person",
+    "value": "15"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#39",
+    "cited_document": "ICD-IAQ-03",
+    "configuration": "nominal",
+    "name": "nominal_concentration",
+    "owner_tag": "SEN-CO2-201",
+    "provisional": false,
+    "quote": "Key Parameter: Nominal concentration | Value: 0.001519 | Units: kg/kg",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "0.001519"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#40",
+    "cited_document": "CDS-IAQ-02",
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "GAIN-NORM-201",
+    "provisional": false,
+    "quote": "Key Parameter: Gain | Value: 658.327847 | Units: 1/(kg/kg)",
+    "stated_status": null,
+    "unit": "1/(kg/kg)",
+    "value": "658.327847"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#41",
+    "cited_document": "CR-IAQ-007",
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "Key Parameter: Kp | Value: 6 | Units: ACH/normalized",
+    "stated_status": null,
+    "unit": "ACH/normalized",
+    "value": "6"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#42",
+    "cited_document": "CDS-IAQ-02",
+    "configuration": "nominal",
+    "name": "value",
+    "owner_tag": "SET-CO2-201",
+    "provisional": false,
+    "quote": "Key Parameter: Setpoint | Value: 1 | Units: normalized",
+    "stated_status": null,
+    "unit": "normalized",
+    "value": "1"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#43",
+    "cited_document": "CDS-IAQ-02",
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "GAIN-AIR-201",
+    "provisional": false,
+    "quote": "Key Parameter: Gain | Value: -0.0333333333 | Units: kg/s per ACH",
+    "stated_status": null,
+    "unit": "kg/s per ACH",
+    "value": "-0.0333333333"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#44",
+    "cited_document": "MOD-NT-03",
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "GAIN-PEO-201",
+    "provisional": false,
+    "quote": "Key Parameter: Gain | Value: 8.18e-08 | Units: kg/(s.person)",
+    "stated_status": null,
+    "unit": "kg/(s.person)",
+    "value": "8.18e-08"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#45",
+    "cited_document": "URS/ICD",
+    "configuration": "nominal",
+    "name": "concentration",
+    "owner_tag": "SET-OA-201",
+    "provisional": false,
+    "quote": "Key Parameter: C_out | Value: 0.0004557 | Units: kg/kg",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "0.0004557"
+   }
+  ],
+  "parts": [
+   {
+    "aliases": [
+     "volume"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "Controlled air volume"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#34",
+    "description": null,
+    "kind": "room_volume",
+    "name": null,
+    "quote": "Tag: ZON-201 | Alias / Legacy Name: volume | Type: Well-mixed room volume | Role: Controlled air volume",
+    "tag": "ZON-201"
+   },
+   {
+    "aliases": [
+     "freshAir"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "Outdoor air supply"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#35",
+    "description": null,
+    "kind": "mass_flow_source",
+    "name": null,
+    "quote": "Tag: SRC-OA-201 | Alias / Legacy Name: freshAir | Type: Controlled mass-flow source | Role: Outdoor air supply",
+    "tag": "SRC-OA-201"
+   },
+   {
+    "aliases": [
+     "boundary4"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "Room exhaust sink"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#36",
+    "description": null,
+    "kind": "pressure_boundary",
+    "name": null,
+    "quote": "Tag: BND-201 | Alias / Legacy Name: boundary4 | Type: Pressure boundary | Role: Room exhaust sink",
+    "tag": "BND-201"
+   },
+   {
+    "aliases": [
+     "peopleSource"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "Occupant CO2 generation"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#37",
+    "description": null,
+    "kind": "trace_substance_source",
+    "name": null,
+    "quote": "Tag: SRC-CO2-201 | Alias / Legacy Name: peopleSource | Type: Trace-substance mass source | Role: Occupant CO2 generation",
+    "tag": "SRC-CO2-201"
+   },
+   {
+    "aliases": [
+     "NumberOfPeople"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "People count source"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#38",
+    "description": null,
+    "kind": "schedule_table",
+    "name": null,
+    "quote": "Tag: SCH-OCC-201 | Alias / Legacy Name: NumberOfPeople | Type: Occupancy schedule | Role: People count source",
+    "tag": "SCH-OCC-201"
+   },
+   {
+    "aliases": [
+     "traceVolume"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "Measures room concentration"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#39",
+    "description": null,
+    "kind": "concentration_sensor",
+    "name": null,
+    "quote": "Tag: SEN-CO2-201 | Alias / Legacy Name: traceVolume | Type: CO2 trace sensor | Role: Measures room concentration",
+    "tag": "SEN-CO2-201"
+   },
+   {
+    "aliases": [
+     "gainSensor"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "Normalize CO2 measurement"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#40",
+    "description": null,
+    "kind": "gain",
+    "name": null,
+    "quote": "Tag: GAIN-NORM-201 | Alias / Legacy Name: gainSensor | Type: Gain | Role: Normalize CO2 measurement",
+    "tag": "GAIN-NORM-201"
+   },
+   {
+    "aliases": [
+     "PID"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "Ventilation feedback"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#41",
+    "description": null,
+    "kind": "p_controller",
+    "name": null,
+    "quote": "Tag: CTL-CO2-201 | Alias / Legacy Name: PID | Type: PID/P controller | Role: Ventilation feedback",
+    "tag": "CTL-CO2-201"
+   },
+   {
+    "aliases": [
+     "CO2Set"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "Normalized CO2 limit"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#42",
+    "description": null,
+    "kind": "constant",
+    "name": null,
+    "quote": "Tag: SET-CO2-201 | Alias / Legacy Name: CO2Set | Type: Constant setpoint | Role: Normalized CO2 limit",
+    "tag": "SET-CO2-201"
+   },
+   {
+    "aliases": [
+     "gain1"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "ACH to source mass flow"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#43",
+    "description": null,
+    "kind": "gain",
+    "name": null,
+    "quote": "Tag: GAIN-AIR-201 | Alias / Legacy Name: gain1 | Type: Gain | Role: ACH to source mass flow",
+    "tag": "GAIN-AIR-201"
+   },
+   {
+    "aliases": [
+     "gain"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "People count to carrier mass flow"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#44",
+    "description": null,
+    "kind": "gain",
+    "name": null,
+    "quote": "Tag: GAIN-PEO-201 | Alias / Legacy Name: gain | Type: Gain | Role: People count to carrier mass flow",
+    "tag": "GAIN-PEO-201"
+   },
+   {
+    "aliases": [
+     "CAtm"
+    ],
+    "attributes": [
+     {
+      "key": "role",
+      "value": "Outdoor trace concentration"
+     }
+    ],
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#45",
+    "description": null,
+    "kind": "constant",
+    "name": null,
+    "quote": "Tag: SET-OA-201 | Alias / Legacy Name: CAtm | Type: Constant | Role: Outdoor trace concentration",
+    "tag": "SET-OA-201"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

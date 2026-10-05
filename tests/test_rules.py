@@ -70,7 +70,13 @@ def test_nothing_imports_cli():
 
 
 def test_no_case_specific_values_in_package():
-    pattern = re.compile(r"TK-10|XV-10|RM-201|\bB[1-7]\b|0\.78|0\.80|_sysmlv2_")
-    hits = [f"{p.relative_to(PKG)}: {m.group(0)}" for p in SOURCES
+    # L1 tags and values, and L2's (phase 10, FR-10 acceptance 5): the -201 tags, the 1000 ppm
+    # mass fraction, the per-person emission, the legacy model name. Scanned: the package's
+    # Python, Modelica and template files, and the catalogue, which is data but not test data.
+    pattern = re.compile(r"TK-10|XV-10|RM-201|\bB[1-7]\b|0\.78|0\.80|_sysmlv2_"
+                         r"|-201\b|1\.519|0\.001519|8\.18|RoomCO2")
+    files = SOURCES + sorted(PKG.rglob("*.mo")) + sorted(PKG.rglob("*.j2"))
+    files.append(PKG.parent / "catalogue" / "components.yaml")
+    hits = [f"{p.relative_to(PKG.parent)}: {m.group(0)}" for p in files
             for m in pattern.finditer(p.read_text(encoding="utf-8"))]
     assert hits == []

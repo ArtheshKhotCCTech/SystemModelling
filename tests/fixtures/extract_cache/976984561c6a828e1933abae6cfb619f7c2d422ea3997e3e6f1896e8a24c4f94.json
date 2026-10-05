@@ -1,0 +1,312 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [
+   {
+    "affects_tags": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "quote": "// ARCHIVED MODEL - useful for topology, NOT all effective values.",
+    "text": "The model is archived and useful for topology, but not all values are effective."
+   }
+  ],
+  "behaviour_chunk_ids": [],
+  "connections": [
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#3",
+    "from_role": "y",
+    "from_tag": "SET-OA-201",
+    "medium_or_signal": "signal_real",
+    "quote": "CAtm -> freshAir -> ductIn -> volume -> ductOut -> boundary4",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "c_in",
+    "to_tag": "SRC-OA-201"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#3",
+    "from_role": "y",
+    "from_tag": "SCH-OCC-201",
+    "medium_or_signal": "signal_real",
+    "quote": "NumberOfPeople -> gain -> peopleSource -> volume",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "m_flow_in",
+    "to_tag": "SRC-CO2-201"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#3",
+    "from_role": "concentration_out",
+    "from_tag": "ZON-201",
+    "medium_or_signal": "signal_real",
+    "quote": "volume.C -> traceVolume -> gainSensor -> PID -> gain1 -> freshAir.m_flow",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "c_in",
+    "to_tag": "SEN-CO2-201"
+   }
+  ],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": false,
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "date": "2026-03-05",
+    "file_name": null,
+    "quote": "within Hackathon.Legacy;",
+    "revision": "Archived 0.9",
+    "role": "legacy_model",
+    "tag": "06_legacy_code/07_legacy_co2_control.mo",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "volume",
+    "owner_tag": "ZON-201",
+    "provisional": false,
+    "quote": "parameter Real V = 100 \"Room volume [m3]\";",
+    "stated_status": null,
+    "unit": "m3",
+    "value": "100"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "density",
+    "owner_tag": "ZON-201",
+    "provisional": false,
+    "quote": "parameter Real rho = 1.2 \"Nominal air density [kg/m3]\";",
+    "stated_status": null,
+    "unit": "kg/m3",
+    "value": "1.2"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "nominal_concentration",
+    "owner_tag": "SEN-CO2-201",
+    "provisional": false,
+    "quote": "parameter Real C_nominal = 1.519e-3 \"Nominal trace concentration [kg/kg]\";",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "1.519e-3"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "concentration",
+    "owner_tag": "SET-OA-201",
+    "provisional": false,
+    "quote": "parameter Real C_out = 0.35*C_nominal \"STALE: 350 ppm equivalent\";",
+    "stated_status": null,
+    "unit": "1",
+    "value": "0.35*C_nominal"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "co2_emission_per_person",
+    "owner_tag": "SRC-CO2-201",
+    "provisional": false,
+    "quote": "parameter Real GPeo = 8.18e-6 \"CO2 generation [kg/s/person]\";",
+    "stated_status": null,
+    "unit": "kg/s/person",
+    "value": "8.18e-6"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "concentration",
+    "owner_tag": "SRC-CO2-201",
+    "provisional": false,
+    "quote": "parameter Real CPeo = 100 \"Trace concentration used by peopleSource [kg/kg]\";",
+    "stated_status": null,
+    "unit": "kg/kg",
+    "value": "100"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "parameter Real Kp = 4.0 \"STALE controller tuning [ACH/normalized]\";",
+    "stated_status": null,
+    "unit": "ACH/normalized",
+    "value": "4.0"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "bias",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "parameter Real uBias = 3.0 \"STALE ACH bias\";",
+    "stated_status": null,
+    "unit": "ACH",
+    "value": "3.0"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "output_min",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "parameter Real uMin = 0.2;",
+    "stated_status": null,
+    "unit": "1",
+    "value": "0.2"
+   },
+   {
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "output_max",
+    "owner_tag": "CTL-CO2-201",
+    "provisional": false,
+    "quote": "parameter Real uMax = 6.0;",
+    "stated_status": null,
+    "unit": "1",
+    "value": "6.0"
+   }
+  ],
+  "parts": [
+   {
+    "aliases": [
+     "volume"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "room_volume",
+    "name": null,
+    "quote": "parameter Real V = 100 \"Room volume [m3]\";",
+    "tag": "ZON-201"
+   },
+   {
+    "aliases": [
+     "volume"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "room_volume",
+    "name": null,
+    "quote": "parameter Real rho = 1.2 \"Nominal air density [kg/m3]\";",
+    "tag": "ZON-201"
+   },
+   {
+    "aliases": [
+     "traceVolume"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "concentration_sensor",
+    "name": null,
+    "quote": "parameter Real C_nominal = 1.519e-3 \"Nominal trace concentration [kg/kg]\";",
+    "tag": "SEN-CO2-201"
+   },
+   {
+    "aliases": [
+     "CAtm"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "constant",
+    "name": null,
+    "quote": "parameter Real C_out = 0.35*C_nominal \"STALE: 350 ppm equivalent\";",
+    "tag": "SET-OA-201"
+   },
+   {
+    "aliases": [
+     "peopleSource"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "trace_substance_source",
+    "name": null,
+    "quote": "parameter Real GPeo = 8.18e-6 \"CO2 generation [kg/s/person]\";",
+    "tag": "SRC-CO2-201"
+   },
+   {
+    "aliases": [
+     "peopleSource"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "trace_substance_source",
+    "name": null,
+    "quote": "parameter Real CPeo = 100 \"Trace concentration used by peopleSource [kg/kg]\";",
+    "tag": "SRC-CO2-201"
+   },
+   {
+    "aliases": [
+     "PID"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "p_controller",
+    "name": null,
+    "quote": "parameter Real Kp = 4.0 \"STALE controller tuning [ACH/normalized]\";",
+    "tag": "CTL-CO2-201"
+   },
+   {
+    "aliases": [
+     "PID"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "p_controller",
+    "name": null,
+    "quote": "parameter Real uBias = 3.0 \"STALE ACH bias\";",
+    "tag": "CTL-CO2-201"
+   },
+   {
+    "aliases": [
+     "PID"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "p_controller",
+    "name": null,
+    "quote": "parameter Real uMin = 0.2;",
+    "tag": "CTL-CO2-201"
+   },
+   {
+    "aliases": [
+     "PID"
+    ],
+    "attributes": [],
+    "chunk_id": "src_06_legacy_code_07_legacy_co2_control_mo#0",
+    "description": null,
+    "kind": "p_controller",
+    "name": null,
+    "quote": "parameter Real uMax = 6.0;",
+    "tag": "CTL-CO2-201"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

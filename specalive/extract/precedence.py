@@ -4,7 +4,8 @@
 # a register row takes the rank of the record it cites — after first honouring status columns the
 # evidence itself carries (requirement 12). The winner becomes effective, each losing value is kept
 # as superseded and named in a Conflict; configuration variants are kept without conflict; ties
-# and provisional winners become Questions.
+# and provisional winners become Questions. A system-level value named like one part's value is
+# ranked with it (fresh-run finding: one register's rows came back under two owners).
 from __future__ import annotations
 
 import math
@@ -395,6 +396,21 @@ class _Resolver:
             if pid in self.used:
                 pid = f"{pid}_{v.best.authority}"
             self.out.parameters.append(_parameter(self.unique(pid), v, status))
+
+
+def adopt_system_values(cands: list[tuple[str, Found[ParameterFragment]]]
+                        ) -> list[tuple[str, Found[ParameterFragment]]]:
+    """A system-level value named like a value of exactly one part is that part's value, so the
+    two are ranked against each other; with several such parts it stays system-level."""
+    owners: dict[str, set[str]] = {}
+    for owner, f in cands:
+        if owner != SYSTEM_OWNER:
+            owners.setdefault(f.fragment.name, set()).add(owner)
+    out = []
+    for owner, f in cands:
+        named = owners.get(f.fragment.name, set())
+        out.append((next(iter(named)) if owner == SYSTEM_OWNER and len(named) == 1 else owner, f))
+    return out
 
 
 def resolve_parameters(cands: list[tuple[str, Found[ParameterFragment]]],

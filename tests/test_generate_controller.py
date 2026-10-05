@@ -76,9 +76,9 @@ def test_initial_state_is_the_start_value(text):
 
 
 def test_connectors_come_from_the_owner_ports(text):
-    assert 'SpecAlive.Interfaces.RealInput level1(unit = "m") "[IR plc_101_level1]";' in text
-    assert 'SpecAlive.Interfaces.BooleanInput shut "[IR plc_101_shut]";' in text
-    assert 'SpecAlive.Interfaces.BooleanOutput valve2 "[IR plc_101_valve2]";' in text
+    assert 'SpecAlive.Interfaces.RealInput level1(unit = "m") "[IR plc_101_level1]" annotation(Placement(' in text
+    assert 'SpecAlive.Interfaces.BooleanInput shut "[IR plc_101_shut]" annotation(Placement(' in text
+    assert 'SpecAlive.Interfaces.BooleanOutput valve2 "[IR plc_101_valve2]" annotation(Placement(' in text
 
 
 def test_machine_parameters_are_declared_without_values(rendered, text):
@@ -316,3 +316,14 @@ def test_a_timer_nothing_freezes_has_no_remaining_time():
 
 def test_a_frozen_timer_still_has_its_remaining_time(text):
     assert "discrete Real wait_after_fill_timer_remaining(start = 0, fixed = true)" in text
+
+
+def test_a_timer_nothing_starts_is_a_constant_that_never_expires():
+    # adversarial finding (contradiction spec): a discrete deadline no when-clause assigns does
+    # not compile; a timer that is never started simply never expires
+    ir = no_history_ir()
+    ir["state_machines"][0]["states"][2]["entry_actions"] = []
+    out = render_plant(ir)
+    assert "discrete Real hold_timer_deadline" not in out
+    assert "parameter Real hold_timer_deadline = Modelica.Constants.inf" in out
+    assert "hold_timer_deadline :=" not in out

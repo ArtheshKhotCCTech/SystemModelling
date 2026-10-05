@@ -59,7 +59,7 @@ def test_topology_holds_under_a_rename(plant):
 def test_topology_breaks_when_a_component_or_connection_changes(plant):
     base = compile_loop.topology(plant.text)
     no_tank = "\n".join(line for line in plant.text.splitlines()
-                        if not line.rstrip().endswith('[IR tank]";'))
+                        if '[IR tank]"' not in line)
     no_connect = plant.text.replace("connect(tank.level, ctl.level)", "// removed", 1)
     other_class = plant.text.replace("SpecAlive.Components.FluidSink drain",
                                      "SpecAlive.Components.FluidSource drain")
@@ -196,7 +196,7 @@ def test_llm_repair_that_deletes_a_component_is_rejected(tmp_path, plant):
     broken = plant.text.replace("  equation\n", "  equation\n    BROKEN\n", 1)
     assert broken != plant.text
     deletes_tank = "\n".join(line for line in plant.text.splitlines()
-                             if not line.rstrip().endswith('[IR tank]";')) + "\n"
+                             if '[IR tank]"' not in line) + "\n"
     llm = ScriptedLLM([deletes_tank, plant.text])
     result, log, _ = run(tmp_path, broken, llm=llm)
     kinds = [(a["kind"], a["topology_held"], a["result"]) for a in log["attempts"]]

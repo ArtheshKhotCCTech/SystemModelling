@@ -1,0 +1,126 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [],
+  "documents": [],
+  "parameters": [],
+  "parts": [],
+  "requirements": [
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#12",
+    "quote": "Req ID: IAQ-CTL-001 | Source / Rev: CDS-IAQ-02 Rev B | Requirement Text: The controller input shall be normalized such that a measured concentration of 1.519E-3 kg/kg produces a normalized value of 1.0.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-CTL-001",
+    "text": "The controller input shall be normalized such that a measured concentration of 1.519E-3 kg/kg produces a normalized value of 1.0."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#13",
+    "quote": "Req ID: IAQ-CTL-002 | Source / Rev: CDS-IAQ-02 Rev B | Requirement Text: The CO2 setpoint presented to the controller shall be 1.0 in normalized concentration units.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-CTL-002",
+    "text": "The CO2 setpoint presented to the controller shall be 1.0 in normalized concentration units."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#14",
+    "quote": "Req ID: IAQ-CTL-003 | Source / Rev: CDS-IAQ-02 Rev B | Requirement Text: The ventilation controller output shall represent an air-change-rate command in ACH.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-CTL-003",
+    "text": "The ventilation controller output shall represent an air-change-rate command in ACH."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#15",
+    "quote": "Req ID: IAQ-CTL-004 | Source / Rev: CDS-IAQ-02 Rev B | Requirement Text: The ventilation command shall be limited to 0.2 through 6.0 ACH during automatic operation.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-CTL-004",
+    "text": "The ventilation command shall be limited to 0.2 through 6.0 ACH during automatic operation."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#16",
+    "quote": "Req ID: IAQ-CTL-005 | Source / Rev: CDS-IAQ-02 Rev B | Requirement Text: The ACH command shall be converted to source mass-flow magnitude using room volume, nominal air density and 3600 s/h.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-CTL-005",
+    "text": "The ACH command shall be converted to source mass-flow magnitude using room volume, nominal air density and 3600 s/h."
+   },
+   {
+    "category": "Interface",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#17",
+    "quote": "Req ID: IAQ-CTL-006 | Source / Rev: CDS-IAQ-02 Rev B | Requirement Text: The simulation source component shall use negative mass-flow sign for air entering the room because of the source-port sign convention.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-CTL-006",
+    "text": "The simulation source component shall use negative mass-flow sign for air entering the room because of the source-port sign convention."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#18",
+    "quote": "Req ID: IAQ-CTL-007 | Source / Rev: DR-IAQ-05 | Requirement Text: The controller shall use the absolute 1000 ppm room concentration as its compliance limit.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-CTL-007",
+    "text": "The controller shall use the absolute 1000 ppm room concentration as its compliance limit."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#19",
+    "quote": "Req ID: IAQ-CTL-008 | Source / Rev: CDS-IAQ-02 Rev A | Requirement Text: The controller proportional gain shall be 4.0 ACH per normalized concentration error.",
+    "status": "superseded",
+    "superseded_by": "CR-IAQ-007",
+    "tag": "IAQ-CTL-008",
+    "text": "The controller proportional gain shall be 4.0 ACH per normalized concentration error."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#20",
+    "quote": "Req ID: IAQ-CTL-009 | Source / Rev: CR-IAQ-007 | Requirement Text: The controller proportional gain shall be 6.0 ACH per normalized concentration error with an output bias of 3.5 ACH.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-CTL-009",
+    "text": "The controller proportional gain shall be 6.0 ACH per normalized concentration error with an output bias of 3.5 ACH."
+   },
+   {
+    "category": "Control",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#21",
+    "quote": "Req ID: IAQ-CTL-010 | Source / Rev: CR-IAQ-007 | Requirement Text: Integral action shall be disabled in the released hackathon reference run to avoid negative windup during long unoccupied periods.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-CTL-010",
+    "text": "Integral action shall be disabled in the released hackathon reference run to avoid negative windup during long unoccupied periods."
+   },
+   {
+    "category": "Schedule",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#22",
+    "quote": "Req ID: IAQ-SCH-001 | Source / Rev: OCC-SCH-04 | Requirement Text: The controller demonstration shall use the approved weekday occupancy schedule with a maximum of 15 occupants.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-SCH-001",
+    "text": "The controller demonstration shall use the approved weekday occupancy schedule with a maximum of 15 occupants."
+   },
+   {
+    "category": "Schedule",
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#23",
+    "quote": "Req ID: IAQ-SCH-002 | Source / Rev: OCC-SCH-04 | Requirement Text: The number-of-people signal shall be piecewise constant between defined schedule change times.",
+    "status": "active",
+    "superseded_by": null,
+    "tag": "IAQ-SCH-002",
+    "text": "The number-of-people signal shall be piecewise constant between defined schedule change times."
+   }
+  ],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

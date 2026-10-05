@@ -40,6 +40,7 @@ from specalive.config import ConfigError, Settings, load_settings
 from specalive.core.catalogue import CatalogueError, load_catalogue
 from specalive.extract.extract import (
     IR_FILE,
+    STRUCTURE_WORKERS,
     EvidenceError,
     ExtractError,
     load_evidence,
@@ -206,7 +207,9 @@ def cmd_extract(settings: Settings, evidence: Path | None, text: str | None,
     bundle, out = got
     try:
         result = run_extract(bundle, llm or LLMClient(settings),
-                             progress=progress or (lambda message: None))
+                             progress=progress or (lambda message: None),
+                             workers=STRUCTURE_WORKERS
+                             if getattr(llm, "parallel_safe", llm is None) else 1)
     except LLMError as exc:
         print(f"specalive extract: infrastructure problem: {_redact(str(exc), settings)}",
               file=sys.stderr)

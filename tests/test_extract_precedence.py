@@ -277,3 +277,17 @@ def test_cited_document_matches_a_bundle_file_named_in_its_quote():
                             date=None, revision=None, file_name=None)
     docs, cited = build_registry(sources, [found(frag, source_id="idx", role="register")])
     assert cited == [] and docs.get("IDX-5").source_id == "src_05_mail_eml"
+
+
+def test_a_system_value_named_like_one_parts_value_joins_that_part():
+    # fresh-run finding: one register's controller rows came back owned by the system in one
+    # batch and by the controller in another, so 10 s and 12 s were never compared
+    from specalive.core.ir import SYSTEM_OWNER
+    from specalive.extract.precedence import adopt_system_values
+
+    cands = [cand("plc", "wait_low", "10", "s"), cand(SYSTEM_OWNER, "wait_low", "12", "s"),
+             cand(SYSTEM_OWNER, "stop_time", "900", "s"),
+             cand("tk_1", "high", "1", "m"), cand("tk_2", "high", "2", "m"),
+             cand(SYSTEM_OWNER, "high", "3", "m")]  # two parts own "high": not adopted
+    owners = [o for o, _ in adopt_system_values(cands)]
+    assert owners == ["plc", "plc", SYSTEM_OWNER, "tk_1", "tk_2", SYSTEM_OWNER]

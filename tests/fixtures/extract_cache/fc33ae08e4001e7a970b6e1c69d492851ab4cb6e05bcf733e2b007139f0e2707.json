@@ -1,0 +1,239 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#9",
+    "names": [
+     "V1",
+     "V2",
+     "V3"
+    ],
+    "quote": "Valve Command Pattern (V1,V2,V3): 0,0,0"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#10",
+    "names": [
+     "LT-101",
+     "T1_High"
+    ],
+    "quote": "Transition when LT-101 >= T1_High."
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#14",
+    "names": [
+     "LT-102",
+     "T2_Low"
+    ],
+    "quote": "Transition when LT-102 <= T2_Low."
+   }
+  ],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_04_design_notes_04_control_logic_design_notes_docx#9",
+   "src_04_design_notes_04_control_logic_design_notes_docx#10",
+   "src_04_design_notes_04_control_logic_design_notes_docx#11",
+   "src_04_design_notes_04_control_logic_design_notes_docx#12",
+   "src_04_design_notes_04_control_logic_design_notes_docx#13",
+   "src_04_design_notes_04_control_logic_design_notes_docx#14",
+   "src_04_design_notes_04_control_logic_design_notes_docx#15",
+   "src_04_design_notes_04_control_logic_design_notes_docx#16",
+   "src_04_design_notes_04_control_logic_design_notes_docx#17",
+   "src_04_design_notes_04_control_logic_design_notes_docx#18",
+   "src_04_design_notes_04_control_logic_design_notes_docx#19",
+   "src_04_design_notes_04_control_logic_design_notes_docx#20",
+   "src_04_design_notes_04_control_logic_design_notes_docx#21",
+   "src_04_design_notes_04_control_logic_design_notes_docx#22",
+   "src_04_design_notes_04_control_logic_design_notes_docx#23",
+   "src_04_design_notes_04_control_logic_design_notes_docx#24",
+   "src_04_design_notes_04_control_logic_design_notes_docx#25",
+   "src_04_design_notes_04_control_logic_design_notes_docx#26",
+   "src_04_design_notes_04_control_logic_design_notes_docx#27",
+   "src_04_design_notes_04_control_logic_design_notes_docx#28",
+   "src_04_design_notes_04_control_logic_design_notes_docx#29",
+   "src_04_design_notes_04_control_logic_design_notes_docx#30",
+   "src_04_design_notes_04_control_logic_design_notes_docx#31",
+   "src_04_design_notes_04_control_logic_design_notes_docx#32",
+   "src_04_design_notes_04_control_logic_design_notes_docx#33",
+   "src_04_design_notes_04_control_logic_design_notes_docx#34"
+  ],
+  "connections": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#9",
+    "from_role": "cmd_out",
+    "from_tag": "PB-START",
+    "medium_or_signal": "signal_bool",
+    "quote": "A START edge begins FILL_T1.",
+    "signal_name": null,
+    "tag": null,
+    "to_role": null,
+    "to_tag": "PLC-101"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#10",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "signal_bool",
+    "quote": "Command XV-101 open.",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "cmd_in",
+    "to_tag": "XV-101"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#12",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "signal_bool",
+    "quote": "Command XV-102 open.",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "cmd_in",
+    "to_tag": "XV-102"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#14",
+    "from_role": null,
+    "from_tag": "PLC-101",
+    "medium_or_signal": "signal_bool",
+    "quote": "Command XV-103 open.",
+    "signal_name": null,
+    "tag": null,
+    "to_role": "cmd_in",
+    "to_tag": "XV-103"
+   }
+  ],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#1",
+    "date": "2026-02-20",
+    "file_name": null,
+    "quote": "Document: CDS-02",
+    "revision": "B",
+    "role": "design_note",
+    "tag": "CDS-02",
+    "title": "CONTROL LOGIC DESIGN NOTE Two-Tank Fill/Transfer/Drain Controller"
+   }
+  ],
+  "parameters": [],
+  "parts": [
+   {
+    "aliases": [
+     "valve1",
+     "V1"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#9",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "State: IDLE | Valve Command Pattern (V1,V2,V3): 0,0,0",
+    "tag": "XV-101"
+   },
+   {
+    "aliases": [
+     "valve2",
+     "V2"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#9",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "State: IDLE | Valve Command Pattern (V1,V2,V3): 0,0,0",
+    "tag": "XV-102"
+   },
+   {
+    "aliases": [
+     "valve3",
+     "V3"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#9",
+    "description": null,
+    "kind": "on_off_valve",
+    "name": null,
+    "quote": "State: IDLE | Valve Command Pattern (V1,V2,V3): 0,0,0",
+    "tag": "XV-103"
+   },
+   {
+    "aliases": [
+     "level1"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#10",
+    "description": null,
+    "kind": "level_sensor",
+    "name": null,
+    "quote": "Transition when LT-101 >= T1_High.",
+    "tag": "LT-101"
+   },
+   {
+    "aliases": [
+     "level2"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#14",
+    "description": null,
+    "kind": "level_sensor",
+    "name": null,
+    "quote": "Transition when LT-102 <= T2_Low.",
+    "tag": "LT-102"
+   },
+   {
+    "aliases": [
+     "shut"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#19",
+    "description": null,
+    "kind": "command_button",
+    "name": null,
+    "quote": "SHUT has the highest command priority.",
+    "tag": "PB-SHUT"
+   },
+   {
+    "aliases": [
+     "stop"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#20",
+    "description": null,
+    "kind": "command_button",
+    "name": null,
+    "quote": "STOP has the next priority.",
+    "tag": "PB-STOP"
+   },
+   {
+    "aliases": [
+     "start"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#21",
+    "description": null,
+    "kind": "command_button",
+    "name": null,
+    "quote": "START has the lowest priority.",
+    "tag": "PB-START"
+   },
+   {
+    "aliases": [
+     "tankController"
+    ],
+    "attributes": [],
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#7",
+    "description": null,
+    "kind": "sequence_controller",
+    "name": null,
+    "quote": "This note defines the controller state semantics",
+    "tag": "PLC-101"
+   }
+  ],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

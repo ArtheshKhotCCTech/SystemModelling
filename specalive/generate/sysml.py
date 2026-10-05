@@ -49,6 +49,8 @@ UNIT_TYPES: dict[str, tuple[str, str | None]] = {
     "m2": ("AreaValue", "m^2"),
     "m3": ("VolumeValue", "m^3"),
     "s": ("TimeValue", "s"),
+    "kg": ("MassValue", "kg"),
+    "kg/m3": ("MassDensityValue", "kg/m^3"),
     "kg/s": ("MassFlowRateValue", "kg/s"),
     "m3/s": ("VolumeFlowRateValue", "m^3/s"),
     "1": ("Real", None),
@@ -339,17 +341,18 @@ class _Builder:
         views = []
         for def_name, kind in sorted(by_def.items()):
             entry = self.cat.entry(kind)
-            attrs: dict[str, str] = {}
+            attrs: dict[str, str | None] = {}
             for p in self.m.parameters:
                 owner = self.parts.get(p.owner)
                 if p.status != "effective" or owner is None or owner.kind != kind:
                     continue
                 vtype = self.value_type(p)
-                if attrs.setdefault(p.name, vtype) != vtype:
-                    raise SysmlGenerationError(f"kind {kind!r}: attribute {p.name!r} is "
-                                               f"{attrs[p.name]} on one part and {vtype} on "
-                                               f"another ({p.id!r})")
-            members = [f"attribute {sysml_name(n)} : {t}" for n, t in sorted(attrs.items())]
+                # a block's value has the unit of its use (a gain on kg/kg here, on 1/s there):
+                # the def leaves it untyped and each usage binds its own typed value
+                if attrs.setdefault(p.name, vtype) not in (vtype, None):
+                    attrs[p.name] = None
+            members = [f"attribute {sysml_name(n)}" + (f" : {t}" if t else "")
+                       for n, t in sorted(attrs.items())]
             for role, spec in sorted(entry.ports.items()):
                 conj = "~" if spec.direction == "in" else ""
                 members.append(f"port {sysml_name(role)} : {conj}{DOMAIN_PORTS[spec.domain][0]}")

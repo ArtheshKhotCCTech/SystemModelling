@@ -1,0 +1,191 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [],
+  "assumptions": [],
+  "behaviour_chunk_ids": [],
+  "connections": [],
+  "criteria": [
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#104",
+    "quote": "24-hour trend test and <=1000 ppm acceptance criteria issued.",
+    "tag": null,
+    "text": "Max CO2 <= 1000 ppm"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#107",
+    "quote": "Acceptance Criterion: Max CO2 <= 1000 ppm",
+    "tag": null,
+    "text": "Max CO2 <= 1000 ppm"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#108",
+    "quote": "Acceptance Criterion: Both representations consistent within rounding",
+    "tag": null,
+    "text": "Both representations consistent within rounding"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#109",
+    "quote": "Acceptance Criterion: Product m_flow*C_source = 8.18E-6 kg/s",
+    "tag": null,
+    "text": "Product m_flow*C_source = 8.18E-6 kg/s"
+   }
+  ],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#97",
+    "date": "2026-01-08",
+    "file_name": null,
+    "quote": "Date: 2026-01-08 | Record: URS-IAQ-001 | Revision: A | Status: Released | Affected Item(s): CO2 limit, room volume, occupant emission | Change Summary: Initial owner requirements issued. | Approved By: M. Ortega | Precedence Note: Baseline requirement source.",
+    "revision": "A",
+    "role": "change_record",
+    "tag": "URS-IAQ-001",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#98",
+    "date": "2026-01-22",
+    "file_name": null,
+    "quote": "Date: 2026-01-22 | Record: MDS-IAQ-01 | Revision: 1.1 | Status: Released | Affected Item(s): Room and air-flow modeling data | Change Summary: 100 m3 volume and 1.2 kg/m3 nominal density frozen. | Approved By: L. Chen | Precedence Note: Technical basis.",
+    "revision": "1.1",
+    "role": "change_record",
+    "tag": "MDS-IAQ-01",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#99",
+    "date": "2026-02-01",
+    "file_name": null,
+    "quote": "Date: 2026-02-01 | Record: CDS-IAQ-02 | Revision: A | Status: Released | Affected Item(s): Controller tuning | Change Summary: Initial Kp=4.0 and integral enabled. | Approved By: N. Shah | Precedence Note: Superseded in part by CR-IAQ-007.",
+    "revision": "A",
+    "role": "change_record",
+    "tag": "CDS-IAQ-02",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#100",
+    "date": "2026-02-07",
+    "file_name": null,
+    "quote": "Date: 2026-02-07 | Record: ICD-IAQ-03 | Revision: B | Status: Released | Affected Item(s): Signal units and normalization | Change Summary: Trace-substance interfaces frozen in kg/kg. | Approved By: N. Shah | Precedence Note: Controls interface baseline.",
+    "revision": "B",
+    "role": "change_record",
+    "tag": "ICD-IAQ-03",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#101",
+    "date": "2026-02-14",
+    "file_name": null,
+    "quote": "Date: 2026-02-14 | Record: DR-IAQ-05 | Revision: Final | Status: Approved | Affected Item(s): CO2 compliance interpretation | Change Summary: Confirmed 1000 ppm absolute, rejected '1000 ppm above outdoor' interpretation. | Approved By: Design Review Board | Precedence Note: Approved decision resolves email ambiguity.",
+    "revision": "Final",
+    "role": "change_record",
+    "tag": "DR-IAQ-05",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#102",
+    "date": "2026-02-21",
+    "file_name": null,
+    "quote": "Date: 2026-02-21 | Record: OCC-SCH-04 | Revision: C | Status: Approved | Affected Item(s): Occupancy schedule | Change Summary: Peak occupancy increased from 12 to 15 people for 13:00-15:00. | Approved By: Facilities | Precedence Note: Latest operational schedule.",
+    "revision": "C",
+    "role": "change_record",
+    "tag": "OCC-SCH-04",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#103",
+    "date": "2026-02-28",
+    "file_name": null,
+    "quote": "Date: 2026-02-28 | Record: CR-IAQ-007 | Revision: 1 | Status: Approved | Affected Item(s): Controller tuning | Change Summary: Kp changed 4.0 -> 6.0, bias set to 3.5 ACH, integral disabled for released reference run. | Approved By: M. Ortega | Precedence Note: Overrides CDS-IAQ-02 Rev A tuning.",
+    "revision": "1",
+    "role": "change_record",
+    "tag": "CR-IAQ-007",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#104",
+    "date": "2026-03-03",
+    "file_name": null,
+    "quote": "Date: 2026-03-03 | Record: CP-23 | Revision: C | Status: Released | Affected Item(s): Verification | Change Summary: 24-hour trend test and <=1000 ppm acceptance criteria issued. | Approved By: V&V Lead | Precedence Note: Verification authority.",
+    "revision": "C",
+    "role": "change_record",
+    "tag": "CP-23",
+    "title": null
+   },
+   {
+    "approved": true,
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#105",
+    "date": "2026-03-05",
+    "file_name": null,
+    "quote": "Date: 2026-03-05 | Record: SIM-LEGACY | Revision: 0.9 | Status: Archived | Affected Item(s): Legacy Modelica model | Change Summary: Archived model still uses 12-person peak and 350 ppm outdoor CO2. | Approved By: L. Chen | Precedence Note: Known stale source; useful for architecture only.",
+    "revision": "0.9",
+    "role": "change_record",
+    "tag": "SIM-LEGACY",
+    "title": null
+   }
+  ],
+  "parameters": [
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#98",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "volume",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "100 m3 volume and 1.2 kg/m3 nominal density frozen.",
+    "stated_status": null,
+    "unit": "m3",
+    "value": "100"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#98",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "density",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "100 m3 volume and 1.2 kg/m3 nominal density frozen.",
+    "stated_status": null,
+    "unit": "kg/m3",
+    "value": "1.2"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#103",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "gain",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "Kp changed 4.0 -> 6.0, bias set to 3.5 ACH, integral disabled for released reference run.",
+    "stated_status": null,
+    "unit": "1",
+    "value": "6.0"
+   },
+   {
+    "chunk_id": "src_02_engineering_data_02_iaq_engineering_register_xlsx#103",
+    "cited_document": null,
+    "configuration": "nominal",
+    "name": "bias",
+    "owner_tag": null,
+    "provisional": false,
+    "quote": "Kp changed 4.0 -> 6.0, bias set to 3.5 ACH, integral disabled for released reference run.",
+    "stated_status": null,
+    "unit": "ACH",
+    "value": "3.5"
+   }
+  ],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}

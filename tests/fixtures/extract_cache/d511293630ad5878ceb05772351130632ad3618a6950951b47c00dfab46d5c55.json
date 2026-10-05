@@ -1,0 +1,87 @@
+{
+ "model": "gpt-4o",
+ "response": {
+  "aliases": [
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "FILL",
+     "FILL_T1"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "HOLD1",
+     "WAIT_AFTER_FILL"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "TRANSFER",
+     "TRANSFER_T1_T2"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "HOLD2",
+     "WAIT_AFTER_TRANSFER"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "DRAIN",
+     "DRAIN_T2"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   },
+   {
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#43",
+    "names": [
+     "HOLD3",
+     "WAIT_AFTER_DRAIN"
+    ],
+    "quote": "7. Naming Cross-Reference"
+   }
+  ],
+  "assumptions": [],
+  "behaviour_chunk_ids": [
+   "src_04_design_notes_04_control_logic_design_notes_docx#35",
+   "src_04_design_notes_04_control_logic_design_notes_docx#36",
+   "src_04_design_notes_04_control_logic_design_notes_docx#37",
+   "src_04_design_notes_04_control_logic_design_notes_docx#38",
+   "src_04_design_notes_04_control_logic_design_notes_docx#39",
+   "src_04_design_notes_04_control_logic_design_notes_docx#40",
+   "src_04_design_notes_04_control_logic_design_notes_docx#41",
+   "src_04_design_notes_04_control_logic_design_notes_docx#42"
+  ],
+  "connections": [],
+  "criteria": [],
+  "documents": [
+   {
+    "approved": true,
+    "chunk_id": "src_04_design_notes_04_control_logic_design_notes_docx#35",
+    "date": "2026-02-20",
+    "file_name": "CDS-02",
+    "quote": "CONTROL LOGIC DESIGN NOTE Two-Tank Fill/Transfer/Drain Controller",
+    "revision": "B",
+    "role": "design_note",
+    "tag": "CDS-02",
+    "title": "CONTROL LOGIC DESIGN NOTE Two-Tank Fill/Transfer/Drain Controller"
+   }
+  ],
+  "parameters": [],
+  "parts": [],
+  "requirements": [],
+  "system_description": null,
+  "system_name": null
+ },
+ "schema": "FragmentReply"
+}
