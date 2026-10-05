@@ -273,14 +273,22 @@ package system_model "Extracted from 12 source(s)."
     // ASSUMPTION as_stated_01: The dynamic valve stroke is neglected and each valve is treated as an ideal Boolean flow switch.
     SpecAlive.Components.OnOffValve xv_103(q_nominal = xv_103_nominal_flow) "XV-103 [IR xv_103]" annotation(Placement(transformation(origin = {300, -20}, extent = {{-10, -10}, {10, 10}})));
   equation
-    connect(lt_101.y, plc_101.level1) "Level measurement [IR if_ctl_01]" annotation(Line(points = {{210, 20}, {214, 20}, {214, -80}, {36, -80}, {36, 8}, {40, 8}}, color = {0, 0, 127}));
-    connect(lt_102.y, plc_101.level2) "Level measurement [IR if_ctl_02]" annotation(Line(points = {{310, 20}, {314, 20}, {314, -86}, {36, -86}, {36, 4}, {40, 4}}, color = {0, 0, 127}));
-    connect(pb_start.y, plc_101.start) "Command [IR if_ctl_03]" annotation(Line(points = {{10, 20}, {25, 20}, {25, -4}, {40, -4}}, color = {255, 0, 255}));
-    connect(pb_stop.y, plc_101.stop) "Command [IR if_ctl_04]" annotation(Line(points = {{10, -20}, {25, -20}, {25, -8}, {40, -8}}, color = {255, 0, 255}));
-    connect(pb_shut.y, plc_101.shut) "Command [IR if_ctl_05]" annotation(Line(points = {{10, 60}, {25, 60}, {25, 0}, {40, 0}}, color = {255, 0, 255}));
-    connect(plc_101.valve1, xv_101.open) "Open command [IR if_ctl_06]" annotation(Line(points = {{60, 6.7}, {75, 6.7}, {75, -5}, {90, -5}}, color = {255, 0, 255}));
-    connect(plc_101.valve2, xv_102.open) "Open command [IR if_ctl_07]" annotation(Line(points = {{60, 0}, {125, 0}, {125, -25}, {190, -25}}, color = {255, 0, 255}));
-    connect(plc_101.valve3, xv_103.open) "Open command [IR if_ctl_08]" annotation(Line(points = {{60, -6.7}, {175, -6.7}, {175, -25}, {290, -25}}, color = {255, 0, 255}));
+    connect(lt_101.y, plc_101.level1) annotation(
+      Line(points = {{210, 20}, {214, 20}, {214, -80}, {36, -80}, {36, 8}, {40, 8}}, color = {0, 0, 127}));
+    connect(lt_102.y, plc_101.level2) annotation(
+      Line(points = {{310, 20}, {314, 20}, {314, -86}, {36, -86}, {36, 4}, {40, 4}}, color = {0, 0, 127}));
+    connect(pb_start.y, plc_101.start) annotation(
+      Line(points = {{10, 20}, {25, 20}, {25, -4}, {40, -4}}, color = {255, 0, 255}));
+    connect(pb_stop.y, plc_101.stop) annotation(
+      Line(points = {{10, -20}, {25, -20}, {25, -8}, {40, -8}}, color = {255, 0, 255}));
+    connect(pb_shut.y, plc_101.shut) annotation(
+      Line(points = {{10, 60}, {25, 60}, {25, 0}, {40, 0}}, color = {255, 0, 255}));
+    connect(plc_101.valve1, xv_101.open) annotation(
+      Line(points = {{60, 7}, {75, 7}, {75, -5}, {90, -5}}, color = {255, 0, 255}));
+    connect(plc_101.valve2, xv_102.open) annotation(
+      Line(points = {{60, 0}, {125, 0}, {125, -25}, {190, -25}}, color = {255, 0, 255}));
+    connect(plc_101.valve3, xv_103.open) annotation(
+      Line(points = {{60, -7}, {175, -7}, {175, -25}, {290, -25}}, color = {255, 0, 255}));
     connect(src_101.outlet, xv_101.inlet) "Liquid [IR if_hyd_01]" annotation(Line(points = {{10, -60}, {50, -60}, {50, 5}, {90, 5}}, color = {0, 127, 255}));
     connect(xv_101.outlet, tk_101.inlet) "Liquid [IR if_hyd_02]" annotation(Line(points = {{110, 0}, {140, 0}}, color = {0, 127, 255}));
     connect(tk_101.outlet, xv_102.inlet) "Liquid [IR if_hyd_03]" annotation(Line(points = {{160, 5}, {175, 5}, {175, -15}, {190, -15}}, color = {0, 127, 255}));
