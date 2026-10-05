@@ -31,6 +31,7 @@ from specalive.core.ir import (
     parse_action,
     parse_expression,
 )
+from specalive.generate import layout
 from specalive.generate.modelica_text import (
     ModelicaGenerationError,
     modelica_name,
@@ -74,6 +75,15 @@ class ControllerView:
     conditions: list[str]
     branches: list[BranchView]
     equations: list[str]
+    icon: str
+
+
+# A box with the instance's name above it and "state machine" inside: the controller's graphics.
+ICON = ('annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {'
+        'Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 127}, '
+        'fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), '
+        'Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), '
+        'Text(extent = {{-90, 20}, {90, -20}}, textString = "state machine")}));')
 
 
 @dataclass(frozen=True)
@@ -379,6 +389,7 @@ class _Controller:
 
     def _declarations(self) -> list[str]:
         decls = []
+        icon = layout.icon_positions([(p.id, p.direction) for p in self.owner.ports])
         for port in self.owner.ports:
             key = (port.domain, port.direction)
             if key not in _CONNECTORS:
@@ -386,8 +397,11 @@ class _Controller:
                     f"part {self.owner.id!r}: port {port.id!r} ({port.direction} {port.domain}) "
                     "has no controller connector; controllers take real and Boolean signals")
             unit = f'(unit = "{port.unit}")' if port.unit and port.domain == "signal_real" else ""
+            x, y = icon[port.id]
+            box = f"{{{{{x - 20}, {y - 20}}}, {{{x + 20}, {y + 20}}}}}"
             decls.append(f"{_CONNECTORS[key]} {self.connector[port.id]}{unit} "
-                         f"{string(f'[IR {port.id}]')};")
+                         f"{string(f'[IR {port.id}]')} annotation(Placement(transformation("
+                         f"extent = {box}), iconTransformation(extent = {box})));")
         for pid in sorted(self.used_params):
             p = self.params[pid]
             decls.append(f'parameter Real {modelica_name(pid)}(unit = "{p.unit}") '
@@ -424,7 +438,8 @@ class _Controller:
         description = string(f"State machine {self.sm.id} of {self.owner.name} [IR {self.sm.id}]")
         view = ControllerView(class_name(self.sm), description,
                               assumption_comments(self.m, self.sm.id, self.sm.assumption_ids),
-                              literals, self._declarations(), conditions, branches, equations)
+                              literals, self._declarations(), conditions, branches, equations,
+                              ICON)
         return view, asserted
 
 

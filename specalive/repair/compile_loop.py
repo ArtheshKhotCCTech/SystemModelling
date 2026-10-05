@@ -42,8 +42,9 @@ _PARSER_ERRORS = ("No viable alternative", "Parser error", "Missing token", "Une
                   "mismatched input")
 _PREFIXES = r"(?:(?:parameter|constant|discrete|input|output|flow|inner|outer)\s+)*"
 _DECLARATION = re.compile(rf"^\s*{_PREFIXES}([A-Za-z_][\w.]*)\s+([A-Za-z_]\w*)\s*[(\"]")
+# an instance line ends with its "[IR id]" description, then its diagram placement if it has one
 _INSTANCE = re.compile(r'^\s*([A-Za-z_][\w.]*)\s+([A-Za-z_]\w*)\b.*"[^"]*\[IR ([a-z_][a-z0-9_]*)\]"'
-                       r"\s*;\s*$")
+                       r"\s*(?:annotation\s*\(.*\))?\s*;\s*$")
 _CONNECT = re.compile(r"connect\(\s*([A-Za-z_]\w*)\.([A-Za-z_][\w\[\]]*)\s*,"
                       r"\s*([A-Za-z_]\w*)\.([A-Za-z_][\w\[\]]*)\s*\)")
 _NOT_INSTANCES = {"parameter", "constant", "connect", "import", "extends", "type"}

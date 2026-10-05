@@ -76,9 +76,9 @@ def test_initial_state_is_the_start_value(text):
 
 
 def test_connectors_come_from_the_owner_ports(text):
-    assert 'SpecAlive.Interfaces.RealInput level1(unit = "m") "[IR plc_101_level1]";' in text
-    assert 'SpecAlive.Interfaces.BooleanInput shut "[IR plc_101_shut]";' in text
-    assert 'SpecAlive.Interfaces.BooleanOutput valve2 "[IR plc_101_valve2]";' in text
+    assert 'SpecAlive.Interfaces.RealInput level1(unit = "m") "[IR plc_101_level1]" annotation(Placement(' in text
+    assert 'SpecAlive.Interfaces.BooleanInput shut "[IR plc_101_shut]" annotation(Placement(' in text
+    assert 'SpecAlive.Interfaces.BooleanOutput valve2 "[IR plc_101_valve2]" annotation(Placement(' in text
 
 
 def test_machine_parameters_are_declared_without_values(rendered, text):

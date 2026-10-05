@@ -16,6 +16,24 @@ omc simulate.mos           # writes <package>.System_res.csv over the model's ow
 Checked with OpenModelica 1.27.1 and MSL 4.0.0 on 2026-10-05: both compile with no error and
 simulate to the end of their experiment.
 
+## Opening them in OMEdit
+
+`File → Open Model/Library File(s)` → `model.mo`, then open `System` (inside
+`system_model` for L1, `room_co2_ventilation` for L2):
+
+- **Diagram View** shows every component placed left to right in the direction things flow,
+  with its name, and a line for every `connect` (fluid lines blue, real signals dark blue,
+  Boolean signals magenta). A line that closes a feedback loop runs below the components.
+- **Check Model** (right-click `System`) prints `Check of ... completed successfully.` in the
+  Messages Browser; **Simulate** runs the built-in experiment and opens the plot view. Useful
+  variables: `tk_101.h`, `tk_102.h`, `plc_101.state` (L1); `zon_201.C` (L2, 0.001519 is 1000 ppm).
+
+The diagram is graphics only. The layout is generated, so it is tidy rather than hand-drawn.
+Flattening each model with `omc` gives output byte-identical to the version without diagrams,
+so the drawings changed no equation. `omc`'s graphical API (the one OMEdit draws from) reads
+every placement, line and icon back without error. Rendering in the OMEdit window itself was not
+checked from here: please confirm it by eye.
+
 ## L1 — Two-tank fill / transfer / drain (`L1_tank/`)
 
 | | |

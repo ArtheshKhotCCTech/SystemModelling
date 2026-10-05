@@ -6,15 +6,17 @@ package system_model "Extracted from 12 source(s)."
       connector RealOutput = Modelica.Blocks.Interfaces.RealOutput "Real signal output";
       connector BooleanInput = Modelica.Blocks.Interfaces.BooleanInput "Boolean signal input";
       connector BooleanOutput = Modelica.Blocks.Interfaces.BooleanOutput "Boolean signal output";
-      connector VolumeFlowInput = input Real(unit = "m3/s") "Volume flow rate set by the connected component";
-      connector VolumeFlowOutput = output Real(unit = "m3/s") "Volume flow rate set by this component";
+      connector VolumeFlowInput = input Real(unit = "m3/s") "Volume flow rate set by the connected component" annotation(Icon(graphics = {Polygon(points = {{-100, 100}, {100, 0}, {-100, -100}, {-100, 100}}, lineColor = {0, 127, 255}, fillColor = {0, 127, 255}, fillPattern = FillPattern.Solid)}));
+      connector VolumeFlowOutput = output Real(unit = "m3/s") "Volume flow rate set by this component" annotation(Icon(graphics = {Polygon(points = {{-100, 100}, {100, 0}, {-100, -100}, {-100, 100}}, lineColor = {0, 127, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid)}));
       connector AirFlowInput "Air mass flow and the trace-substance mass fraction it carries, set upstream"
         input Real m_flow(unit = "kg/s") "Mass flow in the direction of the connection";
         input Real C(unit = "kg/kg") "Trace-substance mass fraction of that flow";
+        annotation(Icon(graphics = {Polygon(points = {{-100, 100}, {100, 0}, {-100, -100}, {-100, 100}}, lineColor = {0, 127, 127}, fillColor = {0, 127, 127}, fillPattern = FillPattern.Solid)}));
       end AirFlowInput;
       connector AirFlowOutput "Air mass flow and the trace-substance mass fraction it carries, set here"
         output Real m_flow(unit = "kg/s") "Mass flow in the direction of the connection";
         output Real C(unit = "kg/kg") "Trace-substance mass fraction of that flow";
+        annotation(Icon(graphics = {Polygon(points = {{-100, 100}, {100, 0}, {-100, -100}, {-100, 100}}, lineColor = {0, 127, 127}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid)}));
       end AirFlowOutput;
     end Interfaces;
 
@@ -22,41 +24,46 @@ package system_model "Extracted from 12 source(s)."
       model CommandButton "Momentary pushbutton: true for one pulse width from each press time"
         parameter Real pressTimes[:](each unit = "s") = fill(0.0, 0) "Press times; none means never pressed";
         parameter Real width(unit = "s") = 1 "Pulse width of one press";
-        SpecAlive.Interfaces.BooleanOutput y "True while pressed";
+        SpecAlive.Interfaces.BooleanOutput y "True while pressed" annotation(Placement(transformation(extent = {{80, -20}, {120, 20}}), iconTransformation(extent = {{80, -20}, {120, 20}})));
       protected
         Modelica.Blocks.Sources.BooleanTable table(table = {if mod(i, 2) == 1 then pressTimes[div(i + 1, 2)] else pressTimes[div(i, 2)] + width for i in 1:2 * size(pressTimes, 1)}, startValue = false) "Switches on at each press and off one width later";
       equation
         y = table.y;
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "button")}));
       end CommandButton;
 
       model FluidSink "Ideal drain boundary: accepts whatever flow arrives"
-        SpecAlive.Interfaces.VolumeFlowInput inlet "Flow delivered by the upstream component";
+        SpecAlive.Interfaces.VolumeFlowInput inlet "Flow delivered by the upstream component" annotation(Placement(transformation(extent = {{-120, -20}, {-80, 20}}), iconTransformation(extent = {{-120, -20}, {-80, 20}})));
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "sink")}));
       end FluidSink;
 
       model FluidSource "Ideal supply boundary: delivers whatever flow downstream draws"
-        SpecAlive.Interfaces.VolumeFlowInput outlet "Flow drawn by the downstream component";
+        SpecAlive.Interfaces.VolumeFlowInput outlet "Flow drawn by the downstream component" annotation(Placement(transformation(extent = {{80, -20}, {120, 20}}), iconTransformation(extent = {{80, -20}, {120, 20}})));
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "source")}));
       end FluidSource;
 
       model OnOffValve "Ideal Boolean flow switch: passes its nominal flow when open, none when closed"
         parameter Real q_nominal(unit = "m3/s") "Flow when open";
-        SpecAlive.Interfaces.VolumeFlowOutput inlet "Flow drawn from upstream";
-        SpecAlive.Interfaces.VolumeFlowOutput outlet "Flow delivered downstream";
-        SpecAlive.Interfaces.BooleanInput open "True commands the valve open";
+        SpecAlive.Interfaces.VolumeFlowOutput inlet "Flow drawn from upstream" annotation(Placement(transformation(extent = {{-120, 30}, {-80, 70}}), iconTransformation(extent = {{-120, 30}, {-80, 70}})));
+        SpecAlive.Interfaces.VolumeFlowOutput outlet "Flow delivered downstream" annotation(Placement(transformation(extent = {{80, -20}, {120, 20}}), iconTransformation(extent = {{80, -20}, {120, 20}})));
+        SpecAlive.Interfaces.BooleanInput open "True commands the valve open" annotation(Placement(transformation(extent = {{-120, -70}, {-80, -30}}), iconTransformation(extent = {{-120, -70}, {-80, -30}})));
       equation
         outlet = if open then q_nominal else 0;
         inlet = outlet;
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "valve")}));
       end OnOffValve;
 
       model Tank "Open tank of constant cross-section: the level integrates inflow minus outflow"
         parameter Real A(unit = "m2") "Cross-section area";
         parameter Real h_start(unit = "m") "Initial level";
-        SpecAlive.Interfaces.VolumeFlowInput inlet "Inflow, set by the upstream component";
-        SpecAlive.Interfaces.VolumeFlowInput outlet "Outflow, set by the downstream component";
-        SpecAlive.Interfaces.RealOutput level(unit = "m") "Liquid level";
+        SpecAlive.Interfaces.VolumeFlowInput inlet "Inflow, set by the upstream component" annotation(Placement(transformation(extent = {{-120, -20}, {-80, 20}}), iconTransformation(extent = {{-120, -20}, {-80, 20}})));
+        SpecAlive.Interfaces.VolumeFlowInput outlet "Outflow, set by the downstream component" annotation(Placement(transformation(extent = {{80, 30}, {120, 70}}), iconTransformation(extent = {{80, 30}, {120, 70}})));
+        SpecAlive.Interfaces.RealOutput level(unit = "m") "Liquid level" annotation(Placement(transformation(extent = {{80, -70}, {120, -30}}), iconTransformation(extent = {{80, -70}, {120, -30}})));
         Real h(unit = "m", start = h_start, fixed = true) "Liquid level";
       equation
         der(h) = (inlet - outlet) / A;
         level = h;
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "tank")}));
       end Tank;
     end Components;
   end SpecAlive;
@@ -72,14 +79,14 @@ package system_model "Extracted from 12 source(s)."
       wait_after_drain "WAIT_AFTER_DRAIN",
       paused "PAUSED",
       shutdown "SHUTDOWN");
-    SpecAlive.Interfaces.RealInput level1(unit = "m") "[IR plc_101_level1]";
-    SpecAlive.Interfaces.RealInput level2(unit = "m") "[IR plc_101_level2]";
-    SpecAlive.Interfaces.BooleanInput shut "[IR plc_101_shut]";
-    SpecAlive.Interfaces.BooleanInput start "[IR plc_101_start]";
-    SpecAlive.Interfaces.BooleanInput stop "[IR plc_101_stop]";
-    SpecAlive.Interfaces.BooleanOutput valve1 "[IR plc_101_valve1]";
-    SpecAlive.Interfaces.BooleanOutput valve2 "[IR plc_101_valve2]";
-    SpecAlive.Interfaces.BooleanOutput valve3 "[IR plc_101_valve3]";
+    SpecAlive.Interfaces.RealInput level1(unit = "m") "[IR plc_101_level1]" annotation(Placement(transformation(extent = {{-120, 60}, {-80, 100}}), iconTransformation(extent = {{-120, 60}, {-80, 100}})));
+    SpecAlive.Interfaces.RealInput level2(unit = "m") "[IR plc_101_level2]" annotation(Placement(transformation(extent = {{-120, 20}, {-80, 60}}), iconTransformation(extent = {{-120, 20}, {-80, 60}})));
+    SpecAlive.Interfaces.BooleanInput shut "[IR plc_101_shut]" annotation(Placement(transformation(extent = {{-120, -20}, {-80, 20}}), iconTransformation(extent = {{-120, -20}, {-80, 20}})));
+    SpecAlive.Interfaces.BooleanInput start "[IR plc_101_start]" annotation(Placement(transformation(extent = {{-120, -60}, {-80, -20}}), iconTransformation(extent = {{-120, -60}, {-80, -20}})));
+    SpecAlive.Interfaces.BooleanInput stop "[IR plc_101_stop]" annotation(Placement(transformation(extent = {{-120, -100}, {-80, -60}}), iconTransformation(extent = {{-120, -100}, {-80, -60}})));
+    SpecAlive.Interfaces.BooleanOutput valve1 "[IR plc_101_valve1]" annotation(Placement(transformation(extent = {{80, 47}, {120, 87}}), iconTransformation(extent = {{80, 47}, {120, 87}})));
+    SpecAlive.Interfaces.BooleanOutput valve2 "[IR plc_101_valve2]" annotation(Placement(transformation(extent = {{80, -20}, {120, 20}}), iconTransformation(extent = {{80, -20}, {120, 20}})));
+    SpecAlive.Interfaces.BooleanOutput valve3 "[IR plc_101_valve3]" annotation(Placement(transformation(extent = {{80, -87}, {120, -47}}), iconTransformation(extent = {{80, -87}, {120, -47}})));
     parameter Real plc_101_wait_after_tank_1_high(unit = "s") "[IR plc_101_wait_after_tank_1_high]";
     parameter Real plc_101_wait_after_tank_1_low(unit = "s") "[IR plc_101_wait_after_tank_1_low]";
     parameter Real system_inter_cycle_wait(unit = "s") "[IR system_inter_cycle_wait]";
@@ -215,6 +222,7 @@ package system_model "Extracted from 12 source(s)."
     valve2 = state == State.transfer_t1_t2 or state == State.shutdown;
     valve3 = state == State.drain_t2 or state == State.shutdown;
     assert(not (valve1 == true and valve2 == true) and (not (valve2 == true and valve3 == true) or state == State.shutdown), "ac_08: Normal automatic operation shall never command V1 and V2 simultaneously, nor V2 and V3 simultaneously. The latter combination is permitted only in SHUTDOWN.");
+    annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 127}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "state machine")}));
   end Controller_plc_101_sequence;
 
   model System "system_model: one instance per IR part and one connect per IR connection"
@@ -248,41 +256,41 @@ package system_model "Extracted from 12 source(s)."
     parameter Real xv_102_nominal_flow(unit = "m3/s") = 0.0045 "xv_102 nominal_flow [IR xv_102_nominal_flow]";
     parameter Real xv_103_nominal_flow(unit = "m3/s") = 0.005 "xv_103 nominal_flow [IR xv_103_nominal_flow]";
 
-    SpecAlive.Components.FluidSink drn_101 "DRN-101 [IR drn_101]";
-    Modelica.Blocks.Routing.RealPassThrough lt_101 "LT-101 [IR lt_101]";
-    Modelica.Blocks.Routing.RealPassThrough lt_102 "LT-102 [IR lt_102]";
-    SpecAlive.Components.CommandButton pb_shut(pressTimes = pb_shut_press_times) "PB-SHUT [IR pb_shut]";
-    SpecAlive.Components.CommandButton pb_start(pressTimes = pb_start_press_times) "PB-START [IR pb_start]";
-    SpecAlive.Components.CommandButton pb_stop(pressTimes = pb_stop_press_times) "PB-STOP [IR pb_stop]";
-    Controller_plc_101_sequence plc_101(plc_101_wait_after_tank_1_high = plc_101_wait_after_tank_1_high, plc_101_wait_after_tank_1_low = plc_101_wait_after_tank_1_low, system_inter_cycle_wait = system_inter_cycle_wait, tk_101_high_level_setpoint = tk_101_high_level_setpoint, tk_101_low_level_setpoint = tk_101_low_level_setpoint, tk_102_low_level_setpoint = tk_102_low_level_setpoint) "PLC-101 [IR plc_101]";
-    SpecAlive.Components.FluidSource src_101 "SRC-101 [IR src_101]";
-    SpecAlive.Components.Tank tk_101(A = tk_101_area, h_start = tk_101_initial_level) "TK-101 [IR tk_101]";
-    SpecAlive.Components.Tank tk_102(A = tk_102_area, h_start = tk_102_initial_level) "TK-102 [IR tk_102]";
+    SpecAlive.Components.FluidSink drn_101 "DRN-101 [IR drn_101]" annotation(Placement(transformation(origin = {350, 0}, extent = {{-10, -10}, {10, 10}})));
+    Modelica.Blocks.Routing.RealPassThrough lt_101 "LT-101 [IR lt_101]" annotation(Placement(transformation(origin = {200, 20}, extent = {{-10, -10}, {10, 10}})));
+    Modelica.Blocks.Routing.RealPassThrough lt_102 "LT-102 [IR lt_102]" annotation(Placement(transformation(origin = {300, 20}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.CommandButton pb_shut(pressTimes = pb_shut_press_times) "PB-SHUT [IR pb_shut]" annotation(Placement(transformation(origin = {0, 60}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.CommandButton pb_start(pressTimes = pb_start_press_times) "PB-START [IR pb_start]" annotation(Placement(transformation(origin = {0, 20}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.CommandButton pb_stop(pressTimes = pb_stop_press_times) "PB-STOP [IR pb_stop]" annotation(Placement(transformation(origin = {0, -20}, extent = {{-10, -10}, {10, 10}})));
+    Controller_plc_101_sequence plc_101(plc_101_wait_after_tank_1_high = plc_101_wait_after_tank_1_high, plc_101_wait_after_tank_1_low = plc_101_wait_after_tank_1_low, system_inter_cycle_wait = system_inter_cycle_wait, tk_101_high_level_setpoint = tk_101_high_level_setpoint, tk_101_low_level_setpoint = tk_101_low_level_setpoint, tk_102_low_level_setpoint = tk_102_low_level_setpoint) "PLC-101 [IR plc_101]" annotation(Placement(transformation(origin = {50, 0}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.FluidSource src_101 "SRC-101 [IR src_101]" annotation(Placement(transformation(origin = {0, -60}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.Tank tk_101(A = tk_101_area, h_start = tk_101_initial_level) "TK-101 [IR tk_101]" annotation(Placement(transformation(origin = {150, 0}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.Tank tk_102(A = tk_102_area, h_start = tk_102_initial_level) "TK-102 [IR tk_102]" annotation(Placement(transformation(origin = {250, 0}, extent = {{-10, -10}, {10, 10}})));
     // ASSUMPTION as_stated_01: The dynamic valve stroke is neglected and each valve is treated as an ideal Boolean flow switch.
-    SpecAlive.Components.OnOffValve xv_101(q_nominal = xv_101_nominal_flow) "XV-101 [IR xv_101]";
+    SpecAlive.Components.OnOffValve xv_101(q_nominal = xv_101_nominal_flow) "XV-101 [IR xv_101]" annotation(Placement(transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}})));
     // ASSUMPTION as_stated_01: The dynamic valve stroke is neglected and each valve is treated as an ideal Boolean flow switch.
-    SpecAlive.Components.OnOffValve xv_102(q_nominal = xv_102_nominal_flow) "XV-102 [IR xv_102]";
+    SpecAlive.Components.OnOffValve xv_102(q_nominal = xv_102_nominal_flow) "XV-102 [IR xv_102]" annotation(Placement(transformation(origin = {200, -20}, extent = {{-10, -10}, {10, 10}})));
     // ASSUMPTION as_stated_01: The dynamic valve stroke is neglected and each valve is treated as an ideal Boolean flow switch.
-    SpecAlive.Components.OnOffValve xv_103(q_nominal = xv_103_nominal_flow) "XV-103 [IR xv_103]";
+    SpecAlive.Components.OnOffValve xv_103(q_nominal = xv_103_nominal_flow) "XV-103 [IR xv_103]" annotation(Placement(transformation(origin = {300, -20}, extent = {{-10, -10}, {10, 10}})));
   equation
-    connect(lt_101.y, plc_101.level1) "Level measurement [IR if_ctl_01]";
-    connect(lt_102.y, plc_101.level2) "Level measurement [IR if_ctl_02]";
-    connect(pb_start.y, plc_101.start) "Command [IR if_ctl_03]";
-    connect(pb_stop.y, plc_101.stop) "Command [IR if_ctl_04]";
-    connect(pb_shut.y, plc_101.shut) "Command [IR if_ctl_05]";
-    connect(plc_101.valve1, xv_101.open) "Open command [IR if_ctl_06]";
-    connect(plc_101.valve2, xv_102.open) "Open command [IR if_ctl_07]";
-    connect(plc_101.valve3, xv_103.open) "Open command [IR if_ctl_08]";
-    connect(src_101.outlet, xv_101.inlet) "Liquid [IR if_hyd_01]";
-    connect(xv_101.outlet, tk_101.inlet) "Liquid [IR if_hyd_02]";
-    connect(tk_101.outlet, xv_102.inlet) "Liquid [IR if_hyd_03]";
-    connect(xv_102.outlet, tk_102.inlet) "Liquid [IR if_hyd_04]";
-    connect(tk_102.outlet, xv_103.inlet) "Liquid [IR if_hyd_05]";
-    connect(xv_103.outlet, drn_101.inlet) "Liquid [IR if_hyd_06]";
-    connect(tk_101.level, lt_101.u) "level [IR tk_101_level_out_to_lt_101_level_in]";
-    connect(tk_102.level, lt_102.u) "level [IR tk_102_level_out_to_lt_102_level_in]";
+    connect(lt_101.y, plc_101.level1) "Level measurement [IR if_ctl_01]" annotation(Line(points = {{210, 20}, {214, 20}, {214, -80}, {36, -80}, {36, 8}, {40, 8}}, color = {0, 0, 127}));
+    connect(lt_102.y, plc_101.level2) "Level measurement [IR if_ctl_02]" annotation(Line(points = {{310, 20}, {314, 20}, {314, -86}, {36, -86}, {36, 4}, {40, 4}}, color = {0, 0, 127}));
+    connect(pb_start.y, plc_101.start) "Command [IR if_ctl_03]" annotation(Line(points = {{10, 20}, {25, 20}, {25, -4}, {40, -4}}, color = {255, 0, 255}));
+    connect(pb_stop.y, plc_101.stop) "Command [IR if_ctl_04]" annotation(Line(points = {{10, -20}, {25, -20}, {25, -8}, {40, -8}}, color = {255, 0, 255}));
+    connect(pb_shut.y, plc_101.shut) "Command [IR if_ctl_05]" annotation(Line(points = {{10, 60}, {25, 60}, {25, 0}, {40, 0}}, color = {255, 0, 255}));
+    connect(plc_101.valve1, xv_101.open) "Open command [IR if_ctl_06]" annotation(Line(points = {{60, 6.7}, {75, 6.7}, {75, -5}, {90, -5}}, color = {255, 0, 255}));
+    connect(plc_101.valve2, xv_102.open) "Open command [IR if_ctl_07]" annotation(Line(points = {{60, 0}, {125, 0}, {125, -25}, {190, -25}}, color = {255, 0, 255}));
+    connect(plc_101.valve3, xv_103.open) "Open command [IR if_ctl_08]" annotation(Line(points = {{60, -6.7}, {175, -6.7}, {175, -25}, {290, -25}}, color = {255, 0, 255}));
+    connect(src_101.outlet, xv_101.inlet) "Liquid [IR if_hyd_01]" annotation(Line(points = {{10, -60}, {50, -60}, {50, 5}, {90, 5}}, color = {0, 127, 255}));
+    connect(xv_101.outlet, tk_101.inlet) "Liquid [IR if_hyd_02]" annotation(Line(points = {{110, 0}, {140, 0}}, color = {0, 127, 255}));
+    connect(tk_101.outlet, xv_102.inlet) "Liquid [IR if_hyd_03]" annotation(Line(points = {{160, 5}, {175, 5}, {175, -15}, {190, -15}}, color = {0, 127, 255}));
+    connect(xv_102.outlet, tk_102.inlet) "Liquid [IR if_hyd_04]" annotation(Line(points = {{210, -20}, {225, -20}, {225, 0}, {240, 0}}, color = {0, 127, 255}));
+    connect(tk_102.outlet, xv_103.inlet) "Liquid [IR if_hyd_05]" annotation(Line(points = {{260, 5}, {275, 5}, {275, -15}, {290, -15}}, color = {0, 127, 255}));
+    connect(xv_103.outlet, drn_101.inlet) "Liquid [IR if_hyd_06]" annotation(Line(points = {{310, -20}, {325, -20}, {325, 0}, {340, 0}}, color = {0, 127, 255}));
+    connect(tk_101.level, lt_101.u) "level [IR tk_101_level_out_to_lt_101_level_in]" annotation(Line(points = {{160, -5}, {175, -5}, {175, 20}, {190, 20}}, color = {0, 0, 127}));
+    connect(tk_102.level, lt_102.u) "level [IR tk_102_level_out_to_lt_102_level_in]" annotation(Line(points = {{260, -5}, {275, -5}, {275, 20}, {290, 20}}, color = {0, 0, 127}));
 
     // ASSUMPTION (generator default): no output interval in the IR; Interval = (StopTime - StartTime) / 500 = 1.8 s, omc's default of 500 output intervals
-    annotation(experiment(StopTime = 900.0, Interval = 1.8));
+    annotation(Diagram(coordinateSystem(extent = {{-30, -110}, {380, 90}})), experiment(StopTime = 900.0, Interval = 1.8));
   end System;
 end system_model;

@@ -6,30 +6,34 @@ package room_co2_ventilation "Single-zone room CO2 demand-controlled ventilation
       connector RealOutput = Modelica.Blocks.Interfaces.RealOutput "Real signal output";
       connector BooleanInput = Modelica.Blocks.Interfaces.BooleanInput "Boolean signal input";
       connector BooleanOutput = Modelica.Blocks.Interfaces.BooleanOutput "Boolean signal output";
-      connector VolumeFlowInput = input Real(unit = "m3/s") "Volume flow rate set by the connected component";
-      connector VolumeFlowOutput = output Real(unit = "m3/s") "Volume flow rate set by this component";
+      connector VolumeFlowInput = input Real(unit = "m3/s") "Volume flow rate set by the connected component" annotation(Icon(graphics = {Polygon(points = {{-100, 100}, {100, 0}, {-100, -100}, {-100, 100}}, lineColor = {0, 127, 255}, fillColor = {0, 127, 255}, fillPattern = FillPattern.Solid)}));
+      connector VolumeFlowOutput = output Real(unit = "m3/s") "Volume flow rate set by this component" annotation(Icon(graphics = {Polygon(points = {{-100, 100}, {100, 0}, {-100, -100}, {-100, 100}}, lineColor = {0, 127, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid)}));
       connector AirFlowInput "Air mass flow and the trace-substance mass fraction it carries, set upstream"
         input Real m_flow(unit = "kg/s") "Mass flow in the direction of the connection";
         input Real C(unit = "kg/kg") "Trace-substance mass fraction of that flow";
+        annotation(Icon(graphics = {Polygon(points = {{-100, 100}, {100, 0}, {-100, -100}, {-100, 100}}, lineColor = {0, 127, 127}, fillColor = {0, 127, 127}, fillPattern = FillPattern.Solid)}));
       end AirFlowInput;
       connector AirFlowOutput "Air mass flow and the trace-substance mass fraction it carries, set here"
         output Real m_flow(unit = "kg/s") "Mass flow in the direction of the connection";
         output Real C(unit = "kg/kg") "Trace-substance mass fraction of that flow";
+        annotation(Icon(graphics = {Polygon(points = {{-100, 100}, {100, 0}, {-100, -100}, {-100, 100}}, lineColor = {0, 127, 127}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid)}));
       end AirFlowOutput;
     end Interfaces;
 
     package Components "Component classes used by this model"
       model Boundary "Ideal boundary: accepts whatever air flow arrives"
-        SpecAlive.Interfaces.AirFlowInput inlet "Air arriving at the boundary";
+        SpecAlive.Interfaces.AirFlowInput inlet "Air arriving at the boundary" annotation(Placement(transformation(extent = {{-120, -20}, {-80, 20}}), iconTransformation(extent = {{-120, -20}, {-80, 20}})));
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "boundary")}));
       end Boundary;
 
       model MassFlowSource "Commanded air supply: delivers minus the port mass-flow command"
-        SpecAlive.Interfaces.RealInput m_flow_in(unit = "kg/s") "Mass flow at the source port, positive into the source";
-        SpecAlive.Interfaces.RealInput C_in(unit = "kg/kg") "Trace-substance mass fraction supplied";
-        SpecAlive.Interfaces.AirFlowOutput outlet "Air delivered to the network";
+        SpecAlive.Interfaces.RealInput m_flow_in(unit = "kg/s") "Mass flow at the source port, positive into the source" annotation(Placement(transformation(extent = {{-120, 30}, {-80, 70}}), iconTransformation(extent = {{-120, 30}, {-80, 70}})));
+        SpecAlive.Interfaces.RealInput C_in(unit = "kg/kg") "Trace-substance mass fraction supplied" annotation(Placement(transformation(extent = {{-120, -70}, {-80, -30}}), iconTransformation(extent = {{-120, -70}, {-80, -30}})));
+        SpecAlive.Interfaces.AirFlowOutput outlet "Air delivered to the network" annotation(Placement(transformation(extent = {{80, -20}, {120, 20}}), iconTransformation(extent = {{80, -20}, {120, 20}})));
       equation
         outlet.m_flow = -m_flow_in;
         outlet.C = C_in;
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "air supply")}));
       end MassFlowSource;
 
       block PController "Proportional controller with bias and output limits"
@@ -37,46 +41,50 @@ package room_co2_ventilation "Single-zone room CO2 demand-controlled ventilation
         parameter Real bias = 0 "Output when the measurement equals the setpoint";
         parameter Real yMin "Lower output limit";
         parameter Real yMax "Upper output limit";
-        SpecAlive.Interfaces.RealInput u_s "Setpoint";
-        SpecAlive.Interfaces.RealInput u_m "Measurement";
-        SpecAlive.Interfaces.RealOutput y "Limited command";
+        SpecAlive.Interfaces.RealInput u_s "Setpoint" annotation(Placement(transformation(extent = {{-120, 30}, {-80, 70}}), iconTransformation(extent = {{-120, 30}, {-80, 70}})));
+        SpecAlive.Interfaces.RealInput u_m "Measurement" annotation(Placement(transformation(extent = {{-120, -70}, {-80, -30}}), iconTransformation(extent = {{-120, -70}, {-80, -30}})));
+        SpecAlive.Interfaces.RealOutput y "Limited command" annotation(Placement(transformation(extent = {{80, -20}, {120, 20}}), iconTransformation(extent = {{80, -20}, {120, 20}})));
       equation
         y = min(yMax, max(yMin, bias + k * (u_m - u_s)));
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "P control")}));
       end PController;
 
       model RoomVolume "Well-mixed air volume: the trace mass fraction follows the inflows"
         parameter Real V(unit = "m3") "Air volume";
         parameter Real rho(unit = "kg/m3") "Air density, constant";
         parameter Real C_start(unit = "kg/kg") = 0 "Initial trace-substance mass fraction";
-        SpecAlive.Interfaces.AirFlowInput supply "Supply air";
-        SpecAlive.Interfaces.AirFlowInput source "Trace-substance source";
-        SpecAlive.Interfaces.AirFlowOutput exhaust "Exhaust air, at the room's mass fraction";
-        SpecAlive.Interfaces.RealOutput concentration(unit = "kg/kg") "Room trace mass fraction";
+        SpecAlive.Interfaces.AirFlowInput supply "Supply air" annotation(Placement(transformation(extent = {{-120, 30}, {-80, 70}}), iconTransformation(extent = {{-120, 30}, {-80, 70}})));
+        SpecAlive.Interfaces.AirFlowInput source "Trace-substance source" annotation(Placement(transformation(extent = {{-120, -70}, {-80, -30}}), iconTransformation(extent = {{-120, -70}, {-80, -30}})));
+        SpecAlive.Interfaces.AirFlowOutput exhaust "Exhaust air, at the room's mass fraction" annotation(Placement(transformation(extent = {{80, 30}, {120, 70}}), iconTransformation(extent = {{80, 30}, {120, 70}})));
+        SpecAlive.Interfaces.RealOutput concentration(unit = "kg/kg") "Room trace mass fraction" annotation(Placement(transformation(extent = {{80, -70}, {120, -30}}), iconTransformation(extent = {{80, -70}, {120, -30}})));
         Real C(unit = "kg/kg", start = C_start, fixed = true) "Room trace mass fraction";
       equation
         rho * V * der(C) = supply.m_flow * (supply.C - C) + source.m_flow * (source.C - C);
         exhaust.m_flow = supply.m_flow + source.m_flow;
         exhaust.C = C;
         concentration = C;
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "room")}));
       end RoomVolume;
 
       block ScheduleTable "Piecewise-constant schedule"
         parameter Real times[:](each unit = "s") "Times the value changes, ascending";
         parameter Real values[size(times, 1)] "Value from each time until the next";
-        SpecAlive.Interfaces.RealOutput y "Scheduled value";
+        SpecAlive.Interfaces.RealOutput y "Scheduled value" annotation(Placement(transformation(extent = {{80, -20}, {120, 20}}), iconTransformation(extent = {{80, -20}, {120, 20}})));
       protected
         Modelica.Blocks.Sources.CombiTimeTable table(table = [times, values], smoothness = Modelica.Blocks.Types.Smoothness.ConstantSegments, extrapolation = Modelica.Blocks.Types.Extrapolation.HoldLastPoint) "Steps at each time";
       equation
         y = table.y[1];
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "schedule")}));
       end ScheduleTable;
 
       model TraceSource "Trace-substance injection: a carrier flow at a fixed mass fraction"
         parameter Real C(unit = "kg/kg") "Trace-substance mass fraction of the carrier";
-        SpecAlive.Interfaces.RealInput m_flow_in(unit = "kg/s") "Carrier mass flow leaving the source";
-        SpecAlive.Interfaces.AirFlowOutput outlet "Carrier flow delivered to the network";
+        SpecAlive.Interfaces.RealInput m_flow_in(unit = "kg/s") "Carrier mass flow leaving the source" annotation(Placement(transformation(extent = {{-120, -20}, {-80, 20}}), iconTransformation(extent = {{-120, -20}, {-80, 20}})));
+        SpecAlive.Interfaces.AirFlowOutput outlet "Carrier flow delivered to the network" annotation(Placement(transformation(extent = {{80, -20}, {120, 20}}), iconTransformation(extent = {{80, -20}, {120, 20}})));
       equation
         outlet.m_flow = m_flow_in;
         outlet.C = C;
+        annotation(Icon(coordinateSystem(extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-100, 100}, {100, -100}}, lineColor = {0, 0, 0}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Text(extent = {{-100, 140}, {100, 105}}, textString = "%name", textColor = {0, 0, 255}), Text(extent = {{-90, 20}, {90, -20}}, textString = "trace source")}));
       end TraceSource;
     end Components;
   end SpecAlive;
@@ -101,34 +109,34 @@ package room_co2_ventilation "Single-zone room CO2 demand-controlled ventilation
     parameter Real zon_201_initial_concentration(unit = "kg/kg") = 0.0004557 "zon_201 initial_concentration [IR zon_201_initial_concentration]";
     parameter Real zon_201_volume(unit = "m3") = 100.0 "zon_201 volume [IR zon_201_volume]";
 
-    SpecAlive.Components.Boundary bnd_201 "Exhaust boundary [IR bnd_201]";
-    SpecAlive.Components.PController ctl_co2_201(bias = ctl_co2_201_bias, k = ctl_co2_201_gain, yMax = ctl_co2_201_output_max, yMin = ctl_co2_201_output_min) "Ventilation controller [IR ctl_co2_201]";
-    Modelica.Blocks.Math.Gain gain_air_201(k = gain_air_201_gain) "ACH to source mass-flow gain [IR gain_air_201]";
-    Modelica.Blocks.Math.Gain gain_norm_201(k = gain_norm_201_gain) "CO2 normalisation gain [IR gain_norm_201]";
-    Modelica.Blocks.Math.Gain gain_peo_201(k = gain_peo_201_gain) "People to carrier mass-flow gain [IR gain_peo_201]";
-    SpecAlive.Components.ScheduleTable sch_occ_201(times = sch_occ_201_times, values = sch_occ_201_values) "Occupancy schedule [IR sch_occ_201]";
-    Modelica.Blocks.Routing.RealPassThrough sen_co2_201 "Room CO2 sensor [IR sen_co2_201]";
-    Modelica.Blocks.Sources.Constant set_co2_201(k = set_co2_201_value) "Normalised CO2 setpoint [IR set_co2_201]";
-    Modelica.Blocks.Sources.Constant set_oa_201(k = set_oa_201_value) "Outdoor CO2 mass fraction [IR set_oa_201]";
-    SpecAlive.Components.TraceSource src_co2_201(C = src_co2_201_concentration) "Occupant CO2 source [IR src_co2_201]";
-    SpecAlive.Components.MassFlowSource src_oa_201 "Outdoor air supply [IR src_oa_201]";
-    SpecAlive.Components.RoomVolume zon_201(rho = zon_201_density, C_start = zon_201_initial_concentration, V = zon_201_volume) "Room air volume [IR zon_201]";
+    SpecAlive.Components.Boundary bnd_201 "Exhaust boundary [IR bnd_201]" annotation(Placement(transformation(origin = {200, 20}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.PController ctl_co2_201(bias = ctl_co2_201_bias, k = ctl_co2_201_gain, yMax = ctl_co2_201_output_max, yMin = ctl_co2_201_output_min) "Ventilation controller [IR ctl_co2_201]" annotation(Placement(transformation(origin = {300, 0}, extent = {{-10, -10}, {10, 10}})));
+    Modelica.Blocks.Math.Gain gain_air_201(k = gain_air_201_gain) "ACH to source mass-flow gain [IR gain_air_201]" annotation(Placement(transformation(origin = {350, 0}, extent = {{-10, -10}, {10, 10}})));
+    Modelica.Blocks.Math.Gain gain_norm_201(k = gain_norm_201_gain) "CO2 normalisation gain [IR gain_norm_201]" annotation(Placement(transformation(origin = {250, 0}, extent = {{-10, -10}, {10, 10}})));
+    Modelica.Blocks.Math.Gain gain_peo_201(k = gain_peo_201_gain) "People to carrier mass-flow gain [IR gain_peo_201]" annotation(Placement(transformation(origin = {50, 0}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.ScheduleTable sch_occ_201(times = sch_occ_201_times, values = sch_occ_201_values) "Occupancy schedule [IR sch_occ_201]" annotation(Placement(transformation(origin = {0, 40}, extent = {{-10, -10}, {10, 10}})));
+    Modelica.Blocks.Routing.RealPassThrough sen_co2_201 "Room CO2 sensor [IR sen_co2_201]" annotation(Placement(transformation(origin = {200, -20}, extent = {{-10, -10}, {10, 10}})));
+    Modelica.Blocks.Sources.Constant set_co2_201(k = set_co2_201_value) "Normalised CO2 setpoint [IR set_co2_201]" annotation(Placement(transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}})));
+    Modelica.Blocks.Sources.Constant set_oa_201(k = set_oa_201_value) "Outdoor CO2 mass fraction [IR set_oa_201]" annotation(Placement(transformation(origin = {0, -40}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.TraceSource src_co2_201(C = src_co2_201_concentration) "Occupant CO2 source [IR src_co2_201]" annotation(Placement(transformation(origin = {100, 0}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.MassFlowSource src_oa_201 "Outdoor air supply [IR src_oa_201]" annotation(Placement(transformation(origin = {400, 0}, extent = {{-10, -10}, {10, 10}})));
+    SpecAlive.Components.RoomVolume zon_201(rho = zon_201_density, C_start = zon_201_initial_concentration, V = zon_201_volume) "Room air volume [IR zon_201]" annotation(Placement(transformation(origin = {150, 0}, extent = {{-10, -10}, {10, 10}})));
   equation
     // ASSUMPTION as_ducts_direct: The supply and exhaust ducts have no storage in the benchmark, so the source, the room and the boundary are connected directly and the ducts are not modelled as parts.
-    connect(src_oa_201.outlet, zon_201.supply) "air [IR if_air_01]";
+    connect(src_oa_201.outlet, zon_201.supply) "air [IR if_air_01]" annotation(Line(points = {{410, 0}, {414, 0}, {414, -60}, {136, -60}, {136, 5}, {140, 5}}, color = {0, 127, 255}));
     // ASSUMPTION as_ducts_direct: The supply and exhaust ducts have no storage in the benchmark, so the source, the room and the boundary are connected directly and the ducts are not modelled as parts.
-    connect(zon_201.exhaust, bnd_201.inlet) "air [IR if_air_03]";
-    connect(sch_occ_201.y, gain_peo_201.u) "people count [IR if_sig_01]";
-    connect(gain_peo_201.y, src_co2_201.m_flow_in) "carrier mass flow [IR if_sig_02]";
-    connect(set_oa_201.y, src_oa_201.C_in) "outdoor mass fraction [IR if_sig_03]";
-    connect(zon_201.concentration, sen_co2_201.u) "room mass fraction [IR if_sig_04]";
-    connect(sen_co2_201.y, gain_norm_201.u) "measured mass fraction [IR if_sig_05]";
-    connect(gain_norm_201.y, ctl_co2_201.u_m) "normalised CO2 [IR if_sig_06]";
-    connect(set_co2_201.y, ctl_co2_201.u_s) "normalised setpoint [IR if_sig_07]";
-    connect(ctl_co2_201.y, gain_air_201.u) "ACH command [IR if_sig_08]";
-    connect(gain_air_201.y, src_oa_201.m_flow_in) "source mass-flow command [IR if_sig_09]";
-    connect(src_co2_201.outlet, zon_201.source) "trace substance [IR if_trc_01]";
+    connect(zon_201.exhaust, bnd_201.inlet) "air [IR if_air_03]" annotation(Line(points = {{160, 5}, {175, 5}, {175, 20}, {190, 20}}, color = {0, 127, 255}));
+    connect(sch_occ_201.y, gain_peo_201.u) "people count [IR if_sig_01]" annotation(Line(points = {{10, 40}, {25, 40}, {25, 0}, {40, 0}}, color = {0, 0, 127}));
+    connect(gain_peo_201.y, src_co2_201.m_flow_in) "carrier mass flow [IR if_sig_02]" annotation(Line(points = {{60, 0}, {90, 0}}, color = {0, 0, 127}));
+    connect(set_oa_201.y, src_oa_201.C_in) "outdoor mass fraction [IR if_sig_03]" annotation(Line(points = {{10, -40}, {200, -40}, {200, -5}, {390, -5}}, color = {0, 0, 127}));
+    connect(zon_201.concentration, sen_co2_201.u) "room mass fraction [IR if_sig_04]" annotation(Line(points = {{160, -5}, {175, -5}, {175, -20}, {190, -20}}, color = {0, 0, 127}));
+    connect(sen_co2_201.y, gain_norm_201.u) "measured mass fraction [IR if_sig_05]" annotation(Line(points = {{210, -20}, {225, -20}, {225, 0}, {240, 0}}, color = {0, 0, 127}));
+    connect(gain_norm_201.y, ctl_co2_201.u_m) "normalised CO2 [IR if_sig_06]" annotation(Line(points = {{260, 0}, {275, 0}, {275, -5}, {290, -5}}, color = {0, 0, 127}));
+    connect(set_co2_201.y, ctl_co2_201.u_s) "normalised setpoint [IR if_sig_07]" annotation(Line(points = {{10, 0}, {150, 0}, {150, 5}, {290, 5}}, color = {0, 0, 127}));
+    connect(ctl_co2_201.y, gain_air_201.u) "ACH command [IR if_sig_08]" annotation(Line(points = {{310, 0}, {340, 0}}, color = {0, 0, 127}));
+    connect(gain_air_201.y, src_oa_201.m_flow_in) "source mass-flow command [IR if_sig_09]" annotation(Line(points = {{360, 0}, {375, 0}, {375, 5}, {390, 5}}, color = {0, 0, 127}));
+    connect(src_co2_201.outlet, zon_201.source) "trace substance [IR if_trc_01]" annotation(Line(points = {{110, 0}, {125, 0}, {125, -5}, {140, -5}}, color = {0, 127, 255}));
 
-    annotation(experiment(StopTime = 86400.0, Interval = 60.0));
+    annotation(Diagram(coordinateSystem(extent = {{-30, -80}, {440, 70}})), experiment(StopTime = 86400.0, Interval = 60.0));
   end System;
 end room_co2_ventilation;

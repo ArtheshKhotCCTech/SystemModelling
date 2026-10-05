@@ -141,3 +141,16 @@ def test_run_simulation_of_the_generated_golden_model(golden_generated, catalogu
     assert sim.status == omc.OK, sim.result.detail
     assert sim.trace.times[-1] == pytest.approx(900.0)
     assert "plc_101.state" in sim.trace.values and "tk_101.level" in sim.trace.values
+
+
+def test_a_declaration_with_a_diagram_annotation_keeps_its_ir_id():
+    # the generator places every instance and connector; the annotation follows the description
+    text = ('model M "m"\n'
+            '  SpecAlive.Components.Tank tk(A = a) "Tank \\"A\\" [IR tk]" annotation(Placement('
+            'transformation(origin = {0, 0}, extent = {{-10, -10}, {10, 10}})));\n'
+            '  SpecAlive.Interfaces.RealInput u(unit = "m") "[IR m_u]" annotation(Placement('
+            'transformation(extent = {{-120, -20}, {-80, 20}})));\n'
+            'end M;\n')
+    decls = simulate._classes(text)["M"].declarations()
+    assert decls == [("SpecAlive.Components.Tank", "tk", "tk"),
+                     ("SpecAlive.Interfaces.RealInput", "u", "m_u")]

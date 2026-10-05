@@ -4,6 +4,8 @@
 # one instance per part of the class the catalogue names, one connect() per connection, IR ids
 # in description strings, ASSUMPTION comments, and an experiment annotation. Every value the
 # generator supplies itself (catalogue or tool default) is a comment and a returned note.
+# Each instance is placed and each connect drawn (layout.py), so a tool shows the diagram; the
+# annotations are graphics only and change no equation.
 from __future__ import annotations
 
 from collections import defaultdict
@@ -14,7 +16,7 @@ import jinja2
 
 from specalive.core.catalogue import Catalogue
 from specalive.core.ir import SYSTEM_OWNER, Parameter, Part, SystemModel
-from specalive.generate import controller
+from specalive.generate import controller, layout
 from specalive.generate.modelica_text import (
     ModelicaGenerationError,
     modelica_name,
@@ -75,6 +77,15 @@ class PackageView:
     controllers: list[str]
 
 
+def _coord(value: float) -> str:
+    """A diagram coordinate: a whole number without a decimal point, else as written."""
+    return str(int(value)) if float(value).is_integer() else number(value)
+
+
+def _point(p: tuple[float, float]) -> str:
+    return f"{{{_coord(p[0])}, {_coord(p[1])}}}"
+
+
 def _library_text(name: str) -> str:
     """A SpecAlive library class without its leading Purpose comment."""
     path = COMPONENTS / f"{name}.mo"
@@ -111,6 +122,7 @@ class _Builder:
             self.machines[sm.owner].append(sm)
         self.controllers = {sm.id: controller.render_controller(sm, model)
                             for sm in sorted(model.state_machines, key=lambda s: s.id)}
+        self.layout = layout.layout(model, catalogue)
 
     def comments(self, element_id: str, own: list[str]) -> list[str]:
         return controller.assumption_comments(self.m, element_id, own)
@@ -165,8 +177,12 @@ class _Builder:
                                       f"catalogue default {number(default.value)} "
                                       f"{default.unit} used")
         modifier = f"({', '.join(mods)})" if mods else ""
+        x, y = self.layout.origins[part.id]
+        placement = (f"annotation(Placement(transformation(origin = {_point((x, y))}, "
+                     f"extent = {{{{-{layout.HALF}, -{layout.HALF}}}, "
+                     f"{{{layout.HALF}, {layout.HALF}}}}})))")
         return Decl(comments, f"{cls} {modelica_name(part.id)}{modifier} "
-                              f"{string(f'{part.name} [IR {part.id}]')};")
+                              f"{string(f'{part.name} [IR {part.id}]')} {placement};")
 
     def _endpoint(self, port_id: str) -> str:
         part, port = self.ports[port_id]
@@ -182,10 +198,16 @@ class _Builder:
         return f"{modelica_name(part.id)}.{connector}"
 
     def connections(self) -> list[Decl]:
-        return [Decl(self.comments(c.id, c.assumption_ids),
-                     f"connect({self._endpoint(c.from_port)}, {self._endpoint(c.to_port)}) "
-                     f"{string(f'{c.medium_or_signal} [IR {c.id}]')};")
-                for c in sorted(self.m.connections, key=lambda c: c.id)]
+        decls = []
+        for c in sorted(self.m.connections, key=lambda c: c.id):
+            points = ", ".join(_point(p) for p in self.layout.lines[c.id])
+            colour = ", ".join(str(v) for v in self.layout.colours[c.id])
+            decls.append(Decl(
+                self.comments(c.id, c.assumption_ids),
+                f"connect({self._endpoint(c.from_port)}, {self._endpoint(c.to_port)}) "
+                f"{string(f'{c.medium_or_signal} [IR {c.id}]')} "
+                f"annotation(Line(points = {{{points}}}, color = {{{colour}}}));"))
+        return decls
 
     def experiment(self) -> tuple[list[str], str]:
         found: dict[str, float] = {}
@@ -209,7 +231,11 @@ class _Builder:
         self.notes.extend(comments)
         fields = ", ".join(f"{EXPERIMENT[name]} = {number(found[name])}"
                            for name in EXPERIMENT if name in found)
-        return [_DEFAULT_NOTE + c for c in comments], f"annotation(experiment({fields}));"
+        (x1, y1), (x2, y2) = self.layout.extent
+        diagram = (f"Diagram(coordinateSystem(extent = {{{_point((x1, y1))}, "
+                   f"{_point((x2, y2))}}}))")
+        return ([_DEFAULT_NOTE + c for c in comments],
+                f"annotation({diagram}, experiment({fields}));")
 
     def _unasserted_notes(self) -> None:
         asserted = {cid for r in self.controllers.values() for cid in r.asserted}
