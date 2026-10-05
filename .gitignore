@@ -26,3 +26,9 @@ __pycache__/
 examples/*/build/*
 !examples/*/build/compile.mos
 /tests/fixtures/extract_cache
+
+# omc build and simulation output in the Result folders; only the models, scripts and README are tracked
+Result/*/*
+!Result/*/model.mo
+!Result/*/compile.mos
+!Result/*/simulate.mos
